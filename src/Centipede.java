@@ -5,6 +5,29 @@ import java.awt.Color;          // general colors (as triples of red,green,blue 
 import java.util.ArrayList;     // the arraylist library from java
 // and predefined colors (Red, Green, Yellow, Blue, Black, White)
 
+// represents a util class
+class Util {
+  // generates a centipede body given the length and the speed of the centipede
+  ArrayList<BodySeg> generateCentBody(int length, int speed) {
+    ArrayList<BodySeg> body = new ArrayList<>();
+    for (int index = 0; index < length; index += 1) {
+      boolean head = index == length - 1;
+      Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2, ITile.HEIGHT / 2);
+      Posn vel = new Posn(speed, 0);
+      BodySeg curr = new BodySeg(pos, vel, head);
+      body.add(curr);
+    }
+    return body;
+  }
+
+  // takes in an element and generates an arraylist with solely that element
+  <T> ArrayList<T> singletonList(T item) {
+    ArrayList<T> list = new ArrayList<>();
+    list.add(item);
+    return list;
+  }
+}
+
 interface ITile {
   int HEIGHT = 40;
 
@@ -13,14 +36,13 @@ interface ITile {
 
 // represents a centipede in the centipede game
 class Centipede {
-  ArrayList<Posn> body; // represents all the body segments of this centipede
+  ArrayList<BodySeg> body; // represents all the body segments of this centipede
   int speed;
-  Posn velocity;
   boolean down;
   ArrayList<Posn> encountered; // represents a list of obstacles that this centipede has encountered
 
   // the constructor
-  Centipede(ArrayList<Posn> body, int speed, Posn velocity, boolean down,
+  Centipede(ArrayList<BodySeg> body, int speed, boolean down,
             ArrayList<Posn> encountered) {
     if (body.size() == 0) {
       throw new IllegalArgumentException("Centipede cannot have an empty body");
@@ -28,43 +50,85 @@ class Centipede {
 
     this.body = body;
     this.speed = speed;
-    this.velocity = velocity;
     this.down = down;
     this.encountered = encountered;
   }
 
   // the default constructor - constructs the starting centipede in the centipede game
   Centipede() {
-    ArrayList<Posn> body = new ArrayList<>();
-    for (int index = 0; index < 10; index += 1) {
-      body.add(new Posn((index - 9) * ITile.WIDTH + ITile.WIDTH / 2, ITile.HEIGHT / 2));
-    }
-    this.body = body;
-    this.speed = ITile.WIDTH / 10;
-    this.velocity = new Posn(this.speed, 0);
-    this.down = true;
-    this.encountered = new ArrayList<>();
+    this(new Util().generateCentBody(10, ITile.WIDTH / 10),
+        ITile.WIDTH / 10, true, new ArrayList<>());
   }
 
+  // EFFECT: changes the given world scene by adding this centipede onto it
   // draws this centipede onto the given world scene
-  WorldScene draw(WorldScene s) {
-    WorldImage bodyPart = new CircleImage(ITile.WIDTH / 2, OutlineMode.SOLID, Color.BLUE);
-    for (int index = 0; index < this.body.size(); index += 1) {
-      Posn pos = this.body.get(index);
-      if (index == this.body.size() - 1) {
-        bodyPart = new CircleImage(ITile.WIDTH / 2, OutlineMode.SOLID, Color.CYAN);
-      }
-      s.placeImageXY(bodyPart, pos.x, pos.y);
+  void draw(WorldScene s) {
+    for (BodySeg bodyPart : this.body) {
+      bodyPart.draw(s);
     }
-    return s;
   }
 
   // EFFECT: changes the all the elements in this centipede's list of body positions,
   // essentially moving it along in the world
   // moves the centipede along the board in the world
   void move(int width) {
+    for (int i = 0; i < this.body.size(); i += 1) {
+      this.body.get(i).move(width, this.speed, this.down);
+    }
   }
 }
+
+//represents a body segment of a centipede
+class BodySeg {
+  Posn pos; // represents the position of this body segment
+  Posn velocity; // represents the velocity of this body segment
+  boolean head;
+
+  // the constructor
+  BodySeg(Posn pos, Posn velocity, boolean head) {
+    this.pos = pos;
+    this.velocity = velocity;
+    this.head = head;
+  }
+
+  // EFFECT: changes the given world scene by adding this body segment onto it
+  // draws this body segment onto the given world scene
+  void draw(WorldScene s) {
+    Color color = Color.BLUE;
+    if (this.head) {
+      color = Color.CYAN;
+    }
+
+    WorldImage bodyPart = new CircleImage(ITile.WIDTH / 2, OutlineMode.SOLID, color);
+    s.placeImageXY(bodyPart, this.pos.x, this.pos.y);
+  }
+
+  // EFFECT: changes the position of this body segment
+  // moves this body segment
+  void move(int width, int speed, boolean down) {
+    int leftEdge = ITile.WIDTH / 2;
+    int rightEdge = width - ITile.WIDTH / 2;
+    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
+
+    if (this.pos.x == leftEdge && inRow && this.velocity.x < 0
+        || this.pos.x == rightEdge && inRow && this.velocity.x > 0) {
+      if (!down) {
+        speed *= -1;
+      }
+      this.velocity = new Posn(0, speed);
+
+    } else if ((this.pos.x == leftEdge || this.pos.x == rightEdge)
+        && inRow && this.velocity.x == 0) {
+      if (this.pos.x == rightEdge) {
+        speed *=-1;
+      }
+      this.velocity = new Posn(speed, 0);
+    }
+
+    this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+  }
+}
+
 
 // represents the actual game world when the player can control the gnome
 class CGame extends World {
@@ -84,13 +148,12 @@ class CGame extends World {
 
   // the default constructor, only requiring how big the board should be
   CGame(int x, int y) {
-    this.cents = new ArrayList<>();
-    this.cents.add(new Centipede());
-    this.width = ITile.WIDTH * x;
-    this.height = ITile.HEIGHT * y;
+    this(new Util().singletonList(new Centipede()),
+        ITile.WIDTH * x, ITile.HEIGHT * y);
   }
 
   @Override
+  // moves every element in the game accordingly after each tick
   public void onTick() {
     for (Centipede c : this.cents) {
       c.move(this.width);
@@ -98,6 +161,7 @@ class CGame extends World {
   }
 
   @Override
+  // draws all the elements in the game
   public WorldScene makeScene() {
     WorldScene s = new WorldScene(this.width, this.height);
     for (Centipede c : this.cents) {
