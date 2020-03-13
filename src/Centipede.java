@@ -103,23 +103,22 @@ class BodySeg {
     s.placeImageXY(bodyPart, this.pos.x, this.pos.y);
   }
 
-  // EFFECT: changes the position of this body segment
+  // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
   void move(int width, int speed, boolean down) {
-    int leftEdge = ITile.WIDTH / 2;
-    int rightEdge = width - ITile.WIDTH / 2;
+    boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
+    boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
-    if (this.pos.x == leftEdge && inRow && this.velocity.x < 0
-        || this.pos.x == rightEdge && inRow && this.velocity.x > 0) {
+    if (leftEdge && inRow && this.velocity.x < 0 || rightEdge && inRow && this.velocity.x > 0) {
       if (!down) {
         speed *= -1;
       }
       this.velocity = new Posn(0, speed);
+    }
 
-    } else if ((this.pos.x == leftEdge || this.pos.x == rightEdge)
-        && inRow && this.velocity.x == 0) {
-      if (this.pos.x == rightEdge) {
+    else if ((leftEdge || rightEdge) && inRow && this.velocity.x == 0) {
+      if (rightEdge) {
         speed *=-1;
       }
       this.velocity = new Posn(speed, 0);
@@ -133,6 +132,7 @@ class BodySeg {
 // represents the actual game world when the player can control the gnome
 class CGame extends World {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
+  ArrayList<ITile> garden; // represents all the tiles in the current world
   int width;
   int height;
 
