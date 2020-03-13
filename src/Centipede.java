@@ -94,8 +94,8 @@ class GrassTile extends ATile {
 // represents a centipede in the centipede game
 class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
-  int speed;
-  boolean down;
+  int speed; // how fast the centipede should be moving
+  boolean down; // is this centipede moving down? if not, surely it is going up
   ArrayList<Posn> encountered; // represents a list of obstacles that this centipede has encountered
 
   // the constructor
@@ -139,7 +139,7 @@ class Centipede {
 class BodySeg {
   Posn pos; // represents the position of this body segment
   Posn velocity; // represents the velocity of this body segment
-  boolean head;
+  boolean head; // is this body segment the head?
 
   // the constructor
   BodySeg(Posn pos, Posn velocity, boolean head) {
