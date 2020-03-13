@@ -1,7 +1,7 @@
 import javalib.worldimages.*;   // images, like RectangleImage or OverlayImages
 import javalib.impworld.*;      // the abstract World class and the big-bang library
 // for imperative worlds
-import java.awt.Color;          // general colors (as triples of red,green,blue values)
+import java.awt.*;
 import java.util.ArrayList;     // the arraylist library from java
 // and predefined colors (Red, Green, Yellow, Blue, Black, White)
 
@@ -12,7 +12,8 @@ class Util {
     ArrayList<BodySeg> body = new ArrayList<>();
     for (int index = 0; index < length; index += 1) {
       boolean head = index == length - 1;
-      Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2, ITile.HEIGHT / 2);
+      Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2,
+          ITile.HEIGHT / 2);
       Posn vel = new Posn(speed, 0);
       BodySeg curr = new BodySeg(pos, vel, head);
       body.add(curr);
@@ -26,13 +27,69 @@ class Util {
     list.add(item);
     return list;
   }
+
+  // generates an arraylist of grass tiles given the width and height of the board to represent
+  // the board
+  ArrayList<ITile> generateGrassBoard(int row, int col) {
+    ArrayList<ITile> garden = new ArrayList<>();
+    for (int index = 0; index < row; index += 1) {
+      this.generateGrassRow(garden, index, col);
+    }
+    return garden;
+  }
+
+  // EFFECT: modifies the arraylist given to add the current row of grass tiles
+  // generates an arraylist of col amount of grass tiles for a given row number
+  void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col) {
+    for (int index = 0; index < col; index += 1) {
+      garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH/2,
+          index * ITile.HEIGHT + ITile.HEIGHT/2));
+    }
+  }
 }
 
+// represents a tile and introduces the tile's height and width constants
 interface ITile {
   int HEIGHT = 40;
 
   int WIDTH = 40;
+
+  // draws this tile onto the world scene given
+  void draw (WorldScene s);
 }
+
+// implements ITile and introduces the row and col fields, which represent x and y indices
+abstract class ATile implements ITile {
+  int row;
+  int col;
+
+  // the constructor
+  ATile(int row, int col) {
+    this.row = row;
+    this.col = col;
+  }
+
+  // draws this ATile - to be implemented by classes that extend ATile
+  public abstract void draw(WorldScene s);
+}
+
+// represents a tile with no obstacles on it
+class GrassTile extends ATile {
+  // the constructor
+  GrassTile(int row, int col) {
+    super(row, col);
+  }
+
+  // draws a GrassTile, a solid green cube and a black outline, onto the given world scene
+  public void draw(WorldScene s) {
+    WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
+    WorldImage grass = new RectangleImage(WIDTH-1,
+        HEIGHT-1, OutlineMode.SOLID, Color.GREEN);
+    s.placeImageXY(outline, this.row, this.col);
+    s.placeImageXY(grass, this.row, this.col);
+  }
+}
+
 
 // represents a centipede in the centipede game
 class Centipede {
@@ -72,8 +129,8 @@ class Centipede {
   // essentially moving it along in the world
   // moves the centipede along the board in the world
   void move(int width) {
-    for (int i = 0; i < this.body.size(); i += 1) {
-      this.body.get(i).move(width, this.speed, this.down);
+    for (int index = 0; index < this.body.size(); index += 1) {
+      this.body.get(index).move(width, this.speed, this.down);
     }
   }
 }
@@ -99,7 +156,10 @@ class BodySeg {
       color = Color.CYAN;
     }
 
-    WorldImage bodyPart = new CircleImage(ITile.WIDTH / 2, OutlineMode.SOLID, color);
+    WorldImage bodyPartOutline = new CircleImage(ITile.WIDTH/2,
+        OutlineMode.SOLID, Color.BLACK);
+    WorldImage bodyPart = new CircleImage(ITile.WIDTH/2 - 1, OutlineMode.SOLID, color);
+    s.placeImageXY(bodyPartOutline, this.pos.x, this.pos.y);
     s.placeImageXY(bodyPart, this.pos.x, this.pos.y);
   }
 
@@ -137,11 +197,12 @@ class CGame extends World {
   int height;
 
   // the constructor
-  CGame(ArrayList<Centipede> cents, int width, int height) {
+  CGame(ArrayList<Centipede> cents, ArrayList<ITile> garden, int width, int height) {
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
     this.cents = cents;
+    this.garden = garden;
     this.width = width;
     this.height = height;
   }
@@ -149,6 +210,7 @@ class CGame extends World {
   // the default constructor, only requiring how big the board should be
   CGame(int x, int y) {
     this(new Util().singletonList(new Centipede()),
+        new Util().generateGrassBoard(x, y),
         ITile.WIDTH * x, ITile.HEIGHT * y);
   }
 
@@ -164,6 +226,11 @@ class CGame extends World {
   // draws all the elements in the game
   public WorldScene makeScene() {
     WorldScene s = new WorldScene(this.width, this.height);
+
+    for (ITile tile : this.garden) {
+      tile.draw(s);
+    }
+
     for (Centipede c : this.cents) {
       c.draw(s);
     }
