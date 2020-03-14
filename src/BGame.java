@@ -9,4 +9,15 @@ class BGame extends World {
   ArrayList<ITile> garden;
   Gnome gnome;
 
+  BGame(int width, int height, ArrayList<ITile> garden, Gnome gnome) {
+    this.width = width;
+    this.height = height;
+    this.garden = garden;
+    this.gnome = gnome;
+  }
+
+  @Override
+  public WorldScene makeScene() {
+    return null;
+  }
 }
