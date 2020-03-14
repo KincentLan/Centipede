@@ -70,7 +70,7 @@ class BGame extends World {
 //    return this;
   }
 
-  // EFFECT: changes this BGame's garden to change the tile its effective new tile
+  // EFFECT: changes this BGame's garden to change the tile clicked on to its effective new tile
   // on left mouse click, updates this BGame with a new DandelionTile at the given
   // posn;
   // on right mouse click, updates this BGame with a new PebbleTile at the given
