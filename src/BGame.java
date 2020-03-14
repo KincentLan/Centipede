@@ -8,21 +8,24 @@ class BGame extends World {
   int height;
   ArrayList<ITile> garden;
   Gnome gnome;
+  Random rand;
 
   // the constructor
-  BGame(int width, int height, ArrayList<ITile> garden, Gnome gnome) {
+  BGame(int width, int height, ArrayList<ITile> garden, Gnome gnome, Random rand) {
     this.width = width;
     this.height = height;
     this.garden = garden;
     this.gnome = gnome;
+    this.rand = rand;
   }
 
-  BGame(int width, int height) {
+  BGame(int width, int height, int initialSeed) {
     this.width = width;
     this.height = height;
     this.garden = new Util().generateGrassBoard(width, height);
     this.gnome = new Gnome(ITile.WIDTH / 2, height * ITile.HEIGHT - ITile.HEIGHT / 2,
         ITile.WIDTH / 7);
+    this.rand = new Random(initialSeed);
   }
   
   // draws all the elements in the game
@@ -43,24 +46,18 @@ class BGame extends World {
   // on s keypress, ends the BGame game
   public void onKeyEvent(String key) {
 
-    /*
-     * onKeyEvent template: everything in the BGame template, plus Fields of
-     * parameters: none Methods on parameters: none
-     */
     if (key.equals("left")) {
       this.gnome.moveCell("left", this.width * ITile.WIDTH);
     }
     else if (key.equals("right")) {
       this.gnome.moveCell("right", this.width * ITile.WIDTH);
     }
-//    else if (key.equals("d")) {
-//      return new BGame(this.generateDandelions(this.width * (this.height - 1) / 20, this.garden),
-//          this);
-//    }
-//    else if (key.equals("p")) {
-//      return new BGame(this.generatePebbles(this.width * (this.height - 1) / 20, this.garden),
-//          this);
-//    }
+    else if (key.equals("d")) {
+      this.generate("left");
+    }
+    else if (key.equals("p")) {
+      this.generate("right");
+    }
 //    else if (key.equals("r")) {
 //      return new BGame(new Util().generateGrass(width, height, height), this);
 //    }
@@ -68,6 +65,17 @@ class BGame extends World {
 //      return new CGame(this.width, this.height, this.garden, this.gnome);
 //    }
 //    return this;
+  }
+  
+  // EFFECT:
+  void generate(String bName) {
+    // 
+    int availiable = (this.garden.size() - this.width) / 20;
+    for(int index = 0; index < availiable; index += 1) {
+      int randInt = rand.nextInt(availiable);
+      ITile randElement = this.garden.get(randInt);
+      this.garden.set(randInt, randElement.replaceTile(bName, this.height));
+    }
   }
 
   // EFFECT: changes this BGame's garden to change the tile clicked on to its effective new tile
