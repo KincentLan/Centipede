@@ -90,6 +90,43 @@ class GrassTile extends ATile {
   }
 }
 
+// represents a tile with a pebble tile
+class PebbleTile extends ATile {
+  // the constructor
+  PebbleTile(int row, int col) {
+    super(row, col);
+  }
+
+  // draws a PebbleTile, a solid gray cube and a black outline, onto the given world scene
+  public void draw(WorldScene s) {
+    WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
+    WorldImage grass = new RectangleImage(WIDTH - 1,
+        HEIGHT - 1, OutlineMode.SOLID, Color.GRAY);
+    s.placeImageXY(outline, this.row, this.col);
+    s.placeImageXY(grass, this.row, this.col);
+  }
+}
+
+// represents a tile with a dandelion tile
+class DandelionTile extends ATile {
+  // the constructor
+  DandelionTile(int row, int col) {
+    super(row, col);
+  }
+
+  // draws a DandelionTile, a solid yellow cube and a black outline, onto the given world scene
+  public void draw(WorldScene s) {
+    WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
+    WorldImage grass = new RectangleImage(WIDTH - 1,
+        HEIGHT - 1, OutlineMode.SOLID, Color.YELLOW);
+    s.placeImageXY(outline, this.row, this.col);
+    s.placeImageXY(grass, this.row, this.col);
+  }
+}
+
+class Gnome {
+
+}
 
 // represents a centipede in the centipede game
 class Centipede {
