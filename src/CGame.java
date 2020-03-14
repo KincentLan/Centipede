@@ -140,14 +140,9 @@ class Gnome {
   // EFFECT: changes the given world scene by adding this gnome onto it
   // draws this gnome onto the given world scene
   void draw(WorldScene s) {
-    System.out.println("(" + this.x + ", " + this.y + ")");
-    WorldImage outline =
-        new StarImage(ITile.WIDTH / 2, 8,
-            2, OutlineMode.SOLID, Color.BLACK);
     WorldImage player =
         new StarImage(ITile.WIDTH / 2 - 1, 8,
             2, OutlineMode.SOLID, Color.ORANGE);
-    s.placeImageXY(outline, this.x, this.y);
     s.placeImageXY(player, this.x, this.y);
   }
 }
@@ -300,17 +295,13 @@ class CGame extends World {
   // draws all the elements in the game
   public WorldScene makeScene() {
     WorldScene s = new WorldScene(this.width, this.height);
-
-    this.gnome.draw(s);
-
     for (ITile tile : this.garden) {
       tile.draw(s);
     }
-
     for (Centipede c : this.cents) {
       c.draw(s);
     }
-
+    this.gnome.draw(s);
     return s;
   }
 }
