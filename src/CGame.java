@@ -56,6 +56,13 @@ interface ITile {
 
   // draws this tile onto the world scene given
   void draw(WorldScene s);
+
+  //are these the tile's coordinates?
+  boolean samePos(Posn pos);
+
+  // in effect "replaces" this tile with a new tile with the same position given the
+  // mouse button name and the bottom column of the board
+  ITile replaceTile(String bName, int botCol);
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -71,6 +78,25 @@ abstract class ATile implements ITile {
 
   // draws this ATile - to be implemented by classes that extend ATile
   public abstract void draw(WorldScene s);
+
+  // is this ATile at the same position of the given Posn?
+  public boolean samePos(Posn pos) {
+    return this.row == pos.x && this.col == pos.y;
+  }
+
+  // if this tile's indices match a given set of indices, returns a GrassTile with
+  // those indices
+  public ITile replaceTile(String bName, int botCol) {
+    /*
+     * replaceTile template: everything in the ATile template, plus Fields of
+     * parameters: none Methods on parameters: none
+     */
+    if (bName.equals("LeftButton") && this.col != botCol) {
+      return new GrassTile(this.row, this.col);
+    } else {
+      return this;
+    }
+  }
 }
 
 // represents a tile with no obstacles on it
@@ -87,6 +113,23 @@ class GrassTile extends ATile {
         HEIGHT - 1, OutlineMode.SOLID, Color.GREEN);
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
+  }
+
+  // if this tile's indices match a given set of indices, returns a Dandelion
+  // if left botton is clicked) or Pebble (if right botton is clicked) with those
+  // indices
+  public ITile replaceTile(String bName, int botCol) {
+    /*
+     * replaceTile template: everything in the ATile template, plus Fields of
+     * parameters: none Methods on parameters: none
+     */
+    if (bName.equals("LeftButton") && this.col != botCol) {
+      return new DandelionTile(this.row, this.col);
+    }
+    else if (bName.equals("RightButton") && this.col != botCol) {
+      return new PebbleTile(this.row, this.col);
+    }
+    return this;
   }
 }
 
@@ -145,7 +188,7 @@ class Gnome {
             2, OutlineMode.SOLID, Color.ORANGE);
     s.placeImageXY(player, this.x, this.y);
   }
-  
+
   // moves the gnome (towards the direction specified by the key) by one unit
   // (speed).
   // the gnome stays if it tries to move off the edge of the screen.
@@ -156,12 +199,11 @@ class Gnome {
      */
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       this.x = this.x - ITile.WIDTH;
-    }
-    else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
+    } else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
       this.x = this.x + ITile.WIDTH;
     }
   }
-  
+
   // moves the gnome (towards the direction specified by the key) by one unit
   // (speed).
   // the gnome stays if it tries to move off the edge of the screen.
@@ -178,7 +220,7 @@ class Gnome {
 //    }
 //    return this;
 //  }
-  
+
 }
 
 // represents a centipede in the centipede game
@@ -284,7 +326,6 @@ class BodySeg {
   }
 }
 
-
 // represents the actual game world when the player can control the gnome
 class CGame extends World {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
@@ -310,7 +351,7 @@ class CGame extends World {
   CGame(int x, int y) {
     this(new Util().singletonList(new Centipede()),
         new Util().generateGrassBoard(x, y),
-        new Gnome(ITile.WIDTH/2,ITile.HEIGHT * y - ITile.HEIGHT/2, ITile.WIDTH/10),
+        new Gnome(ITile.WIDTH / 2, ITile.HEIGHT * y - ITile.HEIGHT / 2, ITile.WIDTH / 10),
         ITile.WIDTH * x, ITile.HEIGHT * y);
   }
 

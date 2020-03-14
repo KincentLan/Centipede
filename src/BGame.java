@@ -69,4 +69,24 @@ class BGame extends World {
 //    }
 //    return this;
   }
+
+  // EFFECT: changes this BGame's garden to change the tile its effective new tile
+  // on left mouse click, updates this BGame with a new DandelionTile at the given
+  // posn;
+  // on right mouse click, updates this BGame with a new PebbleTile at the given
+  // posn
+  public void onMouseClicked(Posn mouse, String bName) {
+    int row = (mouse.x / ITile.HEIGHT) * ITile.WIDTH + ITile.WIDTH / 2;
+    int col = (mouse.y / ITile.WIDTH) * ITile.HEIGHT + ITile.HEIGHT / 2;
+    int botCol = (this.height - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
+    Posn mouseCentered = new Posn(row, col);
+
+    for (int index = 0; index < this.garden.size(); index += 1) {
+      ITile tile = this.garden.get(index);
+      if (tile.samePos(mouseCentered)) {
+        this.garden.set(index, tile.replaceTile(bName, botCol));
+      }
+    }
+  }
 }
+
