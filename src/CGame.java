@@ -145,6 +145,40 @@ class Gnome {
             2, OutlineMode.SOLID, Color.ORANGE);
     s.placeImageXY(player, this.x, this.y);
   }
+  
+  // moves the gnome (towards the direction specified by the key) by one unit
+  // (speed).
+  // the gnome stays if it tries to move off the edge of the screen.
+  void moveCell(String key, int edge) {
+    /*
+     * TEMPLATE: Everything in the gnome class template plus Methods on parameters:
+     * key.equals(String) -- boolean
+     */
+    if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
+      this.x = this.x - ITile.WIDTH;
+    }
+    else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
+      this.x = this.x + ITile.WIDTH;
+    }
+  }
+  
+  // moves the gnome (towards the direction specified by the key) by one unit
+  // (speed).
+  // the gnome stays if it tries to move off the edge of the screen.
+//  Gnome move(String key, int edge) {
+//    /*
+//     * TEMPLATE: Everything in the gnome class template plus Methods on parameters:
+//     * key.equals(String) -- boolean
+//     */
+//    if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
+//      return new Gnome(this.x - this.speed, this);
+//    }
+//    else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
+//      return new Gnome(this.x + this.speed, this);
+//    }
+//    return this;
+//  }
+  
 }
 
 // represents a centipede in the centipede game
