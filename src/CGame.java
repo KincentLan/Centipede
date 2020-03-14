@@ -140,7 +140,15 @@ class Gnome {
   // EFFECT: changes the given world scene by adding this gnome onto it
   // draws this gnome onto the given world scene
   void draw(WorldScene s) {
-
+    System.out.println("(" + this.x + ", " + this.y + ")");
+    WorldImage outline =
+        new StarImage(ITile.WIDTH / 2, 8,
+            2, OutlineMode.SOLID, Color.BLACK);
+    WorldImage player =
+        new StarImage(ITile.WIDTH / 2 - 1, 8,
+            2, OutlineMode.SOLID, Color.ORANGE);
+    s.placeImageXY(outline, this.x, this.y);
+    s.placeImageXY(player, this.x, this.y);
   }
 }
 
@@ -228,7 +236,7 @@ class BodySeg {
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
     if (leftEdge && inRow && this.velocity.x < 0 || rightEdge && inRow && this.velocity.x > 0) {
-      if (this.down && botRow|| !this.down && topRow) {
+      if (this.down && botRow || !this.down && topRow) {
         this.down = !this.down;
       }
 
@@ -255,16 +263,19 @@ class BodySeg {
 class CGame extends World {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
   ArrayList<ITile> garden; // represents all the tiles in the current world
+  Gnome gnome;
   int width;
   int height;
 
   // the constructor
-  CGame(ArrayList<Centipede> cents, ArrayList<ITile> garden, int width, int height) {
+  CGame(ArrayList<Centipede> cents, ArrayList<ITile> garden, Gnome gnome,
+        int width, int height) {
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
     this.cents = cents;
     this.garden = garden;
+    this.gnome = gnome;
     this.width = width;
     this.height = height;
   }
@@ -273,6 +284,7 @@ class CGame extends World {
   CGame(int x, int y) {
     this(new Util().singletonList(new Centipede()),
         new Util().generateGrassBoard(x, y),
+        new Gnome(ITile.WIDTH/2,ITile.HEIGHT * y - ITile.HEIGHT/2, ITile.WIDTH/10),
         ITile.WIDTH * x, ITile.HEIGHT * y);
   }
 
@@ -289,6 +301,8 @@ class CGame extends World {
   public WorldScene makeScene() {
     WorldScene s = new WorldScene(this.width, this.height);
 
+    this.gnome.draw(s);
+
     for (ITile tile : this.garden) {
       tile.draw(s);
     }
@@ -296,6 +310,7 @@ class CGame extends World {
     for (Centipede c : this.cents) {
       c.draw(s);
     }
+
     return s;
   }
 }
