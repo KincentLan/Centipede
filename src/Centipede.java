@@ -15,7 +15,7 @@ class Util {
       Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2,
           ITile.HEIGHT / 2);
       Posn vel = new Posn(speed, 0);
-      BodySeg curr = new BodySeg(pos, vel, head);
+      BodySeg curr = new BodySeg(pos, vel, head, true, true);
       body.add(curr);
     }
     return body;
@@ -42,8 +42,8 @@ class Util {
   // generates an arraylist of col amount of grass tiles for a given row number
   void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col) {
     for (int index = 0; index < col; index += 1) {
-      garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH/2,
-          index * ITile.HEIGHT + ITile.HEIGHT/2));
+      garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH / 2,
+          index * ITile.HEIGHT + ITile.HEIGHT / 2));
     }
   }
 }
@@ -55,7 +55,7 @@ interface ITile {
   int WIDTH = 40;
 
   // draws this tile onto the world scene given
-  void draw (WorldScene s);
+  void draw(WorldScene s);
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -83,8 +83,8 @@ class GrassTile extends ATile {
   // draws a GrassTile, a solid green cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
-    WorldImage grass = new RectangleImage(WIDTH-1,
-        HEIGHT-1, OutlineMode.SOLID, Color.GREEN);
+    WorldImage grass = new RectangleImage(WIDTH - 1,
+        HEIGHT - 1, OutlineMode.SOLID, Color.GREEN);
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
   }
@@ -95,7 +95,6 @@ class GrassTile extends ATile {
 class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
   int speed; // how fast the centipede should be moving
-  boolean down; // is this centipede moving down? if not, surely it is going up
   ArrayList<Posn> encountered; // represents a list of obstacles that this centipede has encountered
 
   // the constructor
@@ -107,7 +106,6 @@ class Centipede {
 
     this.body = body;
     this.speed = speed;
-    this.down = down;
     this.encountered = encountered;
   }
 
@@ -128,9 +126,9 @@ class Centipede {
   // EFFECT: changes the all the elements in this centipede's list of body positions,
   // essentially moving it along in the world
   // moves the centipede along the board in the world
-  void move(int width) {
-    for (int index = 0; index < this.body.size(); index += 1) {
-      this.body.get(index).move(width, this.speed, this.down);
+  void move(int width, int height) {
+    for (BodySeg bodySeg : this.body) {
+      bodySeg.move(width, height, this.speed);
     }
   }
 }
@@ -140,12 +138,16 @@ class BodySeg {
   Posn pos; // represents the position of this body segment
   Posn velocity; // represents the velocity of this body segment
   boolean head; // is this body segment the head?
+  boolean down; // is this body segment going down?
+  boolean right; // is this body segment going right?
 
   // the constructor
-  BodySeg(Posn pos, Posn velocity, boolean head) {
+  BodySeg(Posn pos, Posn velocity, boolean head, boolean down, boolean right) {
     this.pos = pos;
     this.velocity = velocity;
     this.head = head;
+    this.down = down;
+    this.right = right;
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
@@ -156,30 +158,37 @@ class BodySeg {
       color = Color.CYAN;
     }
 
-    WorldImage bodyPartOutline = new CircleImage(ITile.WIDTH/2,
+    WorldImage bodyPartOutline = new CircleImage(ITile.WIDTH / 2,
         OutlineMode.SOLID, Color.BLACK);
-    WorldImage bodyPart = new CircleImage(ITile.WIDTH/2 - 1, OutlineMode.SOLID, color);
+    WorldImage bodyPart = new CircleImage(ITile.WIDTH / 2 - 1, OutlineMode.SOLID, color);
     s.placeImageXY(bodyPartOutline, this.pos.x, this.pos.y);
     s.placeImageXY(bodyPart, this.pos.x, this.pos.y);
   }
 
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
-  void move(int width, int speed, boolean down) {
+  void move(int width, int height, int speed) {
     boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
     boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
+    boolean topRow = this.pos.y == ITile.HEIGHT / 2;
+    boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
     if (leftEdge && inRow && this.velocity.x < 0 || rightEdge && inRow && this.velocity.x > 0) {
-      if (!down) {
+      if (this.down && botRow|| !this.down && topRow) {
+        this.down = !this.down;
+      }
+
+      if (!this.down) {
         speed *= -1;
       }
-      this.velocity = new Posn(0, speed);
-    }
 
-    else if ((leftEdge || rightEdge) && inRow && this.velocity.x == 0) {
-      if (rightEdge) {
-        speed *=-1;
+      this.right = !this.right;
+      this.velocity = new Posn(0, speed);
+
+    } else if (inRow && this.velocity.x == 0) {
+      if (!this.right) {
+        speed *= -1;
       }
       this.velocity = new Posn(speed, 0);
     }
@@ -218,7 +227,7 @@ class CGame extends World {
   // moves every element in the game accordingly after each tick
   public void onTick() {
     for (Centipede c : this.cents) {
-      c.move(this.width);
+      c.move(this.width, this.height);
     }
   }
 
