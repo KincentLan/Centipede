@@ -124,8 +124,24 @@ class DandelionTile extends ATile {
   }
 }
 
+// represents the player in the centipede game
 class Gnome {
+  int x;
+  int y;
+  int speed;
 
+  // the constructor
+  Gnome(int x, int y, int speed) {
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
+  }
+
+  // EFFECT: changes the given world scene by adding this gnome onto it
+  // draws this gnome onto the given world scene
+  void draw(WorldScene s) {
+
+  }
 }
 
 // represents a centipede in the centipede game
