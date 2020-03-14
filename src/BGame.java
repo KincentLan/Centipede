@@ -9,6 +9,7 @@ class BGame extends World {
   ArrayList<ITile> garden;
   Gnome gnome;
 
+  // the constructor
   BGame(int width, int height, ArrayList<ITile> garden, Gnome gnome) {
     this.width = width;
     this.height = height;

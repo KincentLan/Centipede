@@ -214,10 +214,7 @@ class BodySeg {
       color = Color.CYAN;
     }
 
-    WorldImage bodyPartOutline = new CircleImage(ITile.WIDTH / 2,
-        OutlineMode.SOLID, Color.BLACK);
     WorldImage bodyPart = new CircleImage(ITile.WIDTH / 2 - 1, OutlineMode.SOLID, color);
-    s.placeImageXY(bodyPartOutline, this.pos.x, this.pos.y);
     s.placeImageXY(bodyPart, this.pos.x, this.pos.y);
   }
 
