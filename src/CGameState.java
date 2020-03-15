@@ -327,7 +327,7 @@ class BodySeg {
 }
 
 // represents the actual game world when the player can control the gnome
-class CGame extends CentipedeGame {
+class CGameState extends GameState {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
   ArrayList<ITile> garden; // represents all the tiles in the current world
   Gnome gnome;
@@ -335,9 +335,8 @@ class CGame extends CentipedeGame {
   int height;
 
   // the constructor
-  CGame(ArrayList<Centipede> cents, ArrayList<ITile> garden, Gnome gnome,
-        int width, int height) {
-    super(null);
+  CGameState(ArrayList<Centipede> cents, ArrayList<ITile> garden, Gnome gnome,
+             int width, int height) {
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
@@ -346,15 +345,12 @@ class CGame extends CentipedeGame {
     this.gnome = gnome;
     this.width = width;
     this.height = height;
-    this.w = this;
   }
 
   // the default constructor, only requiring how big the board should be
-  CGame(int x, int y) {
-    this(new Util().singletonList(new Centipede()),
-        new Util().generateGrassBoard(x, y),
-        new Gnome(ITile.WIDTH / 2, ITile.HEIGHT * y - ITile.HEIGHT / 2, ITile.WIDTH / 10),
-        ITile.WIDTH * x, ITile.HEIGHT * y);
+  CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
+    this(new Util().singletonList(new Centipede()), garden, gnome, ITile.WIDTH * x,
+        ITile.HEIGHT * y);
   }
 
   @Override
@@ -380,4 +376,8 @@ class CGame extends CentipedeGame {
   }
 
   public void onKeyEvent(String s) { }
+
+  public CGameState toCGame() {
+    return this;
+  }
 }

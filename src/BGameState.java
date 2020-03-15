@@ -3,38 +3,32 @@ import java.util.ArrayList;
 import java.util.Random;        // the random library in java
 import javalib.impworld.*;      // the abstract World class and the big-bang library
 
-class BGame extends CentipedeGame {
-  int width;
-  int height;
+class BGameState extends GameState {
+  int x;
+  int y;
   ArrayList<ITile> garden;
   Gnome gnome;
   Random rand;
 
   // the constructor
-  BGame(int width, int height, ArrayList<ITile> garden, Gnome gnome, Random rand) {
-    super(null);
-    this.width = width;
-    this.height = height;
+  BGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome, Random rand) {
+    this.x = x;
+    this.y = y;
     this.garden = garden;
     this.gnome = gnome;
     this.rand = rand;
-    this.w = this;
   }
 
-  BGame(int width, int height, int initialSeed) {
-    super(null);
-    this.width = width;
-    this.height = height;
-    this.garden = new Util().generateGrassBoard(width, height);
-    this.gnome = new Gnome(ITile.WIDTH / 2, height * ITile.HEIGHT - ITile.HEIGHT / 2,
-        ITile.WIDTH / 7);
-    this.rand = new Random(initialSeed);
-    this.w = this;
+  // the default constructor
+  BGameState(int x, int y, int initialSeed) {
+    this(x, y, new Util().generateGrassBoard(x, y),
+        new Gnome(ITile.WIDTH / 2, y * ITile.HEIGHT - ITile.HEIGHT / 2,
+            ITile.WIDTH / 7), new Random(initialSeed));
   }
   
   // draws all the elements in the game
   public WorldScene makeScene() {
-    WorldScene s = new WorldScene(this.width, this.height);
+    WorldScene s = new WorldScene(this.x, this.y);
     for (ITile tile : this.garden) {
       tile.draw(s);
     }
@@ -50,10 +44,10 @@ class BGame extends CentipedeGame {
   // on s keypress, ends the BGame game
   public void onKeyEvent(String key) {
     if (key.equals("[")) {
-      this.gnome.moveCell("left", this.width * ITile.WIDTH);
+      this.gnome.moveCell("left", this.x * ITile.WIDTH);
     }
     else if (key.equals("]")) {
-      this.gnome.moveCell("right", this.width * ITile.WIDTH);
+      this.gnome.moveCell("right", this.x * ITile.WIDTH);
     }
     else if (key.equals("d")) {
       this.generate("LeftButton");
@@ -62,20 +56,17 @@ class BGame extends CentipedeGame {
       this.generate("RightButton");
     }
     else if (key.equals("r")) {
-      this.garden = new Util().generateGrassBoard(this.width, this.height);
-    }
-    else if (key.equals("s")) {
-      this.changeToGame(this.width, this.height, this.garden, this.gnome);
+      this.garden = new Util().generateGrassBoard(this.x, this.y);
     }
   }
   
   // EFFECT: changes the garden by generating random dandelions or pebbles
   // changes the board to fill 5% of it with dandelions or pebbles
   void generate(String bName) {
-    int botCol = (this.height - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
-    int availiable = (this.garden.size() - this.width) / 20;
+    int botCol = (this.y - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
+    int availiable = (this.garden.size() - this.x) / 20;
     for(int index = 0; index < availiable; index += 1) {
-      int randInt = rand.nextInt(this.garden.size() - this.width);
+      int randInt = rand.nextInt(this.garden.size() - this.x);
       ITile randElement = this.garden.get(randInt);
       this.garden.set(randInt, randElement.replaceTile(bName, botCol));
     }
@@ -89,7 +80,7 @@ class BGame extends CentipedeGame {
   public void onMouseClicked(Posn mouse, String bName) {
     int row = (mouse.x / ITile.HEIGHT) * ITile.WIDTH + ITile.WIDTH / 2;
     int col = (mouse.y / ITile.WIDTH) * ITile.HEIGHT + ITile.HEIGHT / 2;
-    int botCol = (this.height - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
+    int botCol = (this.y - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
     Posn mouseCentered = new Posn(row, col);
 
     for (int index = 0; index < this.garden.size(); index += 1) {
@@ -98,6 +89,10 @@ class BGame extends CentipedeGame {
         this.garden.set(index, tile.replaceTile(bName, botCol));
       }
     }
+  }
+
+  public CGameState toCGame() {
+    return new CGameState(this.x, this.y, this.garden, this.gnome);
   }
 
   public void onTick() { }
