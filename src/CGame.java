@@ -327,7 +327,7 @@ class BodySeg {
 }
 
 // represents the actual game world when the player can control the gnome
-class CGame extends World {
+class CGame extends CentipedeGame {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
   ArrayList<ITile> garden; // represents all the tiles in the current world
   Gnome gnome;
@@ -337,6 +337,7 @@ class CGame extends World {
   // the constructor
   CGame(ArrayList<Centipede> cents, ArrayList<ITile> garden, Gnome gnome,
         int width, int height) {
+    super(null);
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
@@ -345,6 +346,7 @@ class CGame extends World {
     this.gnome = gnome;
     this.width = width;
     this.height = height;
+    this.w = this;
   }
 
   // the default constructor, only requiring how big the board should be
@@ -376,4 +378,6 @@ class CGame extends World {
     this.gnome.draw(s);
     return s;
   }
+
+  public void onKeyEvent(String s) { }
 }

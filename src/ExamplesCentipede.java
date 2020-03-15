@@ -8,7 +8,7 @@ class ExamplesCentipede {
   Centipede cent_0 = new Centipede();
 
   void testBigBang(Tester t) {
-    World w = new BGame(10, 15, 20);
+    CentipedeGame w = new CentipedeGame(10, 15, 20);
     w.bigBang(10 * ITile.WIDTH, 15 * ITile.HEIGHT, 1.0 / 28.0);
   }
 }
