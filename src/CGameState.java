@@ -255,8 +255,8 @@ class Centipede {
   }
 
   // the default constructor - constructs the starting centipede in the centipede game
-  Centipede() {
-    this(new Util().generateCentBody(10, ITile.WIDTH / 10),
+  Centipede(int length) {
+    this(new Util().generateCentBody(length, ITile.WIDTH / 10),
         ITile.WIDTH / 10, true, new ArrayList<>());
   }
 
@@ -362,7 +362,7 @@ class CGameState extends GameState {
 
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
-    this(new Util().singletonList(new Centipede()), garden, gnome, ITile.WIDTH * x,
+    this(new Util().singletonList(new Centipede(10)), garden, gnome, ITile.WIDTH * x,
         ITile.HEIGHT * y);
   }
 

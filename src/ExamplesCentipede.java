@@ -6,7 +6,7 @@ class ExamplesCentipede {
 
   // initializes test conditions
   void initTestConditions() {
-    cent_0 = new Centipede();
+    cent_0 = new Centipede(10);
   }
 
   // runs the game
