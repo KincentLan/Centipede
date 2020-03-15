@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Random;        // the random library in java
 import javalib.impworld.*;      // the abstract World class and the big-bang library
 
+//represents a setting up phase for the centipede game
 class BGameState extends GameState {
   int x;
   int y;
@@ -43,10 +44,10 @@ class BGameState extends GameState {
   // on r keypress, resets all tiles to GrassTiles, and
   // on s keypress, ends the BGame game
   public void onKeyEvent(String key) {
-    if (key.equals("[")) {
+    if (key.equals("left")) {
       this.gnome.moveCell("left", this.x * ITile.WIDTH);
     }
-    else if (key.equals("]")) {
+    else if (key.equals("right")) {
       this.gnome.moveCell("right", this.x * ITile.WIDTH);
     }
     else if (key.equals("d")) {
@@ -64,8 +65,8 @@ class BGameState extends GameState {
   // changes the board to fill 5% of it with dandelions or pebbles
   void generate(String bName) {
     int botCol = (this.y - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
-    int availiable = (this.garden.size() - this.x) / 20;
-    for(int index = 0; index < availiable; index += 1) {
+    int available = (this.garden.size() - this.x) / 20;
+    for(int index = 0; index < available; index += 1) {
       int randInt = rand.nextInt(this.garden.size() - this.x);
       ITile randElement = this.garden.get(randInt);
       this.garden.set(randInt, randElement.replaceTile(bName, botCol));
@@ -91,10 +92,9 @@ class BGameState extends GameState {
     }
   }
 
-  public CGameState toCGame() {
+  // turns this setup (BGameState) to the actual game (CGameState)
+  public CGameState toCGameState() {
     return new CGameState(this.x, this.y, this.garden, this.gnome);
   }
-
-  public void onTick() { }
 }
 

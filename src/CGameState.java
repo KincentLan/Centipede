@@ -377,7 +377,7 @@ class CGameState extends GameState {
 
   public void onKeyEvent(String s) { }
 
-  public CGameState toCGame() {
+  public CGameState toCGameState() {
     return this;
   }
 }
