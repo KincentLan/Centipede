@@ -69,10 +69,35 @@ class BGameState extends GameState {
     int botCol = (this.y - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
     int available = (this.garden.size() - this.x) / 20;
     for(int index = 0; index < available; index += 1) {
-      int randInt = rand.nextInt(this.garden.size() - this.x);
-      ITile randElement = this.garden.get(randInt);
-      this.garden.set(randInt, randElement.replaceTile(bName, botCol));
+      if (this.grassLeft() > 0) {
+        int randGrassIndex = this.randGrassIndex();
+        ITile randElement = this.garden.get(randGrassIndex);
+        this.garden.set(randGrassIndex, randElement.replaceTile(bName, botCol));
+      }
     }
+  }
+
+  // tells how many grass tiles are left in the garden
+  int grassLeft() {
+    int counter = 0;
+    for (ITile tile : this.garden) {
+      if (tile.isGrass()) {
+        counter += 1;
+      }
+    }
+    return counter;
+  }
+
+  // gives the index of a random grass tile in the garden
+  int randGrassIndex() {
+    ArrayList<Integer> grassIndices = new ArrayList<>();
+    for (int index = 0; index < this.garden.size(); index += 1) {
+      if (this.garden.get(index).isGrass()) {
+        grassIndices.add(index);
+      }
+    }
+    int randIndex = this.rand.nextInt(grassIndices.size());
+    return grassIndices.get(randIndex);
   }
 
   @Override

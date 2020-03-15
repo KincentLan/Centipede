@@ -63,6 +63,9 @@ interface ITile {
   // in effect "replaces" this tile with a new tile with the same position given the
   // mouse button name and the bottom column of the board
   ITile replaceTile(String bName, int botCol);
+
+  // is this tile a grass tile?
+  boolean isGrass();
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -97,6 +100,11 @@ abstract class ATile implements ITile {
       return this;
     }
   }
+
+  // is this ATile a grass tile? By default, it is not.
+  public boolean isGrass() {
+    return false;
+  }
 }
 
 // represents a tile with no obstacles on it
@@ -130,6 +138,11 @@ class GrassTile extends ATile {
       return new PebbleTile(this.row, this.col);
     }
     return this;
+  }
+
+  // is this GrassTile a grass tile? Yes, it is.
+  public boolean isGrass() {
+    return true;
   }
 }
 

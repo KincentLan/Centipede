@@ -1,4 +1,5 @@
 import javalib.impworld.*;
+import javalib.worldimages.*;
 
 // represents a centipede game that manages the current GameState, which could be the setup or the
 // actual game
@@ -42,6 +43,13 @@ class GameMaster extends World {
     else {
       this.w.onKeyEvent(s);
     }
+  }
+
+  @Override
+  // EFFECT: changes the current GameState by modifying its fields after each mouse click
+  // changes the world accordingly in response to the position and mouse button click by the user
+  public void onMouseClicked(Posn mouse, String bName) {
+    this.w.onMouseClicked(mouse, bName);
   }
 }
 
