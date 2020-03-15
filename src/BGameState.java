@@ -5,10 +5,10 @@ import javalib.impworld.*;      // the abstract World class and the big-bang lib
 
 //represents a setting up phase for the centipede game
 class BGameState extends GameState {
-  int x;
-  int y;
-  ArrayList<ITile> garden;
-  Gnome gnome;
+  int x; // the amount of columns there are (width)
+  int y; // the amount of rows there are (height)
+  ArrayList<ITile> garden; // represents all the tiles in the current world
+  Gnome gnome; // represents the player in the current world
   Random rand;
 
   // the constructor
@@ -20,13 +20,14 @@ class BGameState extends GameState {
     this.rand = rand;
   }
 
-  // the default constructor
+  // the default constructor - only requiring the dimensions of the board and the random seed
   BGameState(int x, int y, int initialSeed) {
     this(x, y, new Util().generateGrassBoard(x, y),
         new Gnome(ITile.WIDTH / 2, y * ITile.HEIGHT - ITile.HEIGHT / 2,
             ITile.WIDTH / 7), new Random(initialSeed));
   }
-  
+
+  @Override
   // draws all the elements in the game
   public WorldScene makeScene() {
     WorldScene s = new WorldScene(this.x, this.y);
@@ -37,6 +38,7 @@ class BGameState extends GameState {
     return s;
   }
 
+  @Override
   // on left or right arrow keypress, moves the Gnome one tile to the left or
   // right,
   // on d or p keypress, fills 5% of available tiles with DandelionTiles or
@@ -73,6 +75,7 @@ class BGameState extends GameState {
     }
   }
 
+  @Override
   // EFFECT: changes this BGame's garden to change the tile clicked on to its effective new tile
   // on left mouse click, updates this BGame with a new DandelionTile at the given
   // posn;

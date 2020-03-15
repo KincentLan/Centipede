@@ -4,10 +4,12 @@ import tester.*;                // The tester library
 class ExamplesCentipede {
   Centipede cent_0;
 
+  // initializes test conditions
   void initTestConditions() {
     cent_0 = new Centipede();
   }
 
+  // runs the game
   void testBigBang(Tester t) {
     GameMaster w = new GameMaster(10, 15, 20);
     w.bigBang(10 * ITile.WIDTH, 15 * ITile.HEIGHT, 1.0 / 28.0);
