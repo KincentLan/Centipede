@@ -202,7 +202,7 @@ class Gnome {
     s.placeImageXY(player, this.x, this.y);
   }
 
-  // moves the gnome (towards the direction specified by the key) by one unit
+  // moves the gnome (towards the playerDirection specified by the key) by one unit
   // (speed).
   // the gnome stays if it tries to move off the edge of the screen.
   void moveCell(String key, int edge) {
@@ -217,23 +217,27 @@ class Gnome {
     }
   }
 
-  // moves the gnome (towards the direction specified by the key) by one unit
-  // (speed).
+  // moves the gnome (towards the playerDirection specified by the key) by one unit (speed).
   // the gnome stays if it tries to move off the edge of the screen.
-//  Gnome move(String key, int edge) {
-//    /*
-//     * TEMPLATE: Everything in the gnome class template plus Methods on parameters:
-//     * key.equals(String) -- boolean
-//     */
-//    if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
-//      return new Gnome(this.x - this.speed, this);
-//    }
-//    else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
-//      return new Gnome(this.x + this.speed, this);
-//    }
-//    return this;
-//  }
-
+  void move(String key, int rightEdge, int botEdge) {
+    /*
+     * TEMPLATE: Everything in the gnome class template plus Methods on parameters:
+     * key.equals(String) -- boolean
+     */
+    if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
+      this.x -= this.speed;
+    }
+    else if (key.equals("right") && this.x + this.speed <= rightEdge - ITile.WIDTH/2) {
+      this.x += this.speed;
+    }
+    else if (key.equals("up") &&
+        this.y - this.speed >= botEdge - 2 * ITile.HEIGHT - ITile.HEIGHT/2) {
+      this.y -= this.speed;
+    }
+    else if (key.equals("down") && this.y + this.speed <= botEdge - ITile.HEIGHT/2) {
+      this.y += this.speed;
+    }
+  }
 }
 
 // represents a centipede in the centipede game
@@ -343,18 +347,21 @@ class BodySeg {
 class CGameState extends GameState {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
   ArrayList<ITile> garden; // represents all the tiles in the current world
+  Posn playerDirection; // -1 if player is moving left, 0 is player is not moving, and 1 if player is
+  // moving right for the x component, and the same respectively for moving down and up
   Gnome gnome;
   int width;
   int height;
 
   // the constructor
-  CGameState(ArrayList<Centipede> cents, ArrayList<ITile> garden, Gnome gnome,
+  CGameState(ArrayList<Centipede> cents, ArrayList<ITile> garden, Posn playerDirection, Gnome gnome,
              int width, int height) {
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
     this.cents = cents;
     this.garden = garden;
+    this.playerDirection = playerDirection;
     this.gnome = gnome;
     this.width = width;
     this.height = height;
@@ -362,15 +369,38 @@ class CGameState extends GameState {
 
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
-    this(new Util().singletonList(new Centipede(10)), garden, gnome, ITile.WIDTH * x,
+    this(new Util().singletonList(new Centipede(10)), garden,
+        new Posn(0, 0), gnome, ITile.WIDTH * x,
         ITile.HEIGHT * y);
   }
 
   @Override
+  // TODO : elaborate on your effect statement
+  // EFFECT: changes all the fields except width and height
   // moves every element in the game accordingly after each tick
   public void onTick() {
     for (Centipede c : this.cents) {
       c.move(this.width, this.height);
+    }
+
+    this.movePlayer();
+  }
+
+  // EFFECT: modifies the player position of this CGameState based on the player direction
+  // moves the player accordingly based on the key input the user gave
+  void movePlayer() {
+    if (this.playerDirection.x == 1) {
+      this.gnome.move("right", this.width, this.height);
+    }
+    else if (this.playerDirection.x == -1) {
+      this.gnome.move("left", this.width, this.height);
+    }
+
+    if (this.playerDirection.y == 1) {
+      this.gnome.move("up", this.width, this.height);
+    }
+    else if (this.playerDirection.y == -1) {
+      this.gnome.move("down", this.width, this.height);
     }
   }
 
@@ -388,8 +418,34 @@ class CGameState extends GameState {
     return s;
   }
 
-  public void onKeyEvent(String s) { }
+  @Override
+  // EFFECT: modifies the player direction of this CGameState based on the key given by the user
+  // moves the player accordingly based on the key input the user gave
+  public void onKeyEvent(String s) {
+    if (s.equals("left")) {
+      this.playerDirection = new Posn(-1, this.playerDirection.y);
+    }
+    else if (s.equals("right")) {
+      this.playerDirection = new Posn(1, this.playerDirection.y);
+    }
 
+    if (s.equals("up")) {
+      this.playerDirection = new Posn(this.playerDirection.x, 1);
+    }
+    else if (s.equals("down")) {
+      this.playerDirection = new Posn(this.playerDirection.x, -1);
+    }
+  }
+
+  @Override
+  // resets the player's direction to 0 (means not moving) for both components
+  public void onKeyReleased(String s) {
+    if (s.equals("left") || s.equals("right") || s.equals("up") || s.equals("down")) {
+      this.playerDirection = new Posn(0, 0);
+    }
+  }
+
+  // continues this CGameState to be used in GameMaster
   public CGameState toCGameState() {
     return this;
   }

@@ -46,6 +46,14 @@ class GameMaster extends World {
   }
 
   @Override
+  // EFFECT: modifies the current GameState by modifying its fields after each key release
+  // changes the world accordingly in response to the key released by the user
+  public void onKeyReleased(String s) {
+    this.w.onKeyReleased(s);
+  }
+
+
+  @Override
   // EFFECT: changes the current GameState by modifying its fields after each mouse click
   // changes the world accordingly in response to the position and mouse button click by the user
   public void onMouseClicked(Posn mouse, String bName) {
