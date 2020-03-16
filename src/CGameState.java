@@ -338,8 +338,7 @@ class BodySeg {
     boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
-    if (leftEdge && inRow && !this.right
-        || rightEdge && inRow && this.right
+    if (leftEdge && inRow && !this.right|| rightEdge && inRow && this.right
         || this.nextEncountered(encountered)) {
       if (this.down && botRow || !this.down && topRow) {
         this.down = !this.down;
