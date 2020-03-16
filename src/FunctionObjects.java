@@ -92,15 +92,3 @@ class IsPebble implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
     return true;
   }
 }
-
-//class SamePosn implements IFunc<Posn, Boolean> {
-//  Posn p;
-//
-//  SamePosn(Posn p) {
-//    this.p = p;
-//  }
-//
-//  public Boolean apply(Posn p) {
-//    return this.p.x == p.x && this.p.y == p.y;
-//  }
-//}
