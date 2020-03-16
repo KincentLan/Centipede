@@ -40,9 +40,7 @@ class GameMaster extends World {
     if (s.equals("s")) {
       this.w = this.w.toCGameState();
     }
-    else {
-      this.w.onKeyEvent(s);
-    }
+    this.w.onKeyEvent(s);
   }
 
   @Override

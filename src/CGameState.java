@@ -392,14 +392,14 @@ class CGameState extends GameState {
     if (this.playerDirection.x == 1) {
       this.gnome.move("right", this.width, this.height);
     }
-    else if (this.playerDirection.x == -1) {
+    if (this.playerDirection.x == -1) {
       this.gnome.move("left", this.width, this.height);
     }
 
     if (this.playerDirection.y == 1) {
       this.gnome.move("up", this.width, this.height);
     }
-    else if (this.playerDirection.y == -1) {
+    if (this.playerDirection.y == -1) {
       this.gnome.move("down", this.width, this.height);
     }
   }
@@ -425,14 +425,14 @@ class CGameState extends GameState {
     if (s.equals("left")) {
       this.playerDirection = new Posn(-1, this.playerDirection.y);
     }
-    else if (s.equals("right")) {
+    if (s.equals("right")) {
       this.playerDirection = new Posn(1, this.playerDirection.y);
     }
 
     if (s.equals("up")) {
       this.playerDirection = new Posn(this.playerDirection.x, 1);
     }
-    else if (s.equals("down")) {
+    if (s.equals("down")) {
       this.playerDirection = new Posn(this.playerDirection.x, -1);
     }
   }
@@ -440,8 +440,12 @@ class CGameState extends GameState {
   @Override
   // resets the player's direction to 0 (means not moving) for both components
   public void onKeyReleased(String s) {
-    if (s.equals("left") || s.equals("right") || s.equals("up") || s.equals("down")) {
-      this.playerDirection = new Posn(0, 0);
+    if (s.equals("left") || s.equals("right")) {
+      this.playerDirection = new Posn(0, this.playerDirection.y);
+    }
+
+    if (s.equals("up") || s.equals("down")) {
+      this.playerDirection = new Posn(this.playerDirection.x, 0);
     }
   }
 
