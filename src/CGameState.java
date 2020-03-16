@@ -64,8 +64,8 @@ interface ITile {
   // mouse button name and the bottom column of the board
   ITile replaceTile(String bName, int botCol);
 
-  // is this tile a grass tile?
-  boolean isGrass();
+  // to return the result of applying the given visitor to this tile
+  <R> R accept(ITileVisitor<R> visitor);
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -101,10 +101,8 @@ abstract class ATile implements ITile {
     }
   }
 
-  // is this ATile a grass tile? By default, it is not.
-  public boolean isGrass() {
-    return false;
-  }
+  // to return the result of applying the given visitor to this ATile
+  public abstract <R> R accept(ITileVisitor<R> visitor);
 }
 
 // represents a tile with no obstacles on it
@@ -140,9 +138,9 @@ class GrassTile extends ATile {
     return this;
   }
 
-  // is this GrassTile a grass tile? Yes, it is.
-  public boolean isGrass() {
-    return true;
+  // to return the result of applying the given visitor to this GrassTile
+  public <R> R accept(ITileVisitor<R> visitor) {
+    return visitor.visitGrass(this);
   }
 }
 
@@ -161,6 +159,11 @@ class PebbleTile extends ATile {
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
   }
+
+  // to return the result of applying the given visitor to this PebbleTile
+  public <R> R accept(ITileVisitor<R> visitor) {
+    return visitor.visitPeb(this);
+  }
 }
 
 // represents a tile with a dandelion tile
@@ -177,6 +180,11 @@ class DandelionTile extends ATile {
         HEIGHT - 1, OutlineMode.SOLID, Color.YELLOW);
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
+  }
+
+  // to return the result of applying the given visitor to this DandelionTile
+  public <R> R accept(ITileVisitor<R> visitor) {
+    return visitor.visitDan(this);
   }
 }
 
@@ -243,16 +251,15 @@ class Gnome {
 // represents a centipede in the centipede game
 class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
+  // NOTE: the centipede's head is at the end of the list
   int speed; // how fast the centipede should be moving
   ArrayList<Posn> encountered; // represents a list of obstacles that this centipede has encountered
 
   // the constructor
-  Centipede(ArrayList<BodySeg> body, int speed, boolean down,
-            ArrayList<Posn> encountered) {
+  Centipede(ArrayList<BodySeg> body, int speed, ArrayList<Posn> encountered) {
     if (body.size() == 0) {
       throw new IllegalArgumentException("Centipede cannot have an empty body");
     }
-
     this.body = body;
     this.speed = speed;
     this.encountered = encountered;
@@ -261,7 +268,7 @@ class Centipede {
   // the default constructor - constructs the starting centipede in the centipede game
   Centipede(int length) {
     this(new Util().generateCentBody(length, ITile.WIDTH / 10),
-        ITile.WIDTH / 10, true, new ArrayList<>());
+        ITile.WIDTH / 10, new ArrayList<>());
   }
 
   // EFFECT: changes the given world scene by adding this centipede onto it
@@ -275,9 +282,13 @@ class Centipede {
   // EFFECT: changes the all the elements in this centipede's list of body positions,
   // essentially moving it along in the world
   // moves the centipede along the board in the world
-  void move(int width, int height) {
+  void move(int width, int height, ArrayList<ITile> garden) {
+    BodySeg head = this.body.get(this.body.size() - 1);
+    if (head.aheadDandelion(garden) && !head.trapped(this.encountered, width)) {
+      this.encountered.add(head.nextTilePosn());
+    }
     for (BodySeg bodySeg : this.body) {
-      bodySeg.move(width, height, this.speed);
+      bodySeg.move(width, height, this.speed, this.encountered);
     }
   }
 }
@@ -311,16 +322,25 @@ class BodySeg {
     s.placeImageXY(bodyPart, this.pos.x, this.pos.y);
   }
 
+  // EFFECT: changes the value of whether or not this body segment is a head
+  // (changes the head boolean)
+  // turns this body segment into a head
+  void toHead() {
+    this.head = true;
+  }
+
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
-  void move(int width, int height, int speed) {
+  void move(int width, int height, int speed, ArrayList<Posn> encountered) {
     boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
     boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
     boolean topRow = this.pos.y == ITile.HEIGHT / 2;
     boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
-    if (leftEdge && inRow && this.velocity.x < 0 || rightEdge && inRow && this.velocity.x > 0) {
+    if (leftEdge && inRow && !this.right
+        || rightEdge && inRow && this.right
+        || this.nextEncountered(encountered)) {
       if (this.down && botRow || !this.down && topRow) {
         this.down = !this.down;
       }
@@ -340,6 +360,73 @@ class BodySeg {
     }
 
     this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+  }
+
+  // is there a position to the right or left of this body segment (depending on direction)
+  // where it will collide in the given list?
+  boolean nextEncountered(ArrayList<Posn> encountered) {
+    Posn pos = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+    if (!this.right) {
+      pos = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+    }
+    for (Posn p : encountered) {
+      if (p.equals(pos)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // gives the next position (depending on direction) of this body segment
+  // NOTE: this will give an invalid position if the centipede is at one of the edges in which
+  // the body segment maintains its direction towards that edge
+  Posn nextTilePosn() {
+    if (this.right) {
+      return new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+    }
+    return new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+  }
+
+  // gives the previous position (depending on direction) of this body segment
+  // NOTE: this will give an invalid position if the centipede is at one of the edges in which
+  // the body segment maintains its opposite direction towards that edge
+  Posn prevTilePosn() {
+    if (this.right) {
+      return new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+    }
+    return new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+  }
+
+  // is there a dandelion ahead of this body segment?
+  boolean aheadDandelion(ArrayList<ITile> garden) {
+    IsDandelion isDandelion = new IsDandelion();
+    Posn ahead = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+    if (!this.right) {
+      ahead = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+    }
+    for (ITile tile : garden) {
+      if (isDandelion.apply(tile) && tile.samePos(ahead)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // can this BodySeg be trapped by the board?
+  boolean trapped(ArrayList<Posn> encountered, int width) {
+    Posn ahead = this.nextTilePosn();
+    Posn ahead_away2y = new Posn(ahead.x, ahead.y - 2 * ITile.HEIGHT);
+    Posn prev = this.prevTilePosn();
+    Posn prev_away1y = new Posn(prev.x, prev.y - ITile.HEIGHT);
+    if (!this.down) {
+      ahead_away2y = new Posn(ahead.x, ahead.y + 2 * ITile.HEIGHT);
+      prev_away1y = new Posn(ahead.x, ahead.y + ITile.HEIGHT);
+    }
+
+    boolean obstacleTwoYNext = encountered.contains(ahead_away2y);
+    boolean obstacleOneYPrev = encountered.contains(prev_away1y) || prev.x < 0 || prev.x > width;
+
+    return obstacleTwoYNext && obstacleOneYPrev;
   }
 }
 
@@ -380,7 +467,7 @@ class CGameState extends GameState {
   // moves every element in the game accordingly after each tick
   public void onTick() {
     for (Centipede c : this.cents) {
-      c.move(this.width, this.height);
+      c.move(this.width, this.height, this.garden);
     }
 
     this.movePlayer();

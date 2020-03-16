@@ -4,11 +4,11 @@ import javalib.worldimages.*;
 // represents a centipede game that manages the current GameState, which could be the setup or the
 // actual game
 class GameMaster extends World {
-  GameState w;
+  GameState gameState;
 
   // the constructor
-  GameMaster(GameState w) {
-    this.w = w;
+  GameMaster(GameState gameState) {
+    this.gameState = gameState;
   }
 
   // the default constructor - makes a new BGame state, only requiring the dimensions of the board
@@ -20,14 +20,14 @@ class GameMaster extends World {
   @Override
   // gives the world scene of the current GameState
   public WorldScene makeScene() {
-    return this.w.makeScene();
+    return this.gameState.makeScene();
   }
 
   @Override
   // EFFECT: modifies the current GameState by modifying its fields after each tick
   // moves the world along after each tick
   public void onTick() {
-    this.w.onTick();
+    this.gameState.onTick();
   }
 
   @Override
@@ -38,16 +38,16 @@ class GameMaster extends World {
   // changes the world accordingly in response to the key pressed by the user
   public void onKeyEvent(String s) {
     if (s.equals("s")) {
-      this.w = this.w.toCGameState();
+      this.gameState = this.gameState.toCGameState();
     }
-    this.w.onKeyEvent(s);
+    this.gameState.onKeyEvent(s);
   }
 
   @Override
   // EFFECT: modifies the current GameState by modifying its fields after each key release
   // changes the world accordingly in response to the key released by the user
   public void onKeyReleased(String s) {
-    this.w.onKeyReleased(s);
+    this.gameState.onKeyReleased(s);
   }
 
 
@@ -55,7 +55,7 @@ class GameMaster extends World {
   // EFFECT: changes the current GameState by modifying its fields after each mouse click
   // changes the world accordingly in response to the position and mouse button click by the user
   public void onMouseClicked(Posn mouse, String bName) {
-    this.w.onMouseClicked(mouse, bName);
+    this.gameState.onMouseClicked(mouse, bName);
   }
 }
 

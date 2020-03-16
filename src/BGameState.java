@@ -80,8 +80,9 @@ class BGameState extends GameState {
   // tells how many grass tiles are left in the garden
   int grassLeft() {
     int counter = 0;
+    IsGrass isGrass = new IsGrass();
     for (ITile tile : this.garden) {
-      if (tile.isGrass()) {
+      if (isGrass.apply(tile)) {
         counter += 1;
       }
     }
@@ -91,8 +92,9 @@ class BGameState extends GameState {
   // gives the index of a random grass tile in the garden
   int randGrassIndex() {
     ArrayList<Integer> grassIndices = new ArrayList<>();
+    IsGrass isGrass = new IsGrass();
     for (int index = 0; index < this.garden.size(); index += 1) {
-      if (this.garden.get(index).isGrass()) {
+      if (isGrass.apply(this.garden.get(index))) {
         grassIndices.add(index);
       }
     }
