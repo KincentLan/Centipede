@@ -66,6 +66,9 @@ interface ITile {
 
   // to return the result of applying the given visitor to this tile
   <R> R accept(ITileVisitor<R> visitor);
+
+  // is this tile in range of the given posn?
+  boolean inRange(Posn pos);
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -87,18 +90,20 @@ abstract class ATile implements ITile {
     return this.row == pos.x && this.col == pos.y;
   }
 
-  // if this tile's indices match a given set of indices, returns a GrassTile with
-  // those indices
+  // in effect, this gives the "replacement" of this ATile with a new tile
+  // with the same position given the mouse button name and the bottom column of the board
   public ITile replaceTile(String bName, int botCol) {
-    /*
-     * replaceTile template: everything in the ATile template, plus Fields of
-     * parameters: none Methods on parameters: none
-     */
     if (bName.equals("LeftButton") && this.col != botCol) {
       return new GrassTile(this.row, this.col);
     } else {
       return this;
     }
+  }
+
+  // is this ATile in range of the given posn?
+  public boolean inRange(Posn pos) {
+    return Math.abs(this.row - pos.x) <= ITile.WIDTH/2
+        && Math.abs(this.col - pos.y) <= ITile.HEIGHT/2;
   }
 
   // to return the result of applying the given visitor to this ATile
@@ -214,10 +219,6 @@ class Gnome {
   // (speed).
   // the gnome stays if it tries to move off the edge of the screen.
   void moveCell(String key, int edge) {
-    /*
-     * TEMPLATE: Everything in the gnome class template plus Methods on parameters:
-     * key.equals(String) -- boolean
-     */
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       this.x = this.x - ITile.WIDTH;
     } else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
@@ -227,23 +228,39 @@ class Gnome {
 
   // moves the gnome (towards the playerDirection specified by the key) by one unit (speed).
   // the gnome stays if it tries to move off the edge of the screen.
-  void move(String key, int rightEdge, int botEdge) {
-    /*
-     * TEMPLATE: Everything in the gnome class template plus Methods on parameters:
-     * key.equals(String) -- boolean
-     */
+  void move(String key, int rightEdge, int botEdge, ArrayList<ITile> garden) {
+    int x_away = 0;
+    int y_away = 0;
+    int x_offset = 0;
+    int y_offset = 0;
+
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
-      this.x -= this.speed;
+      x_away = -this.speed;
+      x_offset = -ITile.WIDTH/2;
     }
     else if (key.equals("right") && this.x + this.speed <= rightEdge - ITile.WIDTH/2) {
-      this.x += this.speed;
+      x_away = this.speed;
+      x_offset = ITile.WIDTH/2;
     }
     else if (key.equals("up") &&
         this.y - this.speed >= botEdge - 2 * ITile.HEIGHT - ITile.HEIGHT/2) {
-      this.y -= this.speed;
+      y_away = -this.speed;
+      y_offset = -ITile.HEIGHT/2;
     }
     else if (key.equals("down") && this.y + this.speed <= botEdge - ITile.HEIGHT/2) {
-      this.y += this.speed;
+      y_away = this.speed;
+      y_offset = ITile.HEIGHT/2;
+    }
+    IsDandelion isDandelion = new IsDandelion();
+    Posn nextTile = new Posn(this.x + x_offset, this.y + y_offset);
+    boolean isDanAhead = false;
+    for (ITile tile : garden) {
+      isDanAhead = isDanAhead || isDandelion.apply(tile) && tile.inRange(nextTile);
+    }
+
+    if (!isDanAhead) {
+      this.x += x_away;
+      this.y += y_away;
     }
   }
 }
@@ -461,7 +478,7 @@ class CGameState extends GameState {
   }
 
   @Override
-  // TODO : elaborate on your effect statement
+  // TODO : elaborate on the effect statement
   // EFFECT: changes all the fields except width and height
   // moves every element in the game accordingly after each tick
   public void onTick() {
@@ -476,17 +493,17 @@ class CGameState extends GameState {
   // moves the player accordingly based on the key input the user gave
   void movePlayer() {
     if (this.playerDirection.x == 1) {
-      this.gnome.move("right", this.width, this.height);
+      this.gnome.move("right", this.width, this.height, this.garden);
     }
     if (this.playerDirection.x == -1) {
-      this.gnome.move("left", this.width, this.height);
+      this.gnome.move("left", this.width, this.height, this.garden);
     }
 
     if (this.playerDirection.y == 1) {
-      this.gnome.move("up", this.width, this.height);
+      this.gnome.move("up", this.width, this.height, this.garden);
     }
     if (this.playerDirection.y == -1) {
-      this.gnome.move("down", this.width, this.height);
+      this.gnome.move("down", this.width, this.height, this.garden);
     }
   }
 

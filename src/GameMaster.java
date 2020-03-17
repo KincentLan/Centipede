@@ -39,8 +39,9 @@ class GameMaster extends World {
   public void onKeyEvent(String s) {
     if (s.equals("s")) {
       this.gameState = this.gameState.toCGameState();
+    } else {
+      this.gameState.onKeyEvent(s);
     }
-    this.gameState.onKeyEvent(s);
   }
 
   @Override
