@@ -1,5 +1,3 @@
-import javalib.worldimages.Posn;
-
 //represents a generic function object
 interface IFunc<T, R> {
   // applies this function to the given argument
