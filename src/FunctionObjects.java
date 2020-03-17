@@ -45,49 +45,49 @@ class IsGrass implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
   }
 }
 
-// represents a functional object that visits a tile and tells if it is a Dandelion
+// represents a functional object that visits a tile and tells if it is a dandelion
 class IsDandelion implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
-  // applies this predicate on the given tile  to tell if it is a grass
+  // applies this predicate on the given tile to tell if it is a dandelion
   public Boolean apply(ITile tile) {
     return tile.accept(this);
   }
 
-  // visits a grass tile and tells if it is a grass tile, which is always true
+  // visits a grass tile and tells if it is a dandelion tile, which is always false
   public Boolean visitGrass(GrassTile tile) {
     return false;
   }
 
-  // visits a dandelion tile and tells if it is a grass tile, which is always
-  // false
+  // visits a dandelion tile and tells if it is a dandelion tile, which is always
+  // true
   public Boolean visitDan(DandelionTile tile) {
     return true;
   }
 
-  // visits a Pebble tile and tells if it is a grass tile, which is always false
+  // visits a Pebble tile and tells if it is a dandelion tile, which is always false
   public Boolean visitPeb(PebbleTile tile) {
     return false;
   }
 }
 
-// represents a functional object that visits a tile and tells if it is a grass
+// represents a functional object that visits a tile and tells if it is a pebble
 class IsPebble implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
-  // applies this predicate on the given tile  to tell if it is a grass
+  // applies this predicate on the given tile to tell if it is a pebble
   public Boolean apply(ITile tile) {
     return tile.accept(this);
   }
 
-  // visits a grass tile and tells if it is a grass tile, which is always true
+  // visits a grass tile and tells if it is a pebble tile, which is always false
   public Boolean visitGrass(GrassTile tile) {
     return false;
   }
 
-  // visits a dandelion tile and tells if it is a grass tile, which is always
+  // visits a dandelion tile and tells if it is a pebble tile, which is always
   // false
   public Boolean visitDan(DandelionTile tile) {
     return false;
   }
 
-  // visits a Pebble tile and tells if it is a grass tile, which is always false
+  // visits a Pebble tile and tells if it is a pebble tile, which is always true
   public Boolean visitPeb(PebbleTile tile) {
     return true;
   }
