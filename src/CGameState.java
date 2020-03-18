@@ -201,6 +201,89 @@ class DandelionTile extends ATile {
   }
 }
 
+// represents a dart that can be fired in the centipede game
+interface IDart {
+  // draws this IDart onto the given world scene
+  void draw(WorldScene s);
+
+  // updates this IDart (with a new y position) after 1 tick;
+  void move();
+
+  // is this IDart off the screen?
+  boolean offScreen();
+
+  // is this Dart in the same tile as the given position?
+  boolean sameTilePos(Posn p);
+
+  // can this IDart hit the given ITile?
+  boolean hitTile(ITile tile);
+}
+
+// represents a non-existent dart in the centipede game
+class NoDart implements IDart {
+  // draws this NoDart onto the given world scene, which in essence does nothing
+  public void draw(WorldScene s) { }
+
+  // draws this NoDart onto the given world scene, which in essence does nothing
+  public void move() { }
+
+  // is this NoDart off the screen? Yes, always
+  public boolean offScreen() {
+    return true;
+  }
+
+  // does this NoDart have the given posn? Never.
+  public boolean sameTilePos(Posn p) {
+    return false;
+  }
+
+  // can this NoDart hit any dandelion tile given the garden? No.
+  public boolean hitTile(ITile tile) {
+    return false;
+  }
+}
+
+// represents a moving dart in the centipede game
+class Dart implements IDart {
+  int x; // represents the x position of the dart in pixels
+  int y; // represents the y position of the dart in pixels
+  int speed;
+
+  // the constructor
+  Dart(int x, int y, int speed) {
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
+  }
+
+  // EFFECT: modifies the given world scene to include this Dart
+  // draws this Dart onto the given world scene
+  public void draw(WorldScene s) {
+    WorldImage dart = new CircleImage(5, OutlineMode.SOLID, Color.BLACK);
+    s.placeImageXY(dart, this.x, this.y);
+  }
+
+  // draws this Dart onto the given world scene
+  public void move() {
+    this.y -= this.speed;
+  }
+
+  // is this Dart off the screen?
+  public boolean offScreen() {
+    return this.y <= 0;
+  }
+
+  // is this Dart in the same tile as the given position?
+  public boolean sameTilePos(Posn p) {
+    return Math.abs(p.x - this.x) <= ITile.WIDTH / 2 && this.y == p.y;
+  }
+
+  // can this Dart hit the given tile?
+  public boolean hitTile(ITile tile) {
+    return tile.inRange(new Posn(this.x, this.y));
+  }
+}
+
 // represents the player in the centipede game
 class Gnome {
   int x;
@@ -223,9 +306,9 @@ class Gnome {
     s.placeImageXY(player, this.x, this.y);
   }
 
+  // EFFECT: modifies the position of the gnome, meaning it modifies its x and y fields
   // moves the gnome (towards the playerDirection specified by the key) by one unit
-  // (speed).
-  // the gnome stays if it tries to move off the edge of the screen.
+  // (speed), the gnome stays if it tries to move off the edge of the screen.
   void moveCell(String key, int edge) {
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       this.x = this.x - ITile.WIDTH;
@@ -260,7 +343,6 @@ class Gnome {
       y_dir = 1;
     }
     IsDandelion isDandelion = new IsDandelion();
-
     boolean isDanAhead = false;
     for (ITile tile : garden) {
       isDanAhead = isDanAhead || isDandelion.apply(tile) && this.intersect(tile, x_dir, y_dir);
@@ -272,8 +354,8 @@ class Gnome {
     }
   }
 
-  // will this player's model intersect with the given tile given
-  // the direction the player is moving in?
+  // will this player's model intersect with the given tile given the direction
+  // the player is moving in?
   boolean intersect(ITile tile, int x_dir, int y_dir) {
     if (x_dir == 0 && y_dir == 0) {
       return false;
@@ -288,6 +370,12 @@ class Gnome {
     return tile.inRange(new Posn(this.x, y_displace))
         || tile.inRange(new Posn((this.x + 1) - ITile.WIDTH/2, y_displace))
         || tile.inRange(new Posn((this.x - 1) + ITile.WIDTH/2, y_displace));
+  }
+
+  // generates an dart from the center of the tile where is gnome is at
+  IDart generateDart() {
+    return new Dart((this.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2, this.y,
+        ITile.HEIGHT / 2);
   }
 }
 
@@ -479,12 +567,13 @@ class CGameState extends GameState {
   Posn playerDirection; // -1 if player is moving left, 0 is player is not moving, and 1 if player is
   // moving right for the x component, and the same respectively for moving down and up
   Gnome gnome;
+  IDart dart;
   int width;
   int height;
 
   // the constructor
   CGameState(ArrayList<Centipede> cents, ArrayList<ITile> garden, Posn playerDirection, Gnome gnome,
-             int width, int height) {
+             IDart dart, int width, int height) {
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
@@ -492,6 +581,7 @@ class CGameState extends GameState {
     this.garden = garden;
     this.playerDirection = playerDirection;
     this.gnome = gnome;
+    this.dart = dart;
     this.width = width;
     this.height = height;
   }
@@ -499,7 +589,7 @@ class CGameState extends GameState {
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
     this(new Util().singletonList(new Centipede(10)), garden,
-        new Posn(0, 0), gnome, ITile.WIDTH * x,
+        new Posn(0, 0), gnome, new NoDart(), ITile.WIDTH * x,
         ITile.HEIGHT * y);
   }
 
@@ -513,6 +603,8 @@ class CGameState extends GameState {
     }
 
     this.movePlayer();
+
+    this.moveDart();
   }
 
   // EFFECT: modifies the player position of this CGameState based on the player direction
@@ -533,6 +625,17 @@ class CGameState extends GameState {
     }
   }
 
+  // EFFECT: modifies the IDart of this CGameState, either directly modifying the IDart
+  // or setting it equal to a different IDart
+  // moves the Dart in the game
+  void moveDart() {
+    if (this.dart.offScreen()) {
+      this.dart = new NoDart();
+    } else {
+      this.dart.move();
+    }
+  }
+
   @Override
   // draws all the elements in the game
   public WorldScene makeScene() {
@@ -544,6 +647,9 @@ class CGameState extends GameState {
       c.draw(s);
     }
     this.gnome.draw(s);
+
+    this.dart.draw(s);
+
     return s;
   }
 
@@ -564,6 +670,12 @@ class CGameState extends GameState {
     if (s.equals("down")) {
       this.playerDirection = new Posn(this.playerDirection.x, -1);
     }
+
+    if (s.equals(" ")) {
+      if (this.dart.offScreen()) {
+        this.dart = this.gnome.generateDart();
+      }
+    }
   }
 
   @Override
@@ -578,6 +690,7 @@ class CGameState extends GameState {
     }
   }
 
+  @Override
   // continues this CGameState to be used in GameMaster
   public CGameState toCGameState() {
     return this;

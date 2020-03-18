@@ -122,6 +122,7 @@ class BGameState extends GameState {
     }
   }
 
+  @Override
   // turns this setup (BGameState) to the actual game (CGameState) to be used in GameMaster
   public CGameState toCGameState() {
     return new CGameState(this.x, this.y, this.garden, this.gnome);
