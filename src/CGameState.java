@@ -239,37 +239,55 @@ class Gnome {
   void move(String key, int rightEdge, int botEdge, ArrayList<ITile> garden) {
     int x_away = 0;
     int y_away = 0;
-    int x_offset = 0;
-    int y_offset = 0;
+    int x_dir = 0;
+    int y_dir = 0;
 
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       x_away = -this.speed;
-      x_offset = -ITile.WIDTH/2;
+      x_dir = -1;
     }
     else if (key.equals("right") && this.x + this.speed <= rightEdge - ITile.WIDTH/2) {
       x_away = this.speed;
-      x_offset = ITile.WIDTH/2;
+      x_dir = 1;
     }
     else if (key.equals("up") &&
         this.y - this.speed >= botEdge - 2 * ITile.HEIGHT - ITile.HEIGHT/2) {
       y_away = -this.speed;
-      y_offset = -ITile.HEIGHT/2;
+      y_dir = -1;
     }
     else if (key.equals("down") && this.y + this.speed <= botEdge - ITile.HEIGHT/2) {
       y_away = this.speed;
-      y_offset = ITile.HEIGHT/2;
+      y_dir = 1;
     }
     IsDandelion isDandelion = new IsDandelion();
-    Posn nextPosn = new Posn(this.x, this.y);
+
     boolean isDanAhead = false;
     for (ITile tile : garden) {
-      isDanAhead = isDanAhead || (isDandelion.apply(tile) && tile.nextTile(x_offset, y_offset).inRange(nextPosn));
+      isDanAhead = isDanAhead || isDandelion.apply(tile) && this.intersect(tile, x_dir, y_dir);
     }
 
     if (!isDanAhead) {
       this.x += x_away;
       this.y += y_away;
     }
+  }
+
+  // will this player's model intersect with the given tile given
+  // the direction the player is moving in?
+  boolean intersect(ITile tile, int x_dir, int y_dir) {
+    if (x_dir == 0 && y_dir == 0) {
+      return false;
+    }
+    else if (x_dir != 0) {
+      int x_displace = this.x + x_dir * ITile.WIDTH/2;
+      return tile.inRange(new Posn(x_displace, this.y))
+          || tile.inRange(new Posn(x_displace, (this.y + 1) - ITile.HEIGHT/2))
+          || tile.inRange(new Posn(x_displace, (this.y - 1) + ITile.HEIGHT/2));
+    }
+    int y_displace = this.y + y_dir * ITile.HEIGHT/2;
+    return tile.inRange(new Posn(this.x, y_displace))
+        || tile.inRange(new Posn((this.x + 1) - ITile.WIDTH/2, y_displace))
+        || tile.inRange(new Posn((this.x - 1) + ITile.WIDTH/2, y_displace));
   }
 }
 
