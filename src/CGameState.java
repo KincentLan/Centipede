@@ -54,6 +54,8 @@ interface ITile {
 
   int WIDTH = 40;
 
+  int DEF_HP = 3;
+
   // draws this tile onto the world scene given
   void draw(WorldScene s);
 
@@ -69,9 +71,12 @@ interface ITile {
 
   // is this tile in range of the given posn?
   boolean inRange(Posn pos);
-  
-  //
-  ITile nextTile(int x, int y);
+
+  // lowers the HP of this ITile if it has an HP unit
+  void lowerHP();
+
+  // is the HP of this ITile zero or less?
+  boolean noHP();
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -85,14 +90,17 @@ abstract class ATile implements ITile {
     this.col = col;
   }
 
+  @Override
   // draws this ATile - to be implemented by classes that extend ATile
   public abstract void draw(WorldScene s);
 
+  @Override
   // is this ATile at the same position of the given Posn?
   public boolean samePos(Posn pos) {
     return this.row == pos.x && this.col == pos.y;
   }
 
+  @Override
   // in effect, this gives the "replacement" of this ATile with a new tile
   // with the same position given the mouse button name and the bottom column of the board
   public ITile replaceTile(String bName, int botCol) {
@@ -103,18 +111,26 @@ abstract class ATile implements ITile {
     }
   }
 
+  @Override
   // is this ATile in range of the given posn?
   public boolean inRange(Posn pos) {
     return Math.abs(this.row - pos.x) <= ITile.WIDTH/2
         && Math.abs(this.col - pos.y) <= ITile.HEIGHT/2;
   }
 
+  @Override
   // to return the result of applying the given visitor to this ATile
   public abstract <R> R accept(ITileVisitor<R> visitor);
-  
-  // 
-  public ITile nextTile(int x, int y) {
-    return new GrassTile(this.row + x, this.col + y);
+
+  @Override
+  // by default, an ATile does not have an HP unit, so this method does nothing
+  public void lowerHP() { }
+
+  @Override
+  // by default, an ATile does not have an HP unit, so it does not make sense to have noHP, so
+  // it just returns false
+  public boolean noHP() {
+    return false;
   }
 }
 
@@ -125,6 +141,7 @@ class GrassTile extends ATile {
     super(row, col);
   }
 
+  @Override
   // draws a GrassTile, a solid green cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
@@ -134,6 +151,7 @@ class GrassTile extends ATile {
     s.placeImageXY(grass, this.row, this.col);
   }
 
+  @Override
   // if this tile's indices match a given set of indices, returns a Dandelion
   // if left botton is clicked) or Pebble (if right botton is clicked) with those
   // indices
@@ -143,7 +161,7 @@ class GrassTile extends ATile {
      * parameters: none Methods on parameters: none
      */
     if (bName.equals("LeftButton") && this.col != botCol) {
-      return new DandelionTile(this.row, this.col);
+      return new DandelionTile(this.row, this.col, DEF_HP);
     }
     else if (bName.equals("RightButton") && this.col != botCol) {
       return new PebbleTile(this.row, this.col);
@@ -151,6 +169,7 @@ class GrassTile extends ATile {
     return this;
   }
 
+  @Override
   // to return the result of applying the given visitor to this GrassTile
   public <R> R accept(ITileVisitor<R> visitor) {
     return visitor.visitGrass(this);
@@ -164,6 +183,7 @@ class PebbleTile extends ATile {
     super(row, col);
   }
 
+  @Override
   // draws a PebbleTile, a solid gray cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
@@ -173,6 +193,7 @@ class PebbleTile extends ATile {
     s.placeImageXY(grass, this.row, this.col);
   }
 
+  @Override
   // to return the result of applying the given visitor to this PebbleTile
   public <R> R accept(ITileVisitor<R> visitor) {
     return visitor.visitPeb(this);
@@ -181,11 +202,14 @@ class PebbleTile extends ATile {
 
 // represents a tile with a dandelion tile
 class DandelionTile extends ATile {
+  int hp;
   // the constructor
-  DandelionTile(int row, int col) {
+  DandelionTile(int row, int col, int hp) {
     super(row, col);
+    this.hp = hp;
   }
 
+  @Override
   // draws a DandelionTile, a solid yellow cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
@@ -195,9 +219,22 @@ class DandelionTile extends ATile {
     s.placeImageXY(grass, this.row, this.col);
   }
 
+  @Override
   // to return the result of applying the given visitor to this DandelionTile
   public <R> R accept(ITileVisitor<R> visitor) {
     return visitor.visitDan(this);
+  }
+
+  @Override
+  // lowers the HP of this DandelionTile
+  public void lowerHP() {
+    this.hp -= 1;
+  }
+
+  @Override
+  // is the HP of this DandelionTile less than or equal to 0?
+  public boolean noHP() {
+    return this.hp <= 0;
   }
 }
 
@@ -598,6 +635,8 @@ class CGameState extends GameState {
   // EFFECT: changes all the fields except width and height
   // moves every element in the game accordingly after each tick
   public void onTick() {
+    this.collides();
+
     for (Centipede c : this.cents) {
       c.move(this.width, this.height, this.garden);
     }
@@ -633,6 +672,22 @@ class CGameState extends GameState {
       this.dart = new NoDart();
     } else {
       this.dart.move();
+    }
+  }
+
+  // EFFECT: modifies the garden, centipede, and the dart fields of this CGameState
+  // alters the state of the game after possible collisions
+  void collides() {
+    IsDandelion isDandelion = new IsDandelion();
+    for (int index = 0; index < this.garden.size(); index += 1) {
+      ITile tile = this.garden.get(index);
+      if (isDandelion.apply(tile) && this.dart.hitTile(tile)) {
+        this.dart = new NoDart();
+        tile.lowerHP();
+        if (tile.noHP()) {
+          this.garden.set(index, new DanToPeb().apply(tile));
+        }
+      }
     }
   }
 
