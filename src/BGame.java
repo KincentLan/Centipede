@@ -53,10 +53,10 @@ class BGame extends World {
       this.gnome.moveCell("right", this.width * ITile.WIDTH);
     }
     else if (key.equals("d")) {
-      this.generate("left");
+      this.generate("LeftBotton");
     }
     else if (key.equals("p")) {
-      this.generate("right");
+      this.generate("RightBotton");
     }
 //    else if (key.equals("r")) {
 //      return new BGame(new Util().generateGrass(width, height, height), this);
@@ -69,10 +69,11 @@ class BGame extends World {
   
   // EFFECT:
   void generate(String bName) {
-    // 
+    System.out.print(bName);
     int availiable = (this.garden.size() - this.width) / 20;
     for(int index = 0; index < availiable; index += 1) {
-      int randInt = rand.nextInt(availiable);
+      System.out.print(bName);
+      int randInt = rand.nextInt(this.garden.size());
       ITile randElement = this.garden.get(randInt);
       this.garden.set(randInt, randElement.replaceTile(bName, this.height));
     }
