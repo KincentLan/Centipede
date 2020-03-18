@@ -15,7 +15,7 @@ class Util {
       Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2,
           ITile.HEIGHT / 2);
       Posn vel = new Posn(speed, 0);
-      BodySeg curr = new BodySeg(pos, vel, head, true, true);
+      BodySeg curr = new BodySeg(pos, vel, head, true, true, new ArrayList<>());
       body.add(curr);
     }
     return body;
@@ -45,6 +45,15 @@ class Util {
       garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH / 2,
           index * ITile.HEIGHT + ITile.HEIGHT / 2));
     }
+  }
+
+  // gives an arraylist that is a copy of the given one
+  <T> ArrayList<T> copy(ArrayList<T> src) {
+    ArrayList<T> copy = new ArrayList<>();
+    for (T item : src) {
+      copy.add(item);
+    }
+    return copy;
   }
 }
 
@@ -114,8 +123,8 @@ abstract class ATile implements ITile {
   @Override
   // is this ATile in range of the given posn?
   public boolean inRange(Posn pos) {
-    return Math.abs(this.row - pos.x) <= ITile.WIDTH/2
-        && Math.abs(this.col - pos.y) <= ITile.HEIGHT/2;
+    return Math.abs(this.row - pos.x) <= ITile.WIDTH / 2
+        && Math.abs(this.col - pos.y) <= ITile.HEIGHT / 2;
   }
 
   @Override
@@ -124,7 +133,8 @@ abstract class ATile implements ITile {
 
   @Override
   // by default, an ATile does not have an HP unit, so this method does nothing
-  public void lowerHP() { }
+  public void lowerHP() {
+  }
 
   @Override
   // by default, an ATile does not have an HP unit, so it does not make sense to have noHP, so
@@ -162,8 +172,7 @@ class GrassTile extends ATile {
      */
     if (bName.equals("LeftButton") && this.col != botCol) {
       return new DandelionTile(this.row, this.col, DEF_HP);
-    }
-    else if (bName.equals("RightButton") && this.col != botCol) {
+    } else if (bName.equals("RightButton") && this.col != botCol) {
       return new PebbleTile(this.row, this.col);
     }
     return this;
@@ -203,6 +212,7 @@ class PebbleTile extends ATile {
 // represents a tile with a dandelion tile
 class DandelionTile extends ATile {
   int hp;
+
   // the constructor
   DandelionTile(int row, int col, int hp) {
     super(row, col);
@@ -210,11 +220,12 @@ class DandelionTile extends ATile {
   }
 
   @Override
-  // draws a DandelionTile, a solid yellow cube and a black outline, onto the given world scene
+  // draws a DandelionTile, with the color depending on the HP, onto the given world scene
   public void draw(WorldScene s) {
+    Color color = new Color(255, 255, -(this.hp - DEF_HP) * 75);
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
     WorldImage grass = new RectangleImage(WIDTH - 1,
-        HEIGHT - 1, OutlineMode.SOLID, Color.YELLOW);
+        HEIGHT - 1, OutlineMode.SOLID, color);
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
   }
@@ -259,10 +270,12 @@ interface IDart {
 // represents a non-existent dart in the centipede game
 class NoDart implements IDart {
   // draws this NoDart onto the given world scene, which in essence does nothing
-  public void draw(WorldScene s) { }
+  public void draw(WorldScene s) {
+  }
 
   // draws this NoDart onto the given world scene, which in essence does nothing
-  public void move() { }
+  public void move() {
+  }
 
   // is this NoDart off the screen? Yes, always
   public boolean offScreen() {
@@ -365,17 +378,14 @@ class Gnome {
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       x_away = -this.speed;
       x_dir = -1;
-    }
-    else if (key.equals("right") && this.x + this.speed <= rightEdge - ITile.WIDTH/2) {
+    } else if (key.equals("right") && this.x + this.speed <= rightEdge - ITile.WIDTH / 2) {
       x_away = this.speed;
       x_dir = 1;
-    }
-    else if (key.equals("up") &&
-        this.y - this.speed >= botEdge - 2 * ITile.HEIGHT - ITile.HEIGHT/2) {
+    } else if (key.equals("up") &&
+        this.y - this.speed >= botEdge - 2 * ITile.HEIGHT - ITile.HEIGHT / 2) {
       y_away = -this.speed;
       y_dir = -1;
-    }
-    else if (key.equals("down") && this.y + this.speed <= botEdge - ITile.HEIGHT/2) {
+    } else if (key.equals("down") && this.y + this.speed <= botEdge - ITile.HEIGHT / 2) {
       y_away = this.speed;
       y_dir = 1;
     }
@@ -396,17 +406,16 @@ class Gnome {
   boolean intersect(ITile tile, int x_dir, int y_dir) {
     if (x_dir == 0 && y_dir == 0) {
       return false;
-    }
-    else if (x_dir != 0) {
-      int x_displace = this.x + x_dir * ITile.WIDTH/2;
+    } else if (x_dir != 0) {
+      int x_displace = this.x + x_dir * ITile.WIDTH / 2;
       return tile.inRange(new Posn(x_displace, this.y))
-          || tile.inRange(new Posn(x_displace, (this.y + 1) - ITile.HEIGHT/2))
-          || tile.inRange(new Posn(x_displace, (this.y - 1) + ITile.HEIGHT/2));
+          || tile.inRange(new Posn(x_displace, (this.y + 1) - ITile.HEIGHT / 2))
+          || tile.inRange(new Posn(x_displace, (this.y - 1) + ITile.HEIGHT / 2));
     }
-    int y_displace = this.y + y_dir * ITile.HEIGHT/2;
+    int y_displace = this.y + y_dir * ITile.HEIGHT / 2;
     return tile.inRange(new Posn(this.x, y_displace))
-        || tile.inRange(new Posn((this.x + 1) - ITile.WIDTH/2, y_displace))
-        || tile.inRange(new Posn((this.x - 1) + ITile.WIDTH/2, y_displace));
+        || tile.inRange(new Posn((this.x + 1) - ITile.WIDTH / 2, y_displace))
+        || tile.inRange(new Posn((this.x - 1) + ITile.WIDTH / 2, y_displace));
   }
 
   // generates an dart from the center of the tile where is gnome is at
@@ -421,22 +430,20 @@ class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
   // NOTE: the centipede's head is at the end of the list
   int speed; // how fast the centipede should be moving
-  ArrayList<Posn> encountered; // represents a list of obstacles that this centipede has encountered
 
   // the constructor
-  Centipede(ArrayList<BodySeg> body, int speed, ArrayList<Posn> encountered) {
+  Centipede(ArrayList<BodySeg> body, int speed) {
     if (body.size() == 0) {
       throw new IllegalArgumentException("Centipede cannot have an empty body");
     }
     this.body = body;
     this.speed = speed;
-    this.encountered = encountered;
   }
 
   // the default constructor - constructs the starting centipede in the centipede game
   Centipede(int length) {
     this(new Util().generateCentBody(length, ITile.WIDTH / 10),
-        ITile.WIDTH / 10, new ArrayList<>());
+        ITile.WIDTH / 10);
   }
 
   // EFFECT: changes the given world scene by adding this centipede onto it
@@ -452,11 +459,16 @@ class Centipede {
   // moves the centipede along the board in the world
   void move(int width, int height, ArrayList<ITile> garden) {
     BodySeg head = this.body.get(this.body.size() - 1);
-    if (head.aheadDandelion(garden) && !head.trapped(this.encountered, width)) {
-      this.encountered.add(head.nextTilePosn());
+    if (head.aheadDandelion(garden) && !head.trapped(width)) {
+      head.addNewEncountered(head.nextTilePosn());
+      for (int index = 0; index < this.body.size() - 1; index += 1) {
+        if (this.body.get(index).sameYDirection(head)) {
+          this.body.get(index).copyEncountered(head);
+        }
+      }
     }
     for (BodySeg bodySeg : this.body) {
-      bodySeg.move(width, height, this.speed, this.encountered);
+      bodySeg.move(width, height, this.speed);
     }
   }
 }
@@ -468,14 +480,17 @@ class BodySeg {
   boolean head; // is this body segment the head?
   boolean down; // is this body segment going down?
   boolean right; // is this body segment going right?
+  ArrayList<Posn> encountered;
 
   // the constructor
-  BodySeg(Posn pos, Posn velocity, boolean head, boolean down, boolean right) {
+  BodySeg(Posn pos, Posn velocity, boolean head, boolean down, boolean right,
+          ArrayList<Posn> encountered) {
     this.pos = pos;
     this.velocity = velocity;
     this.head = head;
     this.down = down;
     this.right = right;
+    this.encountered = encountered;
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
@@ -499,18 +514,20 @@ class BodySeg {
 
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
-  void move(int width, int height, int speed, ArrayList<Posn> encountered) {
+  void move(int width, int height, int speed) {
     boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
     boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
     boolean topRow = this.pos.y == ITile.HEIGHT / 2;
     boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
-    if (leftEdge && inRow && !this.right|| rightEdge && inRow && this.right
-        || this.nextEncountered(encountered)) {
-      if (this.down && botRow || !this.down && topRow) {
-        this.down = !this.down;
-      }
+    if (this.down && botRow || !this.down && topRow) {
+      this.encountered.clear();
+      this.down = !this.down;
+    }
+
+    if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
+        || this.nextEncountered()) {
 
       if (!this.down) {
         speed *= -1;
@@ -531,12 +548,12 @@ class BodySeg {
 
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
-  boolean nextEncountered(ArrayList<Posn> encountered) {
+  boolean nextEncountered() {
     Posn pos = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
     if (!this.right) {
       pos = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
     }
-    for (Posn p : encountered) {
+    for (Posn p : this.encountered) {
       if (p.equals(pos)) {
         return true;
       }
@@ -580,7 +597,7 @@ class BodySeg {
   }
 
   // can this BodySeg be trapped by the board?
-  boolean trapped(ArrayList<Posn> encountered, int width) {
+  boolean trapped(int width) {
     Posn ahead = this.nextTilePosn();
     Posn ahead_away2y = new Posn(ahead.x, ahead.y - 2 * ITile.HEIGHT);
     Posn prev = this.prevTilePosn();
@@ -590,10 +607,29 @@ class BodySeg {
       prev_away1y = new Posn(ahead.x, ahead.y + ITile.HEIGHT);
     }
 
-    boolean obstacleTwoYNext = encountered.contains(ahead_away2y);
-    boolean obstacleOneYPrev = encountered.contains(prev_away1y) || prev.x < 0 || prev.x > width;
+    boolean obstacleTwoYNext = this.encountered.contains(ahead_away2y);
+    boolean obstacleOneYPrev = this.encountered.contains(prev_away1y)
+        || prev.x < 0 || prev.x > width;
 
     return obstacleTwoYNext && obstacleOneYPrev;
+  }
+
+  // EFFECT: modifies this body segment's encountered list by adding a new element
+  // adds a position of a new obstacle encountered
+  void addNewEncountered(Posn pos) {
+    this.encountered.add(pos);
+  }
+
+  // EFFECT: modifies this body segment's encountered list by copying another's body segment's
+  // encountered list
+  // copies another body segment's encountered list, but does not alias them
+  void copyEncountered(BodySeg other) {
+    this.encountered = new Util().copy(other.encountered);
+  }
+
+  // tells if the given body segment has the same direction as this one
+  boolean sameYDirection(BodySeg other) {
+    return this.down == other.down;
   }
 }
 
