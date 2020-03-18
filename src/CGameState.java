@@ -69,6 +69,9 @@ interface ITile {
 
   // is this tile in range of the given posn?
   boolean inRange(Posn pos);
+  
+  //
+  ITile nextTile(int x, int y);
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -108,6 +111,11 @@ abstract class ATile implements ITile {
 
   // to return the result of applying the given visitor to this ATile
   public abstract <R> R accept(ITileVisitor<R> visitor);
+  
+  // 
+  public ITile nextTile(int x, int y) {
+    return new GrassTile(this.row + x, this.col + y);
+  }
 }
 
 // represents a tile with no obstacles on it
@@ -252,10 +260,10 @@ class Gnome {
       y_offset = ITile.HEIGHT/2;
     }
     IsDandelion isDandelion = new IsDandelion();
-    Posn nextTile = new Posn(this.x + x_offset, this.y + y_offset);
+    Posn nextPosn = new Posn(this.x, this.y);
     boolean isDanAhead = false;
     for (ITile tile : garden) {
-      isDanAhead = isDanAhead || isDandelion.apply(tile) && tile.inRange(nextTile);
+      isDanAhead = isDanAhead || (isDandelion.apply(tile) && tile.nextTile(x_offset, y_offset).inRange(nextPosn));
     }
 
     if (!isDanAhead) {
