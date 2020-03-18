@@ -1,4 +1,4 @@
-//represents a generic function object
+//represents a generic function objects
 interface IFunc<T, R> {
   // applies this function to the given argument
   R apply(T arg);
