@@ -473,6 +473,33 @@ class Centipede {
       bodySeg.reverseYDirection(height);
       bodySeg.move(width, height, this.speed, bodySeg.obstacleList(this.encountered));
     }
+    this.removeUnusedObl();
+  }
+
+  // EFFECT: modifies the centipede's encountered to remove any ObstacleList that have not
+  // been used
+  // removes any unused obstacle lists from this centipede's encountered list
+  void removeUnusedObl() {
+    ArrayList<ObstacleList> used = new ArrayList<>();
+    for (ObstacleList obl : this.encountered) {
+      if (this.usedObl(obl)) {
+        used.add(obl);
+      }
+    }
+    this.encountered.clear();
+    for (ObstacleList obl : used) {
+      this.encountered.add(obl);
+    }
+  }
+
+  // has the given obstacle list been used by any of the body segments?
+  boolean usedObl(ObstacleList obl) {
+    for (BodySeg bodySeg : this.body) {
+      if (bodySeg.sameOblIteration(obl)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -483,7 +510,8 @@ class BodySeg {
   boolean head; // is this body segment the head?
   boolean down; // is this body segment going down?
   boolean right; // is this body segment going right?
-  int iteration;
+  int iteration; // represents the number of times this body segment has bounced
+  // (switched directions)
 
   // the constructor
   BodySeg(Posn pos, Posn velocity, boolean head, boolean down, boolean right,
@@ -515,18 +543,22 @@ class BodySeg {
     this.head = true;
   }
 
-  boolean sameIteration(int iteration) {
-    return this.iteration == iteration;
-  }
-
-  boolean sameObstacleIteration(ObstacleList obl) {
+  // determines if the given obstacle list has the same iteration as this body segment
+  boolean sameOblIteration(ObstacleList obl) {
     return obl.sameIteration(this.iteration);
   }
 
+  // gives the obstacle list that has the same iteration as this body segment
   ObstacleList obstacleList(ArrayList<ObstacleList> encountered) {
-    return encountered.get(this.iteration);
+    for (ObstacleList obl : encountered) {
+      if (obl.sameIteration(this.iteration)) {
+        return obl;
+      }
+    }
+    throw new RuntimeException("No such Obstacle List found");
   }
 
+  // generates a new obstacle list with this body segment's iteration
   ObstacleList generateObstacleList() {
     return new ObstacleList(this.iteration);
   }
@@ -550,8 +582,6 @@ class BodySeg {
   void move(int width, int height, int speed, ObstacleList obl) {
     boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
     boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
-    boolean topRow = this.pos.y == ITile.HEIGHT / 2;
-    boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
     if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
@@ -636,34 +666,37 @@ class BodySeg {
 
     return obstacleTwoYNext && obstacleOneYPrev;
   }
-
-  // tells if the given body segment has the same direction as this one
-  boolean sameYDirection(BodySeg other) {
-    return this.down == other.down;
-  }
 }
 
+// represents a list of all obstacles encountered during a certain period, or iteration, when
+// the centipede was/is moving in
 class ObstacleList {
-  int iteration;
-  ArrayList<Posn> obstacles;
+  int iteration; // represents how many times the centipede has bounced
+  ArrayList<Posn> obstacles; // all the obstacles encountered during this iteration
 
   ObstacleList(int iteration, ArrayList<Posn> obstacles) {
     this.iteration = iteration;
     this.obstacles = obstacles;
   }
 
+  // the default constructor - constructs a new obstacle list with a new iteration with no
+  // obstacles encountered
   ObstacleList(int iteration) {
     this(iteration, new ArrayList<>());
   }
 
+  // is this iteration the same as the one given?
   boolean sameIteration(int iteration) {
     return this.iteration == iteration;
   }
 
+  // EFFECT: modifies this ObstacleList's obstacles by adding a new obstacle/posn to it
+  // adds a new obstacle to this list of obstacles
   void addToObstacles(Posn p) {
     this.obstacles.add(p);
   }
 
+  // is the given posn in this list of obstacles?
   boolean inObstacles(Posn p) {
     for (Posn obstacle : this.obstacles) {
       if (p.equals(obstacle)) {
