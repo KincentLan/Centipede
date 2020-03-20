@@ -274,6 +274,9 @@ interface IDart {
 
   // can this IDart hit the given ITile?
   boolean hitTile(ITile tile);
+
+  // did this dart miss?
+  boolean missed();
 }
 
 // represents a non-existent dart in the centipede game
@@ -298,6 +301,11 @@ class NoDart implements IDart {
 
   // can this NoDart hit any dandelion tile given the garden? No.
   public boolean hitTile(ITile tile) {
+    return false;
+  }
+
+  // NoDart cannot miss since there isn't a dart
+  public boolean missed() {
     return false;
   }
 }
@@ -340,6 +348,11 @@ class Dart implements IDart {
   // can this Dart hit the given tile?
   public boolean hitTile(ITile tile) {
     return tile.inRange(new Posn(this.x, this.y));
+  }
+
+  // did this dart miss anything on the board?
+  public boolean missed() {
+    return this.y <= 0;
   }
 }
 
@@ -822,16 +835,18 @@ class ObstacleList {
 class CGameState extends GameState {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
   ArrayList<ITile> garden; // represents all the tiles in the current world
-  Posn playerDirection; // -1 if player is moving left, 0 is player is not moving, and 1 if player is
-  // moving right for the x component, and the same respectively for moving down and up
-  Gnome gnome;
   IDart dart;
+  Gnome gnome;
+  Posn playerDirection; // -1 if player is moving left, 0 is player is not moving,
+  // and 1 if player is moving right for the x component,
+  // and the same respectively for moving down and up
+  int score;
   int width;
   int height;
 
   // the constructor
   CGameState(ArrayList<Centipede> cents, ArrayList<ITile> garden, Posn playerDirection, Gnome gnome,
-             IDart dart, int width, int height) {
+             IDart dart, int score, int width, int height) {
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
@@ -840,6 +855,7 @@ class CGameState extends GameState {
     this.playerDirection = playerDirection;
     this.gnome = gnome;
     this.dart = dart;
+    this.score = score;
     this.width = width;
     this.height = height;
   }
@@ -847,7 +863,7 @@ class CGameState extends GameState {
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
     this(new Util().singletonList(new Centipede(10)), garden,
-        new Posn(0, 0), gnome, new NoDart(), ITile.WIDTH * x,
+        new Posn(0, 0), gnome, new NoDart(), 0,  ITile.WIDTH * x,
         ITile.HEIGHT * y);
   }
 
@@ -890,6 +906,10 @@ class CGameState extends GameState {
   // or setting it equal to a different IDart
   // moves the Dart in the game
   void moveDart() {
+    if (this.dart.missed()) {
+      this.score -= 1;
+    }
+
     if (this.dart.offScreen()) {
       this.dart = new NoDart();
     } else {
@@ -919,6 +939,7 @@ class CGameState extends GameState {
     ArrayList<Centipede> cpCent = new ArrayList<>();
     for (Centipede cent : this.cents) {
       if (cent.targetHit(this.dart)) {
+        this.score += 10;
         new Util().append(cpCent, cent.split(this.dart));
         this.sproutDandelion(cent.positionHit(this.dart));
         this.dart = new NoDart();
@@ -957,6 +978,9 @@ class CGameState extends GameState {
     this.gnome.draw(s);
 
     this.dart.draw(s);
+
+    WorldImage score = new TextImage("Score: " + this.score, Color.BLACK);
+    s.placeImageXY(score, this.width - 5 * ITile.WIDTH/4, ITile.HEIGHT/4);
 
     return s;
   }
