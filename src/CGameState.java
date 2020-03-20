@@ -15,7 +15,7 @@ class Util {
       Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2,
           ITile.HEIGHT / 2);
       Posn vel = new Posn(speed, 0);
-      BodySeg curr = new BodySeg(pos, vel, head, true, true, new ArrayList<>());
+      BodySeg curr = new BodySeg(pos, vel, head, true, true, 0);
       body.add(curr);
     }
     return body;
@@ -430,20 +430,22 @@ class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
   // NOTE: the centipede's head is at the end of the list
   int speed; // how fast the centipede should be moving
+  ArrayList<ObstacleList> encountered;
 
   // the constructor
-  Centipede(ArrayList<BodySeg> body, int speed) {
+  Centipede(ArrayList<BodySeg> body, int speed, ArrayList<ObstacleList> encountered) {
     if (body.size() == 0) {
       throw new IllegalArgumentException("Centipede cannot have an empty body");
     }
     this.body = body;
     this.speed = speed;
+    this.encountered = encountered;
   }
 
   // the default constructor - constructs the starting centipede in the centipede game
   Centipede(int length) {
     this(new Util().generateCentBody(length, ITile.WIDTH / 10),
-        ITile.WIDTH / 10);
+        ITile.WIDTH / 10, new Util().singletonList(new ObstacleList(0)));
   }
 
   // EFFECT: changes the given world scene by adding this centipede onto it
@@ -459,16 +461,17 @@ class Centipede {
   // moves the centipede along the board in the world
   void move(int width, int height, ArrayList<ITile> garden) {
     BodySeg head = this.body.get(this.body.size() - 1);
-    if (head.aheadDandelion(garden) && !head.trapped(width)) {
-      head.addNewEncountered(head.nextTilePosn());
-      for (int index = 0; index < this.body.size() - 1; index += 1) {
-        if (this.body.get(index).sameYDirection(head)) {
-          this.body.get(index).copyEncountered(head);
-        }
-      }
+    if (head.reverseYDirection(height)) {
+      this.encountered.add(head.generateObstacleList());
+    }
+
+    ObstacleList headObl = head.obstacleList(this.encountered);
+    if (head.aheadDandelion(garden) && !head.trapped(width, headObl)) {
+      headObl.addToObstacles(head.nextTilePosn());
     }
     for (BodySeg bodySeg : this.body) {
-      bodySeg.move(width, height, this.speed);
+      bodySeg.reverseYDirection(height);
+      bodySeg.move(width, height, this.speed, bodySeg.obstacleList(this.encountered));
     }
   }
 }
@@ -480,17 +483,17 @@ class BodySeg {
   boolean head; // is this body segment the head?
   boolean down; // is this body segment going down?
   boolean right; // is this body segment going right?
-  ArrayList<Posn> encountered;
+  int iteration;
 
   // the constructor
   BodySeg(Posn pos, Posn velocity, boolean head, boolean down, boolean right,
-          ArrayList<Posn> encountered) {
+          int iteration) {
     this.pos = pos;
     this.velocity = velocity;
     this.head = head;
     this.down = down;
     this.right = right;
-    this.encountered = encountered;
+    this.iteration = iteration;
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
@@ -512,22 +515,47 @@ class BodySeg {
     this.head = true;
   }
 
+  boolean sameIteration(int iteration) {
+    return this.iteration == iteration;
+  }
+
+  boolean sameObstacleIteration(ObstacleList obl) {
+    return obl.sameIteration(this.iteration);
+  }
+
+  ObstacleList obstacleList(ArrayList<ObstacleList> encountered) {
+    return encountered.get(this.iteration);
+  }
+
+  ObstacleList generateObstacleList() {
+    return new ObstacleList(this.iteration);
+  }
+
+  // EFFECT: reverses the direction of this body segment potentially
+  // returns true if successful, false if otherwise
+  boolean reverseYDirection(int height) {
+    boolean topRow = this.pos.y == ITile.HEIGHT / 2;
+    boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
+
+    if (this.down && botRow || !this.down && topRow) {
+      this.iteration += 1;
+      this.down = !this.down;
+      return true;
+    }
+    return false;
+  }
+
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
-  void move(int width, int height, int speed) {
+  void move(int width, int height, int speed, ObstacleList obl) {
     boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
     boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
     boolean topRow = this.pos.y == ITile.HEIGHT / 2;
     boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
-    if (this.down && botRow || !this.down && topRow) {
-      this.encountered.clear();
-      this.down = !this.down;
-    }
-
     if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
-        || this.nextEncountered()) {
+        || this.nextEncountered(obl)) {
 
       if (!this.down) {
         speed *= -1;
@@ -548,17 +576,12 @@ class BodySeg {
 
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
-  boolean nextEncountered() {
+  boolean nextEncountered(ObstacleList obl) {
     Posn pos = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
     if (!this.right) {
       pos = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
     }
-    for (Posn p : this.encountered) {
-      if (p.equals(pos)) {
-        return true;
-      }
-    }
-    return false;
+    return obl.inObstacles(pos);
   }
 
   // gives the next position (depending on direction) of this body segment
@@ -597,7 +620,7 @@ class BodySeg {
   }
 
   // can this BodySeg be trapped by the board?
-  boolean trapped(int width) {
+  boolean trapped(int width, ObstacleList obl) {
     Posn ahead = this.nextTilePosn();
     Posn ahead_away2y = new Posn(ahead.x, ahead.y - 2 * ITile.HEIGHT);
     Posn prev = this.prevTilePosn();
@@ -607,29 +630,47 @@ class BodySeg {
       prev_away1y = new Posn(ahead.x, ahead.y + ITile.HEIGHT);
     }
 
-    boolean obstacleTwoYNext = this.encountered.contains(ahead_away2y);
-    boolean obstacleOneYPrev = this.encountered.contains(prev_away1y)
+    boolean obstacleTwoYNext = obl.inObstacles(ahead_away2y);
+    boolean obstacleOneYPrev = obl.inObstacles(prev_away1y)
         || prev.x < 0 || prev.x > width;
 
     return obstacleTwoYNext && obstacleOneYPrev;
   }
 
-  // EFFECT: modifies this body segment's encountered list by adding a new element
-  // adds a position of a new obstacle encountered
-  void addNewEncountered(Posn pos) {
-    this.encountered.add(pos);
-  }
-
-  // EFFECT: modifies this body segment's encountered list by copying another's body segment's
-  // encountered list
-  // copies another body segment's encountered list, but does not alias them
-  void copyEncountered(BodySeg other) {
-    this.encountered = new Util().copy(other.encountered);
-  }
-
   // tells if the given body segment has the same direction as this one
   boolean sameYDirection(BodySeg other) {
     return this.down == other.down;
+  }
+}
+
+class ObstacleList {
+  int iteration;
+  ArrayList<Posn> obstacles;
+
+  ObstacleList(int iteration, ArrayList<Posn> obstacles) {
+    this.iteration = iteration;
+    this.obstacles = obstacles;
+  }
+
+  ObstacleList(int iteration) {
+    this(iteration, new ArrayList<>());
+  }
+
+  boolean sameIteration(int iteration) {
+    return this.iteration == iteration;
+  }
+
+  void addToObstacles(Posn p) {
+    this.obstacles.add(p);
+  }
+
+  boolean inObstacles(Posn p) {
+    for (Posn obstacle : this.obstacles) {
+      if (p.equals(obstacle)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

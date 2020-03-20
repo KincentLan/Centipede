@@ -91,10 +91,8 @@ class IsPebble implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
   }
 }
 
-// converts this tile to a pebble if the tile is a dandelion and has the
-// same posn as the dart
+// converts this tile to a pebble if the tile is a dandelion
 class DanToPeb implements ITileVisitor<ITile> {
-
   // applies this visitor to the given tile, meaning that it changes the dandelion tile
   // to a pebble tile
   public ITile apply(ITile tile) {

@@ -11,7 +11,9 @@ class ExamplesCentipede {
 
   // runs the game
   void testBigBang(Tester t) {
-    GameMaster w = new GameMaster(10, 15, 20);
-    w.bigBang(10 * ITile.WIDTH, 15 * ITile.HEIGHT, 1.0 / 28.0);
+    int x = 3;
+    int y = 3;
+    GameMaster w = new GameMaster(x, y, 20);
+    w.bigBang(x * ITile.WIDTH, y * ITile.HEIGHT, 1.0 / 28.0);
   }
 }
