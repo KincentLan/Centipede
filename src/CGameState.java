@@ -902,8 +902,8 @@ class CGameState extends GameState {
     }
   }
 
-  // EFFECT: modifies the IDart of this CGameState, either directly modifying the IDart
-  // or setting it equal to a different IDart
+  // EFFECT: modifies the IDart and score of this CGameState, either directly modifying the IDart
+  // or setting it equal to a different IDart, and modifying the score when needed
   // moves the Dart in the game
   void moveDart() {
     if (this.dart.missed()) {
@@ -933,7 +933,7 @@ class CGameState extends GameState {
     }
   }
 
-  // EFFECT: modifies the centipede, and the dart fields of this CGameState
+  // EFFECT: modifies the centipede, the dart, and the score fields of this CGameState
   // alters the state of the game after possible collisions with a centipede and a dart
   void collidesCentipede() {
     ArrayList<Centipede> cpCent = new ArrayList<>();
