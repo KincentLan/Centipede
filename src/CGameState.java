@@ -475,6 +475,14 @@ class Centipede {
     return false;
   }
 
+  // gets the position of where the dart hit this centipede
+  Posn positionHit(IDart dart) {
+    int indexHit = this.getIndexHit(dart);
+    return this.body.get(indexHit).tilePosn();
+  }
+
+  // splits this centipede into multiple centipedes depending on where the dart hit this
+  // centipede
   ArrayList<Centipede> split(IDart dart) {
     int indexHit = this.getIndexHit(dart);
     Util util = new Util();
@@ -517,6 +525,7 @@ class Centipede {
     return util.singletonList(this);
   }
 
+  // copies this list of ObstacleLists to another Array
   ArrayList<ObstacleList> copyEncountered() {
     ArrayList<ObstacleList> cpEncountered = new ArrayList<>();
     for (ObstacleList obl : this.encountered) {
@@ -550,7 +559,7 @@ class Centipede {
     }
     for (BodySeg bodySeg : this.body) {
       bodySeg.reverseYDirection(height);
-      bodySeg.move(width, height, this.speed, bodySeg.obstacleList(this.encountered));
+      bodySeg.move(width, this.speed, bodySeg.obstacleList(this.encountered));
     }
     this.removeUnusedObl();
   }
@@ -664,7 +673,7 @@ class BodySeg {
 
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
-  void move(int width, int height, int speed, ObstacleList obl) {
+  void move(int width, int speed, ObstacleList obl) {
     boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
     boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
@@ -697,6 +706,18 @@ class BodySeg {
       pos = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
     }
     return obl.inObstacles(pos);
+  }
+
+  // gets the tile position of this centipede
+  Posn tilePosn() {
+    int x = (this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2;
+    int y = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT/2;
+    if (this.right && this.pos.x % ITile.WIDTH > ITile.WIDTH/2) {
+      x += ITile.WIDTH;
+    } else if (!this.right && this.pos.x % ITile.WIDTH < ITile.WIDTH/2) {
+      x -= ITile.WIDTH;
+    }
+    return new Posn(x, y);
   }
 
   // gives the next position (depending on direction) of this body segment
@@ -899,7 +920,7 @@ class CGameState extends GameState {
     for (Centipede cent : this.cents) {
       if (cent.targetHit(this.dart)) {
         new Util().append(cpCent, cent.split(this.dart));
-        this.sproutDandelion();
+        this.sproutDandelion(cent.positionHit(this.dart));
         this.dart = new NoDart();
       } else {
         cpCent.add(cent);
@@ -913,11 +934,11 @@ class CGameState extends GameState {
 
   // EFFECT: modifies the garden to change one of the tiles to a dandelion
   // sprouts a dandelion where a centipede has recently been hit
-  void sproutDandelion() {
+  void sproutDandelion(Posn posHit) {
     IsGrass isGrass = new IsGrass();
     for (int index = 0; index < this.garden.size(); index += 1) {
       ITile tile = this.garden.get(index);
-      if (isGrass.apply(tile) && this.dart.hitTile(tile)) {
+      if (isGrass.apply(tile) && tile.samePos(posHit)) {
         this.garden.set(index, new GrassToDan().apply(tile));
       }
     }
