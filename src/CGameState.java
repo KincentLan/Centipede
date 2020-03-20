@@ -55,6 +55,15 @@ class Util {
     }
     return copy;
   }
+
+  // EFFECT: modifies the first given arraylist to include all the items in the second arraylist
+  // in essence "appending" the lists together
+  // appends the lists together
+  <T> void append(ArrayList<T> src1, ArrayList<T> src2) {
+    for (T item : src2) {
+      src1.add(item);
+    }
+  }
 }
 
 // represents a tile and introduces the tile's height and width constants
@@ -260,8 +269,8 @@ interface IDart {
   // is this IDart off the screen?
   boolean offScreen();
 
-  // is this Dart in the same tile as the given position?
-  boolean sameTilePos(Posn p);
+  // is this IDart in the same tile as the given body seg?
+  boolean hitBodySeg(BodySeg bodySeg);
 
   // can this IDart hit the given ITile?
   boolean hitTile(ITile tile);
@@ -283,7 +292,7 @@ class NoDart implements IDart {
   }
 
   // does this NoDart have the given posn? Never.
-  public boolean sameTilePos(Posn p) {
+  public boolean hitBodySeg(BodySeg bodySeg) {
     return false;
   }
 
@@ -324,8 +333,8 @@ class Dart implements IDart {
   }
 
   // is this Dart in the same tile as the given position?
-  public boolean sameTilePos(Posn p) {
-    return Math.abs(p.x - this.x) <= ITile.WIDTH / 2 && this.y == p.y;
+  public boolean hitBodySeg(BodySeg bodySeg) {
+    return bodySeg.inRange(new Posn(this.x, this.y));
   }
 
   // can this Dart hit the given tile?
@@ -456,6 +465,76 @@ class Centipede {
     }
   }
 
+  // did the given dart hit any part of this centipede?
+  boolean targetHit(IDart dart) {
+    for (BodySeg bodySeg : this.body) {
+      if (dart.hitBodySeg(bodySeg)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  ArrayList<Centipede> split(IDart dart) {
+    int indexHit = this.getIndexHit(dart);
+    Util util = new Util();
+
+    if (indexHit == 0) {
+      if (this.body.size() == 1) {
+        return new ArrayList<>();
+      }
+      ArrayList<BodySeg> restBody = util.copy(this.body);
+      restBody.remove(0);
+      restBody.get(restBody.size() - 1).toHead();
+      return util.singletonList(new Centipede(restBody, this.speed, this.copyEncountered()));
+    }
+
+    else if (indexHit > 0 && indexHit < this.body.size() - 1) {
+      ArrayList<BodySeg> frontBody = new ArrayList<>();
+      ArrayList<BodySeg> backBody = new ArrayList<>();
+      for (int index = 0; index < this.body.size(); index += 1) {
+        if (index < indexHit) {
+          frontBody.add(this.body.get(index));
+        } else if (index > indexHit) {
+          backBody.add(this.body.get(index));
+        }
+      }
+      ArrayList<Centipede> cents = new ArrayList<>();
+      frontBody.get(frontBody.size() - 1).toHead();
+      backBody.get(backBody.size() - 1).toHead();
+      cents.add(new Centipede(frontBody, this.speed, this.copyEncountered()));
+      cents.add(new Centipede(backBody, this.speed, this.copyEncountered()));
+      return cents;
+    }
+
+    else if (indexHit == this.body.size() - 1) {
+      ArrayList<BodySeg> restBody = util.copy(this.body);
+      restBody.remove(this.body.size() - 1);
+      restBody.get(restBody.size() - 1).toHead();
+
+      return util.singletonList(new Centipede(restBody, this.speed, this.copyEncountered()));
+    }
+    return util.singletonList(this);
+  }
+
+  ArrayList<ObstacleList> copyEncountered() {
+    ArrayList<ObstacleList> cpEncountered = new ArrayList<>();
+    for (ObstacleList obl : this.encountered) {
+      cpEncountered.add(new ObstacleList(obl));
+    }
+    return cpEncountered;
+  }
+
+  // gets the index of the body segment
+  int getIndexHit(IDart dart) {
+    for (int index = 0; index < this.body.size(); index += 1) {
+      if (dart.hitBodySeg(this.body.get(index))) {
+        return index;
+      }
+    }
+    throw new RuntimeException("The dart did not hit any of the body segments.");
+  }
+
   // EFFECT: changes the all the elements in this centipede's list of body positions,
   // essentially moving it along in the world
   // moves the centipede along the board in the world
@@ -546,6 +625,12 @@ class BodySeg {
   // determines if the given obstacle list has the same iteration as this body segment
   boolean sameOblIteration(ObstacleList obl) {
     return obl.sameIteration(this.iteration);
+  }
+
+  // is this body segment in range of the given posn?
+  boolean inRange(Posn p) {
+    return Math.abs(this.pos.x - p.x) <= ITile.WIDTH/2
+        && Math.abs(this.pos.y - p.y) <= ITile.HEIGHT/2;
   }
 
   // gives the obstacle list that has the same iteration as this body segment
@@ -685,6 +770,11 @@ class ObstacleList {
     this(iteration, new ArrayList<>());
   }
 
+  // constructs a copy of the given ObstacleList
+  ObstacleList(ObstacleList other) {
+    this(other.iteration, new Util().copy(other.obstacles));
+  }
+
   // is this iteration the same as the one given?
   boolean sameIteration(int iteration) {
     return this.iteration == iteration;
@@ -745,7 +835,8 @@ class CGameState extends GameState {
   // EFFECT: changes all the fields except width and height
   // moves every element in the game accordingly after each tick
   public void onTick() {
-    this.collides();
+    this.collidesDandelion();
+    this.collidesCentipede();
 
     for (Centipede c : this.cents) {
       c.move(this.width, this.height, this.garden);
@@ -785,9 +876,9 @@ class CGameState extends GameState {
     }
   }
 
-  // EFFECT: modifies the garden, centipede, and the dart fields of this CGameState
-  // alters the state of the game after possible collisions
-  void collides() {
+  // EFFECT: modifies the garden and the dart fields of this CGameState
+  // alters the state of the game after possible collisions with a dandelion and a dart
+  void collidesDandelion() {
     IsDandelion isDandelion = new IsDandelion();
     for (int index = 0; index < this.garden.size(); index += 1) {
       ITile tile = this.garden.get(index);
@@ -797,6 +888,37 @@ class CGameState extends GameState {
         if (tile.noHP()) {
           this.garden.set(index, new DanToPeb().apply(tile));
         }
+      }
+    }
+  }
+
+  // EFFECT: modifies the centipede, and the dart fields of this CGameState
+  // alters the state of the game after possible collisions with a centipede and a dart
+  void collidesCentipede() {
+    ArrayList<Centipede> cpCent = new ArrayList<>();
+    for (Centipede cent : this.cents) {
+      if (cent.targetHit(this.dart)) {
+        new Util().append(cpCent, cent.split(this.dart));
+        this.sproutDandelion();
+        this.dart = new NoDart();
+      } else {
+        cpCent.add(cent);
+      }
+    }
+    this.cents.clear();
+    for (Centipede cent : cpCent) {
+      this.cents.add(cent);
+    }
+  }
+
+  // EFFECT: modifies the garden to change one of the tiles to a dandelion
+  // sprouts a dandelion where a centipede has recently been hit
+  void sproutDandelion() {
+    IsGrass isGrass = new IsGrass();
+    for (int index = 0; index < this.garden.size(); index += 1) {
+      ITile tile = this.garden.get(index);
+      if (isGrass.apply(tile) && this.dart.hitTile(tile)) {
+        this.garden.set(index, new GrassToDan().apply(tile));
       }
     }
   }

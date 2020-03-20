@@ -116,3 +116,29 @@ class DanToPeb implements ITileVisitor<ITile> {
     return tile;
   }
 }
+
+// converts this tile to a pebble if the tile is a dandelion
+class GrassToDan implements ITileVisitor<ITile> {
+  // applies this visitor to the given tile, meaning that it changes the dandelion tile
+  // to a pebble tile
+  public ITile apply(ITile tile) {
+    return tile.accept(this);
+  }
+
+  // in effect, this function does nothing to a grass because it is not a
+  // dandelion
+  public ITile visitGrass(GrassTile tile) {
+    return new DandelionTile(tile.row, tile.col, ITile.DEF_HP);
+  }
+
+  // changes the given DandelionTile to a PebbleTile
+  public ITile visitDan(DandelionTile tile) {
+    return tile;
+  }
+
+  // in effect, this function does nothing to a PebbleTile because it already is
+  // one
+  public ITile visitPeb(PebbleTile tile) {
+    return tile;
+  }
+}
