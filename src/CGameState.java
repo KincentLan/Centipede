@@ -452,7 +452,7 @@ class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
   // NOTE: the centipede's head is at the end of the list
   int speed; // how fast the centipede should be moving
-  ArrayList<ObstacleList> encountered; // represents all the obstacles this centipede has
+  ArrayList<ObstacleList> encountered; // represents all the dandelions this centipede has
   // encountered for every direction it has been in
   ArrayList<ITile> pebEncountered; // represents all the pebbles this centipede has encountered
 
