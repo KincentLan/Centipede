@@ -572,6 +572,9 @@ class Centipede {
     }
     for (BodySeg bodySeg : this.body) {
       bodySeg.reverseYDirection(height);
+//      if (bodySeg.hitPebblePile(garden)) {
+//        this.speed /= 2;
+//      }
       bodySeg.move(width, this.speed, bodySeg.obstacleList(this.encountered));
     }
     this.removeUnusedObl();
@@ -785,7 +788,38 @@ class BodySeg {
 
     return obstacleTwoYNext && obstacleOneYPrev;
   }
+  
+  // does this body segment hit any of the pebble piles in the given garden
+  boolean hitPebblePile(ArrayList<ITile> garden) {
+    IsPebble isPebble = new IsPebble();
+    Posn current = new Posn(this.pos.x, this.pos.y);
+    for (ITile tile : garden) {
+      if (isPebble.apply(tile) && tile.inRange(current)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
 }
+
+// represents pebble piles in the game that can slow down the movement of the centipede
+//class PebblePile {
+//  ArrayList<PebbleTile> pebbles;
+//  
+//  PebblePile(ArrayList<PebbleTile> pebbles) {
+//    this.pebbles = pebbles;
+//  }
+//  
+//  // does any of the pebbletile hit the given body segment?
+//  boolean hitBodySeg(BodySeg bodySeg) {
+//    for (PebbleTile pebble : this.pebbles) {
+//      pebble.inRange(pos)
+//      //bodySeg.hitTile(pebble);
+//    }
+//    return false;
+//  }
+//}
 
 // represents a list of all obstacles encountered during a certain period, or iteration, when
 // the centipede was/is moving in
