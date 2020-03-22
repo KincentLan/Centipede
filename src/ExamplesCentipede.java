@@ -22,18 +22,18 @@ class ExamplesCentipede {
     bodySeg_1 = new BodySeg(new Posn(340, 60), new Posn(0, 2),
         false, true, false, 0);
     cent_0 = new Centipede(10);
-    peb_0 = new PebbleTile(20, 20);
-    peb_1 = new PebbleTile(380, 20);
-    peb_2 = new PebbleTile(20, 60);
-    peb_3 = new PebbleTile(380, 60);
-    peb_4 = new PebbleTile(60, 60);
-    peb_5 = new PebbleTile(60, 20);
-    System.out.println(peb_0.hitBox(400));
-    System.out.println(peb_1.hitBox(400));
-    System.out.println(peb_2.hitBox(400));
-    System.out.println(peb_3.hitBox(400));
-    System.out.println(peb_4.hitBox(400));
-    System.out.println(peb_5.hitBox(400));
+    peb_0 = new PebbleTile(20, 20, 400);
+    peb_1 = new PebbleTile(380, 20, 400);
+    peb_2 = new PebbleTile(20, 60, 400);
+    peb_3 = new PebbleTile(380, 60, 400);
+    peb_4 = new PebbleTile(60, 60, 400);
+    peb_5 = new PebbleTile(60, 20, 400);
+    System.out.println(peb_0.hitBox());
+    System.out.println(peb_1.hitBox());
+    System.out.println(peb_2.hitBox());
+    System.out.println(peb_3.hitBox());
+    System.out.println(peb_4.hitBox());
+    System.out.println(peb_5.hitBox());
   }
 
   // runs the game

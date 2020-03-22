@@ -107,7 +107,7 @@ class DanToPeb implements ITileVisitor<ITile> {
 
   // changes the given DandelionTile to a PebbleTile
   public ITile visitDan(DandelionTile tile) {
-    return new PebbleTile(tile.row, tile.col);
+    return new PebbleTile(tile.row, tile.col, tile.width);
   }
 
   // in effect, this function does nothing to a PebbleTile because it already is
@@ -128,7 +128,7 @@ class GrassToDan implements ITileVisitor<ITile> {
   // in effect, this function does nothing to a grass because it is not a
   // dandelion
   public ITile visitGrass(GrassTile tile) {
-    return new DandelionTile(tile.row, tile.col, ITile.DEF_HP);
+    return new DandelionTile(tile.row, tile.col, ITile.DEF_HP, tile.width);
   }
 
   // changes the given DandelionTile to a PebbleTile
