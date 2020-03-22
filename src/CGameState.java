@@ -7,7 +7,7 @@ import java.util.ArrayList;     // the arraylist library from java
 
 // represents a util class
 class Util {
-  // generates a centipede body given the length and the speed of the centipede
+  // generates a centipede body given the length and the currSpeed of the centipede
   ArrayList<BodySeg> generateCentBody(int length, int speed) {
     ArrayList<BodySeg> body = new ArrayList<>();
     for (int index = 0; index < length; index += 1) {
@@ -380,7 +380,7 @@ class Gnome {
 
   // EFFECT: modifies the position of the gnome, meaning it modifies its x and y fields
   // moves the gnome (towards the playerDirection specified by the key) by one unit
-  // (speed), the gnome stays if it tries to move off the edge of the screen.
+  // (currSpeed), the gnome stays if it tries to move off the edge of the screen.
   void moveCell(String key, int edge) {
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       this.x = this.x - ITile.WIDTH;
@@ -389,7 +389,7 @@ class Gnome {
     }
   }
 
-  // moves the gnome (towards the playerDirection specified by the key) by one unit (speed).
+  // moves the gnome (towards the playerDirection specified by the key) by one unit (currSpeed).
   // the gnome stays if it tries to move off the edge of the screen.
   void move(String key, int rightEdge, int botEdge, ArrayList<ITile> garden) {
     int x_away = 0;
@@ -451,27 +451,33 @@ class Gnome {
 class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
   // NOTE: the centipede's head is at the end of the list
-  int speed; // how fast the centipede should be moving
+  int maxSpeed;
+  int currSpeed; // how fast the centipede should be moving
   ArrayList<ObstacleList> encountered; // represents all the dandelions this centipede has
   // encountered for every direction it has been in
-  ArrayList<ITile> pebEncountered; // represents all the pebbles this centipede has encountered
+  ArrayList<ITile> pebsAlreadyOn; // represents all the pebbles this centipede has encountered
 
   // the constructor
-  Centipede(ArrayList<BodySeg> body, int speed,
-            ArrayList<ObstacleList> encountered, ArrayList<ITile> pebEncountered) {
+  Centipede(ArrayList<BodySeg> body, int maxSpeed, int currSpeed,
+            ArrayList<ObstacleList> encountered, ArrayList<ITile> pebsAlreadyOn) {
     if (body.size() == 0) {
       throw new IllegalArgumentException("Centipede cannot have an empty body");
     }
+    if (maxSpeed > ITile.WIDTH|| currSpeed > ITile.WIDTH) {
+      throw new IllegalArgumentException("Speed cannot shoot over a tile.");
+    }
     this.body = body;
-    this.speed = speed;
+    this.maxSpeed = maxSpeed;
+    this.currSpeed = currSpeed;
     this.encountered = encountered;
-    this.pebEncountered = pebEncountered;
+    this.pebsAlreadyOn = pebsAlreadyOn;
   }
 
   // the default constructor - constructs the starting centipede in the centipede game
   Centipede(int length) {
     this(new Util().generateCentBody(length, ITile.WIDTH / 10),
-        ITile.WIDTH / 10, new Util().singletonList(new ObstacleList(0)),
+        ITile.WIDTH / 10, ITile.WIDTH / 10,
+        new Util().singletonList(new ObstacleList(0)),
         new ArrayList<>());
   }
 
@@ -512,11 +518,9 @@ class Centipede {
       ArrayList<BodySeg> restBody = util.copy(this.body);
       restBody.remove(0);
       restBody.get(restBody.size() - 1).toHead();
-      return util.singletonList(new Centipede(restBody, this.speed,
-          this.copyEncountered(), util.copy(this.pebEncountered)));
-    }
-
-    else if (indexHit > 0 && indexHit < this.body.size() - 1) {
+      return util.singletonList(new Centipede(restBody, this.currSpeed, this.maxSpeed,
+          this.copyEncountered(), new ArrayList<>()));
+    } else if (indexHit > 0 && indexHit < this.body.size() - 1) {
       ArrayList<BodySeg> frontBody = new ArrayList<>();
       ArrayList<BodySeg> backBody = new ArrayList<>();
       for (int index = 0; index < this.body.size(); index += 1) {
@@ -529,20 +533,18 @@ class Centipede {
       ArrayList<Centipede> cents = new ArrayList<>();
       frontBody.get(frontBody.size() - 1).toHead();
       backBody.get(backBody.size() - 1).toHead();
-      cents.add(new Centipede(frontBody, this.speed,
-          this.copyEncountered(), util.copy(this.pebEncountered)));
-      cents.add(new Centipede(backBody, this.speed,
-          this.copyEncountered(), util.copy(this.pebEncountered)));
+      cents.add(new Centipede(frontBody, this.currSpeed, this.maxSpeed,
+          this.copyEncountered(), new ArrayList<>()));
+      cents.add(new Centipede(backBody, this.currSpeed, this.maxSpeed,
+          this.copyEncountered(), new ArrayList<>()));
       return cents;
-    }
-
-    else if (indexHit == this.body.size() - 1) {
+    } else if (indexHit == this.body.size() - 1) {
       ArrayList<BodySeg> restBody = util.copy(this.body);
       restBody.remove(this.body.size() - 1);
       restBody.get(restBody.size() - 1).toHead();
 
-      return util.singletonList(new Centipede(restBody, this.speed,
-          this.copyEncountered(), util.copy(this.pebEncountered)));
+      return util.singletonList(new Centipede(restBody, this.currSpeed, this.maxSpeed,
+          this.copyEncountered(), new ArrayList<>()));
     }
     return util.singletonList(this);
   }
@@ -569,10 +571,10 @@ class Centipede {
   // ASSUMPTION: this method assumes that this centipede has hit a pebble that hasn't been
   // encountered
   // gets the pebble this centipede has hit
-  ITile pebbleTileHit(ArrayList<ITile> garden) {
+  ITile getPebOn(ArrayList<ITile> garden) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebEncountered)) {
-        return bodySeg.pebbleTileHit(garden, this.pebEncountered);
+      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn)) {
+        return bodySeg.pebbleTileHit(garden, this.pebsAlreadyOn);
       }
     }
     throw new RuntimeException("Pebble not found.");
@@ -582,8 +584,8 @@ class Centipede {
   // essentially moving it along in the world
   // moves the centipede along the board in the world
   void move(int width, int height, ArrayList<ITile> garden) {
-    if (this.hitPebbleTile(garden) && !this.pebEncountered.contains(this.pebbleTileHit(garden))) {
-      this.pebEncountered.add(this.pebbleTileHit(garden));
+    if (this.hitPebbleTile(garden) && !this.pebsAlreadyOn.contains(this.getPebOn(garden))) {
+      this.pebsAlreadyOn.add(this.getPebOn(garden));
       this.halveBodyVelocity();
     }
     BodySeg head = this.body.get(this.body.size() - 1);
@@ -592,34 +594,72 @@ class Centipede {
     }
 
     ObstacleList headObl = head.obstacleList(this.encountered);
-    if (head.aheadDandelion(garden) && !head.trapped(width, headObl)) {
-      headObl.addToObstacles(head.nextTilePosn());
+    if (head.aheadDandelion(garden, this.currSpeed)
+        && !head.trapped(width, headObl, this.currSpeed)) {
+      headObl.addToObstacles(head.nextTilePosn(this.currSpeed));
     }
     for (BodySeg bodySeg : this.body) {
       bodySeg.reverseYDirection(height);
-      bodySeg.move(width, this.speed, bodySeg.obstacleList(this.encountered));
+      bodySeg.move(width, this.currSpeed, bodySeg.obstacleList(this.encountered));
     }
     this.removeUnusedObl();
+    this.removePebNotOn();
   }
 
   // did this centipede hit a pebble that hasn't been encountered already?
   boolean hitPebbleTile(ArrayList<ITile> garden) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebEncountered)) {
+      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn)) {
         return true;
       }
     }
     return false;
   }
 
-  // EFFECT: changes the velocity of each body segment and this centipede's speed
-  // halves the velocity of each body segment and this centipede's speed
+  void removePebNotOn() {
+    ArrayList<ITile> stillOnPeb = new ArrayList<>();
+    for (ITile pebble : this.pebsAlreadyOn) {
+      if (!this.hitTile(pebble)) {
+        this.doubleBodyVelocity();
+      } else {
+        stillOnPeb.add(pebble);
+      }
+    }
+
+    this.pebsAlreadyOn.clear();
+    for (ITile pebble : stillOnPeb) {
+      this.pebsAlreadyOn.add(pebble);
+    }
+  }
+
+  boolean hitTile(ITile tile) {
+    for (BodySeg bodySeg : this.body) {
+      if (bodySeg.hitTile(tile)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // EFFECT: changes the velocity of each body segment and this centipede's currSpeed
+  // halves the velocity of each body segment and this centipede's currSpeed
   void halveBodyVelocity() {
-    if (this.speed > 1) {
-      this.speed /= 2;
+    if (this.currSpeed > 1) {
+      this.currSpeed /= 2;
     }
     for (BodySeg bodySeg : this.body) {
       bodySeg.halveVelocity();
+    }
+  }
+
+  void doubleBodyVelocity() {
+    if (this.currSpeed * 2 <= this.maxSpeed) {
+      this.currSpeed *= 2;
+    } else {
+      this.currSpeed = this.maxSpeed;
+    }
+    for (BodySeg bodySeg : this.body) {
+      bodySeg.doubleVelocity(this.maxSpeed);
     }
   }
 
@@ -671,6 +711,11 @@ class BodySeg {
     this.iteration = iteration;
   }
 
+  @Override
+  public String toString() {
+    return "" + this.pos;
+  }
+
   // EFFECT: changes the given world scene by adding this body segment onto it
   // draws this body segment onto the given world scene
   void draw(WorldScene s) {
@@ -706,6 +751,28 @@ class BodySeg {
     this.velocity = new Posn(x_vel, y_vel);
   }
 
+  // EFFECT: doubles the velocity of this body segment, unless if the velocity is less than or
+  // equal to one
+  // halves the velocity of this body segment, to be used when the centipede that contains
+  // this body segment slows down
+  void doubleVelocity(int maxSpeed) {
+    int x_vel = this.velocity.x;
+    int y_vel = this.velocity.y;
+    if (Math.abs(this.velocity.x) * 2 <= maxSpeed) {
+      x_vel *= 2;
+    } else if (Math.abs(this.velocity.x) * 2 > maxSpeed) {
+      x_vel = x_vel / Math.abs(x_vel) * maxSpeed;
+    }
+
+    if (Math.abs(this.velocity.y) * 2 <= maxSpeed) {
+      y_vel *= 2;
+    } else if (Math.abs(this.velocity.y) * 2 > maxSpeed) {
+      y_vel = y_vel / Math.abs(y_vel) * maxSpeed;
+    }
+
+    this.velocity = new Posn(x_vel, y_vel);
+  }
+
   // determines if the given obstacle list has the same iteration as this body segment
   boolean sameOblIteration(ObstacleList obl) {
     return obl.sameIteration(this.iteration);
@@ -713,8 +780,8 @@ class BodySeg {
 
   // is this body segment in range of the given posn?
   boolean inRange(Posn p) {
-    return Math.abs(this.pos.x - p.x) <= ITile.WIDTH/2
-        && Math.abs(this.pos.y - p.y) <= ITile.HEIGHT/2;
+    return Math.abs(this.pos.x - p.x) <= ITile.WIDTH / 2
+        && Math.abs(this.pos.y - p.y) <= ITile.HEIGHT / 2;
   }
 
   // gives the obstacle list that has the same iteration as this body segment
@@ -749,13 +816,14 @@ class BodySeg {
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
   void move(int width, int speed, ObstacleList obl) {
-    boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
-    boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
-    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
+    boolean leftEdge = Math.abs(this.pos.x - ITile.WIDTH / 2) <= speed / 2;
+    boolean rightEdge = Math.abs(this.pos.x - (width - ITile.WIDTH / 2)) <= speed / 2;
+    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT <= speed / 2;
 
     if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
-        || this.nextEncountered(obl)) {
-
+        || this.nextEncountered(obl, speed) && inRow) {
+      this.pos = new Posn((this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2,
+          this.pos.y);
       if (!this.down) {
         speed *= -1;
       }
@@ -764,6 +832,8 @@ class BodySeg {
       this.velocity = new Posn(0, speed);
 
     } else if (inRow && this.velocity.x == 0) {
+      this.pos = new Posn(this.pos.x,
+          (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2);
       if (!this.right) {
         speed *= -1;
       }
@@ -775,53 +845,64 @@ class BodySeg {
 
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
-  boolean nextEncountered(ObstacleList obl) {
-    Posn pos = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
-    if (!this.right) {
-      pos = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
-    }
+  boolean nextEncountered(ObstacleList obl, int speed) {
+    Posn pos = this.nextTilePosn(speed);
     return obl.inObstacles(pos);
   }
 
   // gets the tile position of this centipede
   Posn tilePosn() {
     int x = (this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2;
-    int y = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT/2;
-    if (this.right && this.pos.x % ITile.WIDTH > ITile.WIDTH/2) {
+    int y = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2;
+    if (this.right && this.pos.x % ITile.WIDTH > ITile.WIDTH / 2) {
       x += ITile.WIDTH;
-    } else if (!this.right && this.pos.x % ITile.WIDTH < ITile.WIDTH/2) {
+    } else if (!this.right && this.pos.x % ITile.WIDTH < ITile.WIDTH / 2) {
       x -= ITile.WIDTH;
     }
     return new Posn(x, y);
   }
 
+  Posn center(int speed) {
+    Posn pos = new Posn(this.pos.x, this.pos.y);
+    if (Math.abs(this.pos.x - ITile.WIDTH/2) % ITile.WIDTH <= speed/2) {
+
+      pos = new Posn((this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2,
+          (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2);
+    }
+    return pos;
+  }
   // gives the next position (depending on direction) of this body segment
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its direction towards that edge
-  Posn nextTilePosn() {
-    if (this.right) {
-      return new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+  Posn nextTilePosn(int speed) {
+    Posn ahead = this.center(speed);
+    if (!this.right) {
+      ahead = new Posn(ahead.x - ITile.WIDTH, ahead.y);
     }
-    return new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+    else {
+      ahead = new Posn(ahead.x + ITile.WIDTH, ahead.y);
+    }
+    return ahead;
   }
 
   // gives the previous position (depending on direction) of this body segment
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its opposite direction towards that edge
-  Posn prevTilePosn() {
-    if (this.right) {
-      return new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+  Posn prevTilePosn(int speed) {
+    Posn behind = this.center(speed);
+    if (!this.right) {
+      behind = new Posn(behind.x + ITile.WIDTH, behind.y);
     }
-    return new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+    else {
+      behind = new Posn(behind.x - ITile.WIDTH, behind.y);
+    }
+    return behind;
   }
 
   // is there a dandelion ahead of this body segment?
-  boolean aheadDandelion(ArrayList<ITile> garden) {
+  boolean aheadDandelion(ArrayList<ITile> garden, int speed) {
     IsDandelion isDandelion = new IsDandelion();
-    Posn ahead = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
-    if (!this.right) {
-      ahead = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
-    }
+    Posn ahead = this.nextTilePosn(speed);
     for (ITile tile : garden) {
       if (isDandelion.apply(tile) && tile.samePos(ahead)) {
         return true;
@@ -831,10 +912,10 @@ class BodySeg {
   }
 
   // can this BodySeg be trapped by the board?
-  boolean trapped(int width, ObstacleList obl) {
-    Posn ahead = this.nextTilePosn();
+  boolean trapped(int width, ObstacleList obl, int speed) {
+    Posn ahead = this.nextTilePosn(speed);
     Posn ahead_away2y = new Posn(ahead.x, ahead.y - 2 * ITile.HEIGHT);
-    Posn prev = this.prevTilePosn();
+    Posn prev = this.prevTilePosn(speed);
     Posn prev_away1y = new Posn(prev.x, prev.y - ITile.HEIGHT);
     if (!this.down) {
       ahead_away2y = new Posn(ahead.x, ahead.y + 2 * ITile.HEIGHT);
@@ -862,7 +943,7 @@ class BodySeg {
     }
     throw new RuntimeException("Pebble not found.");
   }
-  
+
   // does this body segment hit a pebble tile in the garden that hasn't been encountered already?
   boolean hitPebbleTile(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered) {
     IsPebble isPebble = new IsPebble();
@@ -874,6 +955,10 @@ class BodySeg {
       }
     }
     return false;
+  }
+
+  boolean hitTile(ITile tile) {
+    return tile.inRange(this.pos);
   }
 }
 
@@ -971,7 +1056,7 @@ class CGameState extends GameState {
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
     this(new Util().singletonList(new Centipede(10)), garden,
-        new Posn(0, 0), gnome, new NoDart(), 0,  ITile.WIDTH * x,
+        new Posn(0, 0), gnome, new NoDart(), 0, ITile.WIDTH * x,
         ITile.HEIGHT * y);
   }
 
@@ -1088,7 +1173,7 @@ class CGameState extends GameState {
     this.dart.draw(s);
 
     WorldImage score = new TextImage("Score: " + this.score, Color.BLACK);
-    s.placeImageXY(score, this.width - 5 * ITile.WIDTH/4, ITile.HEIGHT/4);
+    s.placeImageXY(score, this.width - 5 * ITile.WIDTH / 4, ITile.HEIGHT / 4);
 
     return s;
   }
