@@ -64,6 +64,11 @@ class Util {
       src1.add(item);
     }
   }
+
+  boolean inRange(Posn pos, Posn tilePosn) {
+    return Math.abs(tilePosn.x - pos.x) <= ITile.WIDTH/2
+        && Math.abs(tilePosn.y - pos.y) <= ITile.HEIGHT/2;
+  }
 }
 
 // represents a tile and introduces the tile's height and width constants
@@ -95,6 +100,8 @@ interface ITile {
 
   // is the HP of this ITile zero or less?
   boolean noHP();
+
+  ArrayList<Posn> hitBox(int width);
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
@@ -150,6 +157,12 @@ abstract class ATile implements ITile {
   // it just returns false
   public boolean noHP() {
     return false;
+  }
+
+  public ArrayList<Posn> hitBox(int width) {
+    ArrayList<Posn> hitBox = new ArrayList<>();
+    hitBox.add(new Posn(this.row, this.col));
+    return hitBox;
   }
 }
 
@@ -215,6 +228,29 @@ class PebbleTile extends ATile {
   // to return the result of applying the given visitor to this PebbleTile
   public <R> R accept(ITileVisitor<R> visitor) {
     return visitor.visitPeb(this);
+  }
+
+  public ArrayList<Posn> hitBox(int width) {
+    boolean leftEdge = ITile.WIDTH/2 == this.row;
+    boolean rightEdge = width - ITile.WIDTH/2 == this.row;
+    boolean topEdge = ITile.HEIGHT/2 == this.col;
+    // pebbles will never be in the bottom edge
+
+    ArrayList<Posn> pebbleHitBox = new ArrayList<>();
+    pebbleHitBox.add(new Posn(this.row, this.col));
+
+    if (!leftEdge) {
+      pebbleHitBox.add(new Posn(this.row - ITile.WIDTH, this.col));
+    }
+    if (!rightEdge) {
+      pebbleHitBox.add(new Posn(this.row + ITile.WIDTH, this.col));
+    }
+    if (!topEdge) {
+      pebbleHitBox.add(new Posn(this.row, this.col - ITile.WIDTH));
+    }
+    pebbleHitBox.add(new Posn(this.row, this.col + ITile.WIDTH));
+
+    return pebbleHitBox;
   }
 }
 
@@ -571,10 +607,10 @@ class Centipede {
   // ASSUMPTION: this method assumes that this centipede has hit a pebble that hasn't been
   // encountered
   // gets the pebble this centipede has hit
-  ITile getPebOn(ArrayList<ITile> garden) {
+  ITile getPebOn(ArrayList<ITile> garden, int width) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn)) {
-        return bodySeg.pebbleTileHit(garden, this.pebsAlreadyOn);
+      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn, width)) {
+        return bodySeg.pebbleTileHit(garden, this.pebsAlreadyOn, width);
       }
     }
     throw new RuntimeException("Pebble not found.");
@@ -584,8 +620,9 @@ class Centipede {
   // essentially moving it along in the world
   // moves the centipede along the board in the world
   void move(int width, int height, ArrayList<ITile> garden) {
-    if (this.hitPebbleTile(garden) && !this.pebsAlreadyOn.contains(this.getPebOn(garden))) {
-      this.pebsAlreadyOn.add(this.getPebOn(garden));
+    if (this.hitPebbleTile(garden, width)
+        && !this.pebsAlreadyOn.contains(this.getPebOn(garden, width))) {
+      this.pebsAlreadyOn.add(this.getPebOn(garden, width));
       this.halveBodyVelocity();
     }
     BodySeg head = this.body.get(this.body.size() - 1);
@@ -604,12 +641,13 @@ class Centipede {
     }
     this.removeUnusedObl();
     this.removePebNotOn();
+    this.maintainITileDis();
   }
 
   // did this centipede hit a pebble that hasn't been encountered already?
-  boolean hitPebbleTile(ArrayList<ITile> garden) {
+  boolean hitPebbleTile(ArrayList<ITile> garden, int width) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn)) {
+      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn, width)) {
         return true;
       }
     }
@@ -688,6 +726,12 @@ class Centipede {
     }
     return false;
   }
+
+  void maintainITileDis() {
+    for (int index = this.body.size() - 2; index >= 0; index -= 1) {
+       this.body.get(index).maintainITileDis(this.body.get(index + 1));
+    }
+  }
 }
 
 //represents a body segment of a centipede
@@ -711,9 +755,14 @@ class BodySeg {
     this.iteration = iteration;
   }
 
-  @Override
-  public String toString() {
-    return "" + this.pos;
+  void maintainITileDis(BodySeg next) {
+    if (this.pos.y == next.pos.y) {
+      if (!this.right && Math.abs(this.pos.x - next.pos.x) != ITile.WIDTH) {
+        this.pos = new Posn(next.pos.x + ITile.WIDTH, this.pos.y);
+      } else if (this.right && Math.abs(this.pos.x - next.pos.x) != ITile.WIDTH) {
+        this.pos = new Posn(next.pos.x - ITile.WIDTH, this.pos.y);
+      }
+    }
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
@@ -932,11 +981,10 @@ class BodySeg {
   // ASSUMPTION: this method assumes that this body segment has hit a pebble that hasn't
   // been encountered
   // gives the PebbleTile that has not been encountered that hit this body segment
-  ITile pebbleTileHit(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered) {
+  ITile pebbleTileHit(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered, int width) {
     IsPebble isPebble = new IsPebble();
-    Posn current = new Posn(this.pos.x, this.pos.y);
     for (ITile tile : garden) {
-      if (isPebble.apply(tile) && tile.inRange(current)
+      if (isPebble.apply(tile) && this.hitHitBox(tile, width)
           && !pebEncountered.contains(tile)) {
         return tile;
       }
@@ -945,12 +993,22 @@ class BodySeg {
   }
 
   // does this body segment hit a pebble tile in the garden that hasn't been encountered already?
-  boolean hitPebbleTile(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered) {
+  boolean hitPebbleTile(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered, int width) {
     IsPebble isPebble = new IsPebble();
-    Posn current = new Posn(this.pos.x, this.pos.y);
     for (ITile tile : garden) {
-      if (isPebble.apply(tile) && tile.inRange(current)
+      if (isPebble.apply(tile) && this.hitHitBox(tile, width)
           && !pebEncountered.contains(tile)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean hitHitBox(ITile tile, int width) {
+    ArrayList<Posn> hitBox = tile.hitBox(width);
+    Util util = new Util();
+    for (Posn hitBoxSeg : hitBox) {
+      if (util.inRange(this.pos, hitBoxSeg)) {
         return true;
       }
     }
@@ -961,24 +1019,6 @@ class BodySeg {
     return tile.inRange(this.pos);
   }
 }
-
-// represents pebble piles in the game that can slow down the movement of the centipede
-//class PebblePile {
-//  ArrayList<PebbleTile> pebbles;
-//  
-//  PebblePile(ArrayList<PebbleTile> pebbles) {
-//    this.pebbles = pebbles;
-//  }
-//  
-//  // does any of the pebbletile hit the given body segment?
-//  boolean hitBodySeg(BodySeg bodySeg) {
-//    for (PebbleTile pebble : this.pebbles) {
-//      pebble.inRange(pos)
-//      //bodySeg.hitTile(pebble);
-//    }
-//    return false;
-//  }
-//}
 
 // represents a list of all obstacles encountered during a certain period, or iteration, when
 // the centipede was/is moving in
@@ -1145,6 +1185,18 @@ class CGameState extends GameState {
       this.cents.add(cent);
     }
   }
+
+//  ArrayList<Posn> pebblePosns() {
+//    ArrayList<Posn> pebbles = new ArrayList<>();
+//    Util util = new Util();
+//    IsPebble isPebble = new IsPebble();
+//    for (ITile tile : this.garden) {
+//      if (isPebble.apply(tile)) {
+//        util.append(pebbles, tile.hitBox(width));
+//      }
+//    }
+//    return pebbles;
+//  }
 
   // EFFECT: modifies the garden to change one of the tiles to a dandelion
   // sprouts a dandelion where a centipede has recently been hit
