@@ -30,20 +30,20 @@ class Util {
 
   // generates an arraylist of grass tiles given the width and height of the board to represent
   // the board
-  ArrayList<ITile> generateGrassBoard(int row, int col) {
+  ArrayList<ITile> generateGrassBoard(int width, int height) {
     ArrayList<ITile> garden = new ArrayList<>();
-    for (int index = 0; index < row; index += 1) {
-      this.generateGrassRow(garden, index, col, row);
+    for (int index = 0; index < width; index += 1) {
+      this.generateGrassRow(garden, index, height);
     }
     return garden;
   }
 
   // EFFECT: modifies the arraylist given to add the current row of grass tiles
   // generates an arraylist of col amount of grass tiles for a given row number
-  void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col, int row) {
+  void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col) {
     for (int index = 0; index < col; index += 1) {
       garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH / 2,
-          index * ITile.HEIGHT + ITile.HEIGHT / 2, row));
+          index * ITile.HEIGHT + ITile.HEIGHT / 2));
     }
   }
 
@@ -63,11 +63,6 @@ class Util {
     for (T item : src2) {
       src1.add(item);
     }
-  }
-
-  boolean inRange(Posn pos, Posn tilePosn) {
-    return Math.abs(tilePosn.x - pos.x) <= ITile.WIDTH/2
-        && Math.abs(tilePosn.y - pos.y) <= ITile.HEIGHT/2;
   }
 }
 
@@ -100,21 +95,20 @@ interface ITile {
 
   // is the HP of this ITile zero or less?
   boolean noHP();
-
-  ArrayList<Posn> hitBox();
+  
+  // is this ITile itself or a neighbor of a pebble tile/inside a pebble pile?
+  boolean inPile(ArrayList<ITile> garden, int width, int height);
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
 abstract class ATile implements ITile {
   int row;
   int col;
-  int width;
 
   // the constructor
-  ATile(int row, int col, int width) {
+  ATile(int row, int col) {
     this.row = row;
     this.col = col;
-    this.width = width;
   }
 
   @Override
@@ -132,7 +126,7 @@ abstract class ATile implements ITile {
   // with the same position given the mouse button name and the bottom column of the board
   public ITile replaceTile(String bName, int botCol) {
     if (bName.equals("LeftButton") && this.col != botCol) {
-      return new GrassTile(this.row, this.col, this.row);
+      return new GrassTile(this.row, this.col);
     } else {
       return this;
     }
@@ -141,13 +135,45 @@ abstract class ATile implements ITile {
   @Override
   // is this ATile in range of the given posn?
   public boolean inRange(Posn pos) {
-    Util util = new Util();
-    for (Posn hitBodySeg : this.hitBox()) {
-      if (util.inRange(pos, hitBodySeg)) {
-        return true;
-      }
+    return Math.abs(this.row - pos.x) <= ITile.WIDTH / 2
+        && Math.abs(this.col - pos.y) <= ITile.HEIGHT / 2;
+  }
+  
+  // TODO
+  // is the ATile itself or a neighbor of a pebble tile (inside a pebble pile)?
+  public boolean inPile(ArrayList<ITile> garden, int width, int height) {
+    IsPebble isPebble = new IsPebble();
+    int row = width / ITile.WIDTH;
+    int col = height / ITile.HEIGHT;
+    int current = garden.indexOf(this);
+    // is the left tile of this ATile a pebble?
+    boolean isLeftP = false;
+    // is the right tile of this ATile a pebble?
+    boolean isRightP = false;
+    // is the up tile of this ATile a pebble?
+    boolean isUpP = false;
+    // is the down tile of this ATile a pebble?
+    boolean isDownP = false;
+    System.out.println(current);
+    System.out.println(garden.size());
+    System.out.println(row);
+    if (current / col != 0) {
+      ITile left = garden.get(current - col);
+      isLeftP = isLeftP || isPebble.apply(left);
     }
-    return false;
+    if (current / col != row - 1) {
+      ITile right = garden.get(current + col);
+      isRightP = isRightP || isPebble.apply(right);
+    }
+//    if (current % height != 0 ) {
+//      ITile up = garden.get(current - 1);
+//      isUpP = isUpP || isPebble.apply(up);
+//    }
+//    if (current % height != height - 1 ) {
+//      ITile down = garden.get(current + 1);
+//      isDownP = isDownP || isPebble.apply(down);
+//    }
+    return isPebble.apply(this) || isLeftP || isRightP || isUpP || isDownP;
   }
 
   @Override
@@ -165,19 +191,13 @@ abstract class ATile implements ITile {
   public boolean noHP() {
     return false;
   }
-
-  public ArrayList<Posn> hitBox() {
-    ArrayList<Posn> hitBox = new ArrayList<>();
-    hitBox.add(new Posn(this.row, this.col));
-    return hitBox;
-  }
 }
 
 // represents a tile with no obstacles on it
 class GrassTile extends ATile {
   // the constructor
-  GrassTile(int row, int col, int width) {
-    super(row, col, width);
+  GrassTile(int row, int col) {
+    super(row, col);
   }
 
   @Override
@@ -200,9 +220,9 @@ class GrassTile extends ATile {
      * parameters: none Methods on parameters: none
      */
     if (bName.equals("LeftButton") && this.col != botCol) {
-      return new DandelionTile(this.row, this.col, DEF_HP, this.width);
+      return new DandelionTile(this.row, this.col, DEF_HP);
     } else if (bName.equals("RightButton") && this.col != botCol) {
-      return new PebbleTile(this.row, this.col, this.width);
+      return new PebbleTile(this.row, this.col);
     }
     return this;
   }
@@ -217,8 +237,8 @@ class GrassTile extends ATile {
 // represents a tile with a pebble tile
 class PebbleTile extends ATile {
   // the constructor
-  PebbleTile(int row, int col, int width) {
-    super(row, col, width);
+  PebbleTile(int row, int col) {
+    super(row, col);
   }
 
   @Override
@@ -236,29 +256,7 @@ class PebbleTile extends ATile {
   public <R> R accept(ITileVisitor<R> visitor) {
     return visitor.visitPeb(this);
   }
-
-  public ArrayList<Posn> hitBox() {
-    boolean leftEdge = ITile.WIDTH/2 == this.row;
-    boolean rightEdge = this.width - ITile.WIDTH/2 == this.row;
-    boolean topEdge = ITile.HEIGHT/2 == this.col;
-    // pebbles will never be in the bottom edge
-
-    ArrayList<Posn> pebbleHitBox = new ArrayList<>();
-    pebbleHitBox.add(new Posn(this.row, this.col));
-
-    if (!leftEdge) {
-      pebbleHitBox.add(new Posn(this.row - ITile.WIDTH, this.col));
-    }
-    if (!rightEdge) {
-      pebbleHitBox.add(new Posn(this.row + ITile.WIDTH, this.col));
-    }
-    if (!topEdge) {
-      pebbleHitBox.add(new Posn(this.row, this.col - ITile.WIDTH));
-    }
-    pebbleHitBox.add(new Posn(this.row, this.col + ITile.WIDTH));
-
-    return pebbleHitBox;
-  }
+  
 }
 
 // represents a tile with a dandelion tile
@@ -266,8 +264,8 @@ class DandelionTile extends ATile {
   int hp;
 
   // the constructor
-  DandelionTile(int row, int col, int hp, int width) {
-    super(row, col, width);
+  DandelionTile(int row, int col, int hp) {
+    super(row, col);
     this.hp = hp;
   }
 
@@ -614,10 +612,10 @@ class Centipede {
   // ASSUMPTION: this method assumes that this centipede has hit a pebble that hasn't been
   // encountered
   // gets the pebble this centipede has hit
-  ITile getPebOn(ArrayList<ITile> garden, int width) {
+  ITile getPebOn(ArrayList<ITile> garden, int width, int height) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn)) {
-        return bodySeg.pebbleTileHit(garden, this.pebsAlreadyOn, width);
+      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn, width, height)) {
+        return bodySeg.pebbleTileHit(garden, this.pebsAlreadyOn);
       }
     }
     throw new RuntimeException("Pebble not found.");
@@ -627,9 +625,8 @@ class Centipede {
   // essentially moving it along in the world
   // moves the centipede along the board in the world
   void move(int width, int height, ArrayList<ITile> garden) {
-    if (this.hitPebbleTile(garden, width)
-        && !this.pebsAlreadyOn.contains(this.getPebOn(garden, width))) {
-      this.pebsAlreadyOn.add(this.getPebOn(garden, width));
+    if (this.hitPebbleTile(garden, width, height) && !this.pebsAlreadyOn.contains(this.getPebOn(garden, width, height))) {
+      this.pebsAlreadyOn.add(this.getPebOn(garden, width, height));
       this.halveBodyVelocity();
     }
     BodySeg head = this.body.get(this.body.size() - 1);
@@ -648,13 +645,12 @@ class Centipede {
     }
     this.removeUnusedObl();
     this.removePebNotOn();
-    this.maintainITileDis();
   }
 
   // did this centipede hit a pebble that hasn't been encountered already?
-  boolean hitPebbleTile(ArrayList<ITile> garden, int width) {
+  boolean hitPebbleTile(ArrayList<ITile> garden, int width, int height) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn)) {
+      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn, width, height)) {
         return true;
       }
     }
@@ -733,12 +729,6 @@ class Centipede {
     }
     return false;
   }
-
-  void maintainITileDis() {
-    for (int index = this.body.size() - 2; index >= 0; index -= 1) {
-       this.body.get(index).maintainITileDis(this.body.get(index + 1));
-    }
-  }
 }
 
 //represents a body segment of a centipede
@@ -762,14 +752,9 @@ class BodySeg {
     this.iteration = iteration;
   }
 
-  void maintainITileDis(BodySeg next) {
-    if (this.pos.y == next.pos.y) {
-      if (!this.right && Math.abs(this.pos.x - next.pos.x) != ITile.WIDTH) {
-        this.pos = new Posn(next.pos.x + ITile.WIDTH, this.pos.y);
-      } else if (this.right && Math.abs(this.pos.x - next.pos.x) != ITile.WIDTH) {
-        this.pos = new Posn(next.pos.x - ITile.WIDTH, this.pos.y);
-      }
-    }
+  @Override
+  public String toString() {
+    return "" + this.pos;
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
@@ -988,10 +973,11 @@ class BodySeg {
   // ASSUMPTION: this method assumes that this body segment has hit a pebble that hasn't
   // been encountered
   // gives the PebbleTile that has not been encountered that hit this body segment
-  ITile pebbleTileHit(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered, int width) {
+  ITile pebbleTileHit(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered) {
     IsPebble isPebble = new IsPebble();
+    Posn current = new Posn(this.pos.x, this.pos.y);
     for (ITile tile : garden) {
-      if (isPebble.apply(tile) && this.hitHitBox(tile)
+      if (isPebble.apply(tile) && tile.inRange(current)
           && !pebEncountered.contains(tile)) {
         return tile;
       }
@@ -1000,22 +986,11 @@ class BodySeg {
   }
 
   // does this body segment hit a pebble tile in the garden that hasn't been encountered already?
-  boolean hitPebbleTile(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered) {
-    IsPebble isPebble = new IsPebble();
+  boolean hitPebbleTile(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered, int width, int height) {
+    Posn current = new Posn(this.pos.x, this.pos.y);
     for (ITile tile : garden) {
-      if (isPebble.apply(tile) && this.hitHitBox(tile)
+      if (tile.inPile(garden, width, height) && tile.inRange(current)
           && !pebEncountered.contains(tile)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  boolean hitHitBox(ITile tile) {
-    ArrayList<Posn> hitBox = tile.hitBox();
-    Util util = new Util();
-    for (Posn hitBoxSeg : hitBox) {
-      if (util.inRange(this.pos, hitBoxSeg)) {
         return true;
       }
     }
@@ -1026,6 +1001,24 @@ class BodySeg {
     return tile.inRange(this.pos);
   }
 }
+
+// represents pebble piles in the game that can slow down the movement of the centipede
+//class PebblePile {
+//  ArrayList<PebbleTile> pebbles;
+//  
+//  PebblePile(ArrayList<PebbleTile> pebbles) {
+//    this.pebbles = pebbles;
+//  }
+//  
+//  // does any of the pebbletile hit the given body segment?
+//  boolean hitBodySeg(BodySeg bodySeg) {
+//    for (PebbleTile pebble : this.pebbles) {
+//      pebble.inRange(pos)
+//      //bodySeg.hitTile(pebble);
+//    }
+//    return false;
+//  }
+//}
 
 // represents a list of all obstacles encountered during a certain period, or iteration, when
 // the centipede was/is moving in
@@ -1192,18 +1185,6 @@ class CGameState extends GameState {
       this.cents.add(cent);
     }
   }
-
-//  ArrayList<Posn> pebblePosns() {
-//    ArrayList<Posn> pebbles = new ArrayList<>();
-//    Util util = new Util();
-//    IsPebble isPebble = new IsPebble();
-//    for (ITile tile : this.garden) {
-//      if (isPebble.apply(tile)) {
-//        util.append(pebbles, tile.hitBox(width));
-//      }
-//    }
-//    return pebbles;
-//  }
 
   // EFFECT: modifies the garden to change one of the tiles to a dandelion
   // sprouts a dandelion where a centipede has recently been hit
