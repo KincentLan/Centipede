@@ -732,6 +732,16 @@ class Centipede {
     int indexHit = this.getIndexHit(dart);
     return this.body.get(indexHit).tilePosn();
   }
+  
+  // gets the position of where the water balloon hit this centipede
+  ArrayList<Posn> posnsHit(IWaterBalloon balloon) {
+    ArrayList<Integer> indicesHit = this.getIndicesHit(balloon);
+    ArrayList<Posn> posns = new ArrayList<Posn>();
+    for (int index : indicesHit) {
+      posns.add(this.body.get(index).tilePosn());
+    }
+    return posns;
+  }
 
   // splits this centipede into multiple centipedes depending on where the dart hit this
   // centipede
@@ -1389,6 +1399,13 @@ class CGameState extends GameState {
         new Util().append(cpCent, cent.split(this.dart));
         this.sproutDandelion(cent.positionHit(this.dart));
         this.dart = new NoDart();
+      }
+      if (cent.targetHit(this.waterBalloon)) {
+        this.score += 10;
+        this.streak += 1;
+        new Util().append(cpCent, cent.split(this.waterBalloon));
+        this.sproutDans(cent.posnsHit(this.waterBalloon));
+        this.waterBalloon = new NoWaterBalloon();
       } else {
         cpCent.add(cent);
       }
@@ -1408,6 +1425,14 @@ class CGameState extends GameState {
       if (isGrass.apply(tile) && tile.samePos(posHit)) {
         this.garden.set(index, new GrassToDan().apply(tile));
       }
+    }
+  }
+  
+  // EFFECT: modifies the garden to change a list of the tiles to a dandelion
+  // sprouts a dandelion where a centipede has recently been hit
+  void sproutDans(ArrayList<Posn> posns) {
+    for (Posn pos : posns) {
+      this.sproutDandelion(pos);
     }
   }
 
