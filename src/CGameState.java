@@ -639,7 +639,7 @@ class Centipede {
 
   // the default constructor - constructs the starting centipede in the centipede game
   Centipede(int length, int speed) {
-    this(new Util().generateCentBody(length, ITile.WIDTH / 10),
+    this(new Util().generateCentBody(length, speed),
         speed, speed,
         new Util().singletonList(new ObstacleList(0)),
         new ArrayList<>());
