@@ -21,6 +21,13 @@ class Util {
     return body;
   }
 
+  <T> ArrayList<T> getElementsBetween(ArrayList<T> src, int start, int end) {
+    ArrayList<T> cpArr = new ArrayList<>();
+    for (int index = start; index < end; index += 1) {
+      cpArr.add(src.get(index));
+    }
+    return cpArr;
+  }
   // takes in an element and generates an arraylist with solely that element
   <T> ArrayList<T> singletonList(T item) {
     ArrayList<T> list = new ArrayList<>();
@@ -30,20 +37,20 @@ class Util {
 
   // generates an arraylist of grass tiles given the width and height of the board to represent
   // the board
-  ArrayList<ITile> generateGrassBoard(int width, int height) {
+  ArrayList<ITile> generateGrassBoard(int row, int col) {
     ArrayList<ITile> garden = new ArrayList<>();
-    for (int index = 0; index < width; index += 1) {
-      this.generateGrassRow(garden, index, height);
+    for (int index = 0; index < row; index += 1) {
+      this.generateGrassRow(garden, index, col, row);
     }
     return garden;
   }
 
   // EFFECT: modifies the arraylist given to add the current row of grass tiles
   // generates an arraylist of col amount of grass tiles for a given row number
-  void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col) {
+  void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col, int row) {
     for (int index = 0; index < col; index += 1) {
       garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH / 2,
-          index * ITile.HEIGHT + ITile.HEIGHT / 2));
+          index * ITile.HEIGHT + ITile.HEIGHT / 2, row));
     }
   }
 
@@ -63,6 +70,11 @@ class Util {
     for (T item : src2) {
       src1.add(item);
     }
+  }
+
+  boolean inRange(Posn pos, Posn tilePosn) {
+    return Math.abs(tilePosn.x - pos.x) <= ITile.WIDTH / 2
+        && Math.abs(tilePosn.y - pos.y) <= ITile.HEIGHT / 2;
   }
 }
 
@@ -95,22 +107,28 @@ interface ITile {
 
   // is the HP of this ITile zero or less?
   boolean noHP();
-  
-  // is this ITile itself or a neighbor of a pebble tile/inside a pebble pile?
-  boolean inPile(ArrayList<ITile> garden, int width, int height);
+
+  void fullHP();
+
+  ArrayList<Posn> hitBox();
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
 abstract class ATile implements ITile {
   int row;
   int col;
+  int width;
 
   // the constructor
-  ATile(int row, int col) {
+  ATile(int row, int col, int width) {
     this.row = row;
     this.col = col;
+    this.width = width;
   }
 
+  public String toString() {
+    return "(" + this.row + ", " + this.col + ")";
+  }
   @Override
   // draws this ATile - to be implemented by classes that extend ATile
   public abstract void draw(WorldScene s);
@@ -126,7 +144,7 @@ abstract class ATile implements ITile {
   // with the same position given the mouse button name and the bottom column of the board
   public ITile replaceTile(String bName, int botCol) {
     if (bName.equals("LeftButton") && this.col != botCol) {
-      return new GrassTile(this.row, this.col);
+      return new GrassTile(this.row, this.col, this.row);
     } else {
       return this;
     }
@@ -135,45 +153,13 @@ abstract class ATile implements ITile {
   @Override
   // is this ATile in range of the given posn?
   public boolean inRange(Posn pos) {
-    return Math.abs(this.row - pos.x) <= ITile.WIDTH / 2
-        && Math.abs(this.col - pos.y) <= ITile.HEIGHT / 2;
-  }
-  
-  // TODO
-  // is the ATile itself or a neighbor of a pebble tile (inside a pebble pile)?
-  public boolean inPile(ArrayList<ITile> garden, int width, int height) {
-    IsPebble isPebble = new IsPebble();
-    int row = width / ITile.WIDTH;
-    int col = height / ITile.HEIGHT;
-    int current = garden.indexOf(this);
-    // is the left tile of this ATile a pebble?
-    boolean isLeftP = false;
-    // is the right tile of this ATile a pebble?
-    boolean isRightP = false;
-    // is the up tile of this ATile a pebble?
-    boolean isUpP = false;
-    // is the down tile of this ATile a pebble?
-    boolean isDownP = false;
-    System.out.println(current);
-    System.out.println(garden.size());
-    System.out.println(row);
-    if (current / col != 0) {
-      ITile left = garden.get(current - col);
-      isLeftP = isLeftP || isPebble.apply(left);
+    Util util = new Util();
+    for (Posn hitBodySeg : this.hitBox()) {
+      if (util.inRange(pos, hitBodySeg)) {
+        return true;
+      }
     }
-    if (current / col != row - 1) {
-      ITile right = garden.get(current + col);
-      isRightP = isRightP || isPebble.apply(right);
-    }
-//    if (current % height != 0 ) {
-//      ITile up = garden.get(current - 1);
-//      isUpP = isUpP || isPebble.apply(up);
-//    }
-//    if (current % height != height - 1 ) {
-//      ITile down = garden.get(current + 1);
-//      isDownP = isDownP || isPebble.apply(down);
-//    }
-    return isPebble.apply(this) || isLeftP || isRightP || isUpP || isDownP;
+    return false;
   }
 
   @Override
@@ -185,19 +171,28 @@ abstract class ATile implements ITile {
   public void lowerHP() {
   }
 
+  public void fullHP() {
+  }
+
   @Override
   // by default, an ATile does not have an HP unit, so it does not make sense to have noHP, so
   // it just returns false
   public boolean noHP() {
     return false;
   }
+
+  public ArrayList<Posn> hitBox() {
+    ArrayList<Posn> hitBox = new ArrayList<>();
+    hitBox.add(new Posn(this.row, this.col));
+    return hitBox;
+  }
 }
 
 // represents a tile with no obstacles on it
 class GrassTile extends ATile {
   // the constructor
-  GrassTile(int row, int col) {
-    super(row, col);
+  GrassTile(int row, int col, int width) {
+    super(row, col, width);
   }
 
   @Override
@@ -220,9 +215,9 @@ class GrassTile extends ATile {
      * parameters: none Methods on parameters: none
      */
     if (bName.equals("LeftButton") && this.col != botCol) {
-      return new DandelionTile(this.row, this.col, DEF_HP);
+      return new DandelionTile(this.row, this.col, DEF_HP, this.width);
     } else if (bName.equals("RightButton") && this.col != botCol) {
-      return new PebbleTile(this.row, this.col);
+      return new PebbleTile(this.row, this.col, this.width);
     }
     return this;
   }
@@ -237,8 +232,8 @@ class GrassTile extends ATile {
 // represents a tile with a pebble tile
 class PebbleTile extends ATile {
   // the constructor
-  PebbleTile(int row, int col) {
-    super(row, col);
+  PebbleTile(int row, int col, int width) {
+    super(row, col, width);
   }
 
   @Override
@@ -256,7 +251,29 @@ class PebbleTile extends ATile {
   public <R> R accept(ITileVisitor<R> visitor) {
     return visitor.visitPeb(this);
   }
-  
+
+  public ArrayList<Posn> hitBox() {
+    boolean leftEdge = ITile.WIDTH / 2 == this.row;
+    boolean rightEdge = this.width - ITile.WIDTH / 2 == this.row;
+    boolean topEdge = ITile.HEIGHT / 2 == this.col;
+    // pebbles will never be in the bottom edge
+
+    ArrayList<Posn> pebbleHitBox = new ArrayList<>();
+    pebbleHitBox.add(new Posn(this.row, this.col));
+
+    if (!leftEdge) {
+      pebbleHitBox.add(new Posn(this.row - ITile.WIDTH, this.col));
+    }
+    if (!rightEdge) {
+      pebbleHitBox.add(new Posn(this.row + ITile.WIDTH, this.col));
+    }
+    if (!topEdge) {
+      pebbleHitBox.add(new Posn(this.row, this.col - ITile.WIDTH));
+    }
+    pebbleHitBox.add(new Posn(this.row, this.col + ITile.WIDTH));
+
+    return pebbleHitBox;
+  }
 }
 
 // represents a tile with a dandelion tile
@@ -264,8 +281,8 @@ class DandelionTile extends ATile {
   int hp;
 
   // the constructor
-  DandelionTile(int row, int col, int hp) {
-    super(row, col);
+  DandelionTile(int row, int col, int hp, int width) {
+    super(row, col, width);
     this.hp = hp;
   }
 
@@ -292,6 +309,10 @@ class DandelionTile extends ATile {
     this.hp -= 1;
   }
 
+  public void fullHP() {
+    this.hp = DEF_HP;
+  }
+
   @Override
   // is the HP of this DandelionTile less than or equal to 0?
   public boolean noHP() {
@@ -299,29 +320,59 @@ class DandelionTile extends ATile {
   }
 }
 
-// represents a dart that can be fired in the centipede game
-interface IDart {
-  // draws this IDart onto the given world scene
+interface IProjectile {
+  // draws this IWaterBallon onto the given world scene
   void draw(WorldScene s);
 
-  // updates this IDart (with a new y position) after 1 tick;
+  // updates this IWaterBallon (with a new y position) after 1 tick;
   void move();
 
-  // is this IDart off the screen?
+  // is this IWaterBallon off the screen?
   boolean offScreen();
 
-  // is this IDart in the same tile as the given body seg?
+  // is this IWaterBallon in the same tile as the given body seg?
   boolean hitBodySeg(BodySeg bodySeg);
 
-  // can this IDart hit the given ITile?
+  // can this IWaterBallon hit the given ITile?
   boolean hitTile(ITile tile);
-
-  // did this dart miss?
-  boolean missed();
 }
 
-// represents a non-existent dart in the centipede game
-class NoDart implements IDart {
+abstract class AProjectile implements IProjectile {
+  int x; // represents the x position of the dart in pixels
+  int y; // represents the y position of the dart in pixels
+  int speed;
+
+  // the constructor
+  AProjectile(int x, int y, int speed) {
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
+  }
+
+  public abstract void draw(WorldScene s);
+
+  // draws this Dart onto the given world scene
+  public void move() {
+    this.y -= this.speed;
+  }
+
+  // is this Dart off the screen?
+  public boolean offScreen() {
+    return this.y <= 0;
+  }
+
+  // is this Dart in the same tile as the given position?
+  public boolean hitBodySeg(BodySeg bodySeg) {
+    return bodySeg.inRange(new Posn(this.x, this.y));
+  }
+
+  // can this Dart hit the given tile?
+  public boolean hitTile(ITile tile) {
+    return tile.inRange(new Posn(this.x, this.y));
+  }
+}
+
+abstract class ANoProjectile implements IProjectile {
   // draws this NoDart onto the given world scene, which in essence does nothing
   public void draw(WorldScene s) {
   }
@@ -344,7 +395,101 @@ class NoDart implements IDart {
   public boolean hitTile(ITile tile) {
     return false;
   }
+}
 
+interface IWaterBalloon extends IProjectile {
+  void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden);
+
+  boolean inHitBox(BodySeg bodySeg);
+}
+
+class WaterBalloon extends AProjectile implements IWaterBalloon {
+  public WaterBalloon(int x, int y, int speed) {
+    super(x, y, speed);
+  }
+
+  // EFFECT: modifies the given world scene to include this Dart
+  // draws this Dart onto the given world scene
+  public void draw(WorldScene s) {
+    WorldImage waterBalloon
+        = new EllipseImage(ITile.WIDTH / 2, ITile.HEIGHT, OutlineMode.SOLID, Color.BLUE);
+    s.placeImageXY(waterBalloon, this.x, this.y);
+  }
+
+  public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
+    for (ITile tile : garden) {
+      if (new IsDandelion().apply(tile) && this.inHitBox(tile)) {
+        tile.fullHP();
+      }
+    }
+    ArrayList<Centipede> cpCent = new ArrayList<>();
+    Util util = new Util();
+    for (Centipede cent : cents) {
+      if (cent.targetHit(this)) {
+        util.append(cpCent, cent.split(this));
+      } else {
+        cpCent.add(cent);
+      }
+    }
+    cents.clear();
+    for (Centipede cent : cpCent) {
+      cents.add(cent);
+    }
+  }
+
+  public boolean inHitBox(BodySeg bodySeg) {
+    for (Posn p : this.hitBox()) {
+      if (bodySeg.inRange(p)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean inHitBox(ITile tile) {
+    for (Posn p : this.hitBox()) {
+      if (tile.inRange(p)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  ArrayList<Posn> hitBox() {
+    ArrayList<Posn> hitBox = new ArrayList<>();
+    Posn p = new Posn(this.x, this.y - ITile.WIDTH/2);
+    hitBox.add(p);
+    hitBox.add(new Posn(p.x, p.y - ITile.HEIGHT));
+    hitBox.add(new Posn(p.x, p.y + ITile.HEIGHT));
+    hitBox.add(new Posn(p.x - ITile.WIDTH, p.y));
+    hitBox.add(new Posn(p.x + ITile.WIDTH, p.y));
+    hitBox.add(new Posn(p.x + ITile.WIDTH, p.y + ITile.HEIGHT));
+    hitBox.add(new Posn(p.x - ITile.WIDTH, p.y - ITile.HEIGHT));
+    hitBox.add(new Posn(p.x - ITile.WIDTH, p.y + ITile.HEIGHT));
+    hitBox.add(new Posn(p.x + ITile.WIDTH, p.y - ITile.HEIGHT));
+    return hitBox;
+  }
+}
+
+class NoWaterBalloon extends ANoProjectile implements IWaterBalloon {
+  @Override
+  public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
+  }
+
+  @Override
+  public boolean inHitBox(BodySeg bodySeg) {
+    return false;
+  }
+}
+
+// represents a dart that can be fired in the centipede game
+interface IDart extends IProjectile {
+  // did this IDart miss anything on the board?
+  boolean missed();
+}
+
+// represents a non-existent dart in the centipede game
+class NoDart extends ANoProjectile implements IDart {
   // NoDart cannot miss since there isn't a dart
   public boolean missed() {
     return false;
@@ -352,16 +497,9 @@ class NoDart implements IDart {
 }
 
 // represents a moving dart in the centipede game
-class Dart implements IDart {
-  int x; // represents the x position of the dart in pixels
-  int y; // represents the y position of the dart in pixels
-  int speed;
-
-  // the constructor
-  Dart(int x, int y, int speed) {
-    this.x = x;
-    this.y = y;
-    this.speed = speed;
+class Dart extends AProjectile implements IDart {
+  public Dart(int x, int y, int speed) {
+    super(x, y, speed);
   }
 
   // EFFECT: modifies the given world scene to include this Dart
@@ -371,27 +509,6 @@ class Dart implements IDart {
     s.placeImageXY(dart, this.x, this.y);
   }
 
-  // draws this Dart onto the given world scene
-  public void move() {
-    this.y -= this.speed;
-  }
-
-  // is this Dart off the screen?
-  public boolean offScreen() {
-    return this.y <= 0;
-  }
-
-  // is this Dart in the same tile as the given position?
-  public boolean hitBodySeg(BodySeg bodySeg) {
-    return bodySeg.inRange(new Posn(this.x, this.y));
-  }
-
-  // can this Dart hit the given tile?
-  public boolean hitTile(ITile tile) {
-    return tile.inRange(new Posn(this.x, this.y));
-  }
-
-  // did this dart miss anything on the board?
   public boolean missed() {
     return this.y <= 0;
   }
@@ -486,6 +603,12 @@ class Gnome {
     return new Dart((this.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2, this.y,
         ITile.HEIGHT / 2);
   }
+
+  // generates an water balloon from the center of the tile where is gnome is at
+  IWaterBalloon generateWaterBallon() {
+    return new WaterBalloon((this.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2, this.y,
+        ITile.HEIGHT / 2);
+  }
 }
 
 // represents a centipede in the centipede game
@@ -504,7 +627,7 @@ class Centipede {
     if (body.size() == 0) {
       throw new IllegalArgumentException("Centipede cannot have an empty body");
     }
-    if (maxSpeed > ITile.WIDTH|| currSpeed > ITile.WIDTH) {
+    if (maxSpeed > ITile.WIDTH || currSpeed > ITile.WIDTH) {
       throw new IllegalArgumentException("Speed cannot shoot over a tile.");
     }
     this.body = body;
@@ -515,9 +638,9 @@ class Centipede {
   }
 
   // the default constructor - constructs the starting centipede in the centipede game
-  Centipede(int length) {
+  Centipede(int length, int speed) {
     this(new Util().generateCentBody(length, ITile.WIDTH / 10),
-        ITile.WIDTH / 10, ITile.WIDTH / 10,
+        speed, speed,
         new Util().singletonList(new ObstacleList(0)),
         new ArrayList<>());
   }
@@ -540,6 +663,46 @@ class Centipede {
     return false;
   }
 
+  // did the given water balloon hit any part of this centipede?
+  boolean targetHit(IWaterBalloon waterBalloon) {
+    for (BodySeg bodySeg : this.body) {
+      if (waterBalloon.hitBodySeg(bodySeg)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // EFFECT:
+  boolean onPebble(ArrayList<ITile> garden) {
+    IsPebble isPebble = new IsPebble();
+    for (ITile tile : garden) {
+      if (isPebble.apply(tile) && !this.inPebsAlreadyOn(tile) && this.anyInRange(tile)) {
+        this.pebsAlreadyOn.add(tile);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean inPebsAlreadyOn(ITile tile) {
+    for (ITile pebble : this.pebsAlreadyOn) {
+      if (pebble == tile) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean anyInRange(ITile tile) {
+    for (BodySeg bodySeg : this.body) {
+      if (bodySeg.inRange(tile)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // gets the position of where the dart hit this centipede
   Posn positionHit(IDart dart) {
     int indexHit = this.getIndexHit(dart);
@@ -550,44 +713,56 @@ class Centipede {
   // centipede
   ArrayList<Centipede> split(IDart dart) {
     int indexHit = this.getIndexHit(dart);
-    Util util = new Util();
-
-    if (indexHit == 0) {
-      if (this.body.size() == 1) {
-        return new ArrayList<>();
-      }
-      ArrayList<BodySeg> restBody = util.copy(this.body);
-      restBody.remove(0);
-      restBody.get(restBody.size() - 1).toHead();
-      return util.singletonList(new Centipede(restBody, this.currSpeed, this.maxSpeed,
-          this.copyEncountered(), new ArrayList<>()));
-    } else if (indexHit > 0 && indexHit < this.body.size() - 1) {
-      ArrayList<BodySeg> frontBody = new ArrayList<>();
-      ArrayList<BodySeg> backBody = new ArrayList<>();
-      for (int index = 0; index < this.body.size(); index += 1) {
-        if (index < indexHit) {
-          frontBody.add(this.body.get(index));
-        } else if (index > indexHit) {
-          backBody.add(this.body.get(index));
-        }
-      }
-      ArrayList<Centipede> cents = new ArrayList<>();
-      frontBody.get(frontBody.size() - 1).toHead();
-      backBody.get(backBody.size() - 1).toHead();
-      cents.add(new Centipede(frontBody, this.currSpeed, this.maxSpeed,
-          this.copyEncountered(), new ArrayList<>()));
-      cents.add(new Centipede(backBody, this.currSpeed, this.maxSpeed,
-          this.copyEncountered(), new ArrayList<>()));
-      return cents;
-    } else if (indexHit == this.body.size() - 1) {
-      ArrayList<BodySeg> restBody = util.copy(this.body);
-      restBody.remove(this.body.size() - 1);
-      restBody.get(restBody.size() - 1).toHead();
-
-      return util.singletonList(new Centipede(restBody, this.currSpeed, this.maxSpeed,
-          this.copyEncountered(), new ArrayList<>()));
+    if (this.body.size() <= 1) {
+      return new ArrayList<>();
     }
-    return util.singletonList(this);
+    Util util = new Util();
+    ArrayList<Centipede> centipedes = new ArrayList<>();
+    ArrayList<BodySeg> frontBody = util.getElementsBetween(this.body, 0, indexHit);
+    if (frontBody.size() > 0) {
+      centipedes.add(this.makeCentipede(frontBody));
+    }
+    if (indexHit + 1 < this.body.size()) {
+      ArrayList<BodySeg> backBody =
+          util.getElementsBetween(this.body, indexHit+1, this.body.size());
+      if (backBody.size() > 0) {
+        centipedes.add(this.makeCentipede(backBody));
+      }
+    }
+    return centipedes;
+  }
+
+  // splits this centipede into multiple centipedes depending on where the water balloon hit this
+  // centipede
+  ArrayList<Centipede> split(IWaterBalloon waterBalloon) {
+    ArrayList<Integer> indicesHit = this.getIndicesHit(waterBalloon);
+    ArrayList<Centipede> centipedes = new ArrayList<>();
+    Util util = new Util();
+    int startInd = 0;
+    for (int index : indicesHit) {
+      ArrayList<BodySeg> bodySegs = util.getElementsBetween(this.body, startInd, index);
+      if (bodySegs.size() > 0) {
+        centipedes.add(makeCentipede(bodySegs));
+      }
+      startInd = index + 1;
+    }
+
+    if (startInd < this.body.size()) {
+      ArrayList<BodySeg> bodySegs = util.getElementsBetween(this.body, startInd, this.body.size());
+      centipedes.add(makeCentipede(bodySegs));
+    }
+    return centipedes;
+  }
+
+  // makes a centipede with the same fields as this one but instead with a different given
+  // body
+  Centipede makeCentipede(ArrayList<BodySeg> bodySegs) {
+    bodySegs.get(bodySegs.size() - 1).toHead();
+    for (BodySeg bodySeg : bodySegs) {
+      bodySeg.setSpeed(this.maxSpeed);
+    }
+    return new Centipede(bodySegs, this.maxSpeed, this.maxSpeed,
+        this.copyEncountered(), new ArrayList<>());
   }
 
   // copies this list of ObstacleLists to another Array
@@ -597,6 +772,17 @@ class Centipede {
       cpEncountered.add(new ObstacleList(obl));
     }
     return cpEncountered;
+  }
+
+  // gets the positions of where the water balloon hit this centipede
+  ArrayList<Integer> getIndicesHit(IWaterBalloon waterBalloon) {
+    ArrayList<Integer> indicesHit = new ArrayList<>();
+    for (int index = 0; index < this.body.size(); index += 1) {
+      if (waterBalloon.inHitBox(this.body.get(index))) {
+        indicesHit.add(index);
+      }
+    }
+    return indicesHit;
   }
 
   // gets the index of the body segment
@@ -609,98 +795,62 @@ class Centipede {
     throw new RuntimeException("The dart did not hit any of the body segments.");
   }
 
-  // ASSUMPTION: this method assumes that this centipede has hit a pebble that hasn't been
-  // encountered
-  // gets the pebble this centipede has hit
-  ITile getPebOn(ArrayList<ITile> garden, int width, int height) {
-    for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn, width, height)) {
-        return bodySeg.pebbleTileHit(garden, this.pebsAlreadyOn);
-      }
-    }
-    throw new RuntimeException("Pebble not found.");
-  }
-
   // EFFECT: changes the all the elements in this centipede's list of body positions,
   // essentially moving it along in the world
   // moves the centipede along the board in the world
   void move(int width, int height, ArrayList<ITile> garden) {
-    if (this.hitPebbleTile(garden, width, height) && !this.pebsAlreadyOn.contains(this.getPebOn(garden, width, height))) {
-      this.pebsAlreadyOn.add(this.getPebOn(garden, width, height));
-      this.halveBodyVelocity();
+    if (this.onPebble(garden)) {
+      this.halveSpeed();
     }
     BodySeg head = this.body.get(this.body.size() - 1);
     if (head.reverseYDirection(height)) {
       this.encountered.add(head.generateObstacleList());
     }
-
     ObstacleList headObl = head.obstacleList(this.encountered);
-    if (head.aheadDandelion(garden, this.currSpeed)
-        && !head.trapped(width, headObl, this.currSpeed)) {
-      headObl.addToObstacles(head.nextTilePosn(this.currSpeed));
+    if (head.aheadDandelion(garden)
+        && !head.trapped(width, headObl)) {
+      headObl.addToObstacles(head.nextTilePosn());
     }
     for (BodySeg bodySeg : this.body) {
       bodySeg.reverseYDirection(height);
       bodySeg.move(width, this.currSpeed, bodySeg.obstacleList(this.encountered));
     }
     this.removeUnusedObl();
-    this.removePebNotOn();
+    this.removeUnusedPeb();
   }
 
-  // did this centipede hit a pebble that hasn't been encountered already?
-  boolean hitPebbleTile(ArrayList<ITile> garden, int width, int height) {
-    for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitPebbleTile(garden, this.pebsAlreadyOn, width, height)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void removePebNotOn() {
-    ArrayList<ITile> stillOnPeb = new ArrayList<>();
-    for (ITile pebble : this.pebsAlreadyOn) {
-      if (!this.hitTile(pebble)) {
-        this.doubleBodyVelocity();
+  void removeUnusedPeb() {
+    ArrayList<ITile> usedPebs = new ArrayList<>();
+    for (ITile tile : this.pebsAlreadyOn) {
+      if (this.anyInRange(tile)) {
+        usedPebs.add(tile);
       } else {
-        stillOnPeb.add(pebble);
+        this.doubleSpeed();
       }
     }
-
     this.pebsAlreadyOn.clear();
-    for (ITile pebble : stillOnPeb) {
-      this.pebsAlreadyOn.add(pebble);
+    for (ITile tile : usedPebs) {
+      this.pebsAlreadyOn.add(tile);
     }
   }
 
-  boolean hitTile(ITile tile) {
-    for (BodySeg bodySeg : this.body) {
-      if (bodySeg.hitTile(tile)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // EFFECT: changes the velocity of each body segment and this centipede's currSpeed
-  // halves the velocity of each body segment and this centipede's currSpeed
-  void halveBodyVelocity() {
-    if (this.currSpeed > 1) {
-      this.currSpeed /= 2;
-    }
-    for (BodySeg bodySeg : this.body) {
-      bodySeg.halveVelocity();
-    }
-  }
-
-  void doubleBodyVelocity() {
+  void doubleSpeed() {
     if (this.currSpeed * 2 <= this.maxSpeed) {
       this.currSpeed *= 2;
     } else {
       this.currSpeed = this.maxSpeed;
     }
     for (BodySeg bodySeg : this.body) {
-      bodySeg.doubleVelocity(this.maxSpeed);
+      bodySeg.doubleSpeed(this.maxSpeed);
+    }
+  }
+
+  void halveSpeed() {
+    if (this.currSpeed > 1) {
+      this.currSpeed /= 2;
+    }
+    for (BodySeg bodySeg : this.body) {
+      bodySeg.halveSpeed();
     }
   }
 
@@ -752,11 +902,6 @@ class BodySeg {
     this.iteration = iteration;
   }
 
-  @Override
-  public String toString() {
-    return "" + this.pos;
-  }
-
   // EFFECT: changes the given world scene by adding this body segment onto it
   // draws this body segment onto the given world scene
   void draw(WorldScene s) {
@@ -776,42 +921,71 @@ class BodySeg {
     this.head = true;
   }
 
-  // EFFECT: halves the velocity of this body segment, unless if the velocity is less than or
-  // equal to one
-  // halves the velocity of this body segment, to be used when the centipede that contains
-  // this body segment slows down
-  void halveVelocity() {
-    int x_vel = this.velocity.x;
-    int y_vel = this.velocity.y;
-    if (Math.abs(this.velocity.x) > 1) {
-      x_vel /= 2;
+  void halveSpeed() {
+    int vel_x = this.velocity.x;
+    int vel_y = this.velocity.y;
+    if (Math.abs(vel_x) != 1) {
+      vel_x /= 2;
     }
-    if (Math.abs(this.velocity.y) > 1) {
-      y_vel /= 2;
+    if (Math.abs(vel_y) != 1) {
+      vel_y /= 2;
     }
-    this.velocity = new Posn(x_vel, y_vel);
+    this.velocity = new Posn(vel_x, vel_y);
   }
 
-  // EFFECT: doubles the velocity of this body segment, unless if the velocity is less than or
-  // equal to one
-  // halves the velocity of this body segment, to be used when the centipede that contains
-  // this body segment slows down
-  void doubleVelocity(int maxSpeed) {
-    int x_vel = this.velocity.x;
-    int y_vel = this.velocity.y;
-    if (Math.abs(this.velocity.x) * 2 <= maxSpeed) {
-      x_vel *= 2;
-    } else if (Math.abs(this.velocity.x) * 2 > maxSpeed) {
-      x_vel = x_vel / Math.abs(x_vel) * maxSpeed;
+  void doubleSpeed(int maxSpeed) {
+    int vel_x = this.velocity.x;
+    int vel_y = this.velocity.y;
+    if (Math.abs(vel_x) * 2 <= maxSpeed) {
+      vel_x *= 2;
+    } else if (Math.abs(vel_x) * 2 > maxSpeed) {
+      vel_x = vel_x/Math.abs(vel_x) * maxSpeed;
     }
 
-    if (Math.abs(this.velocity.y) * 2 <= maxSpeed) {
-      y_vel *= 2;
-    } else if (Math.abs(this.velocity.y) * 2 > maxSpeed) {
-      y_vel = y_vel / Math.abs(y_vel) * maxSpeed;
+    if (Math.abs(vel_y) * 2 <= maxSpeed) {
+      vel_y *= 2;
+    } else if (Math.abs(vel_y) * 2 > maxSpeed) {
+      vel_y =  vel_y/Math.abs(vel_y) * maxSpeed;
     }
 
-    this.velocity = new Posn(x_vel, y_vel);
+    this.velocity = new Posn(vel_x, vel_y);
+    this.correctPos();
+  }
+
+  void setSpeed(int maxSpeed) {
+    int vel_x = this.velocity.x;
+    int vel_y = this.velocity.y;
+    if (vel_x != 0) {
+      vel_x = Math.abs(vel_x)/vel_x * maxSpeed;
+    }
+    if (vel_y != 0) {
+      vel_y = Math.abs(vel_y)/vel_y * maxSpeed;
+    }
+    this.velocity = new Posn(vel_x, vel_y);
+    this.correctPos();
+  }
+
+  void correctPos() {
+    int distanceToTile_x = Math.abs(ITile.WIDTH - this.pos.x);
+    int distanceToTile_y = Math.abs(ITile.HEIGHT - this.pos.y);
+    int speed_x = Math.abs(this.velocity.x);
+    int speed_y = Math.abs(this.velocity.y);
+
+    if (speed_x != 0 && distanceToTile_x % speed_x > 0) {
+      if (!this.right) {
+        this.pos = new Posn(this.pos.x - distanceToTile_x % speed_x, this.pos.y);
+      } else {
+        this.pos = new Posn(this.pos.x + distanceToTile_x % speed_x, this.pos.y);
+      }
+    }
+
+    if (speed_y != 0 && distanceToTile_y % speed_y > 0) {
+      if (!this.down) {
+        this.pos = new Posn(this.pos.x, this.pos.y - distanceToTile_y % speed_y);
+      } else {
+        this.pos = new Posn(this.pos.x, this.pos.y + distanceToTile_y % speed_y);
+      }
+    }
   }
 
   // determines if the given obstacle list has the same iteration as this body segment
@@ -823,6 +997,10 @@ class BodySeg {
   boolean inRange(Posn p) {
     return Math.abs(this.pos.x - p.x) <= ITile.WIDTH / 2
         && Math.abs(this.pos.y - p.y) <= ITile.HEIGHT / 2;
+  }
+
+  boolean inRange(ITile tile) {
+    return tile.inRange(this.pos);
   }
 
   // gives the obstacle list that has the same iteration as this body segment
@@ -857,14 +1035,12 @@ class BodySeg {
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
   void move(int width, int speed, ObstacleList obl) {
-    boolean leftEdge = Math.abs(this.pos.x - ITile.WIDTH / 2) <= speed / 2;
-    boolean rightEdge = Math.abs(this.pos.x - (width - ITile.WIDTH / 2)) <= speed / 2;
-    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT <= speed / 2;
+    boolean leftEdge = this.pos.x == ITile.WIDTH/2;
+    boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
+    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
     if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
-        || this.nextEncountered(obl, speed) && inRow) {
-      this.pos = new Posn((this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2,
-          this.pos.y);
+        || this.nextEncountered(obl) && inRow) {
       if (!this.down) {
         speed *= -1;
       }
@@ -873,36 +1049,27 @@ class BodySeg {
       this.velocity = new Posn(0, speed);
 
     } else if (inRow && this.velocity.x == 0) {
-      this.pos = new Posn(this.pos.x,
-          (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2);
       if (!this.right) {
         speed *= -1;
       }
       this.velocity = new Posn(speed, 0);
     }
-    int nextRow = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + 3 * ITile.HEIGHT / 2;
-    if (!this.down) {
-      nextRow = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT - 3 * ITile.HEIGHT / 2;
-    }
-    if (this.pos.x + this.velocity.x > width - ITile.WIDTH / 2) {
-      this.pos = new Posn(width - ITile.WIDTH / 2, this.pos.y);
-    } else if (this.pos.x + this.velocity.x < ITile.WIDTH / 2) {
-      this.pos = new Posn(ITile.WIDTH/2, this.pos.y);
-    } else if (this.pos.y + this.velocity.y > nextRow) {
-      this.pos = new Posn(ITile.WIDTH/2, this.pos.y);
-    } else {
-      this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
-    }
+
+    this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+  }
+
+  public String toString() {
+    return "" + this.velocity;
   }
 
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
-  boolean nextEncountered(ObstacleList obl, int speed) {
-    Posn pos = this.nextTilePosn(speed);
+  boolean nextEncountered(ObstacleList obl) {
+    Posn pos = this.nextTilePosn();
     return obl.inObstacles(pos);
   }
 
-  // gets the tile position of this centipede
+  // gets the tile position of this body segment
   Posn tilePosn() {
     int x = (this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2;
     int y = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2;
@@ -914,25 +1081,13 @@ class BodySeg {
     return new Posn(x, y);
   }
 
-  Posn center(int speed) {
-    Posn pos = new Posn(this.pos.x, this.pos.y);
-    if (Math.abs(this.pos.x - ITile.WIDTH/2) % ITile.WIDTH <= speed/2) {
-
-      pos = new Posn((this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2,
-          (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2);
-    }
-    return pos;
-  }
   // gives the next position (depending on direction) of this body segment
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its direction towards that edge
-  Posn nextTilePosn(int speed) {
-    Posn ahead = this.center(speed);
+  Posn nextTilePosn() {
+    Posn ahead = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
     if (!this.right) {
-      ahead = new Posn(ahead.x - ITile.WIDTH, ahead.y);
-    }
-    else {
-      ahead = new Posn(ahead.x + ITile.WIDTH, ahead.y);
+      ahead = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
     }
     return ahead;
   }
@@ -940,21 +1095,18 @@ class BodySeg {
   // gives the previous position (depending on direction) of this body segment
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its opposite direction towards that edge
-  Posn prevTilePosn(int speed) {
-    Posn behind = this.center(speed);
+  Posn prevTilePosn() {
+    Posn behind = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
     if (!this.right) {
-      behind = new Posn(behind.x + ITile.WIDTH, behind.y);
-    }
-    else {
-      behind = new Posn(behind.x - ITile.WIDTH, behind.y);
+      behind = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
     }
     return behind;
   }
 
   // is there a dandelion ahead of this body segment?
-  boolean aheadDandelion(ArrayList<ITile> garden, int speed) {
+  boolean aheadDandelion(ArrayList<ITile> garden) {
     IsDandelion isDandelion = new IsDandelion();
-    Posn ahead = this.nextTilePosn(speed);
+    Posn ahead = this.nextTilePosn();
     for (ITile tile : garden) {
       if (isDandelion.apply(tile) && tile.samePos(ahead)) {
         return true;
@@ -964,10 +1116,10 @@ class BodySeg {
   }
 
   // can this BodySeg be trapped by the board?
-  boolean trapped(int width, ObstacleList obl, int speed) {
-    Posn ahead = this.nextTilePosn(speed);
+  boolean trapped(int width, ObstacleList obl) {
+    Posn ahead = this.nextTilePosn();
     Posn ahead_away2y = new Posn(ahead.x, ahead.y - 2 * ITile.HEIGHT);
-    Posn prev = this.prevTilePosn(speed);
+    Posn prev = this.prevTilePosn();
     Posn prev_away1y = new Posn(prev.x, prev.y - ITile.HEIGHT);
     if (!this.down) {
       ahead_away2y = new Posn(ahead.x, ahead.y + 2 * ITile.HEIGHT);
@@ -980,56 +1132,7 @@ class BodySeg {
 
     return obstacleTwoYNext && obstacleOneYPrev;
   }
-
-  // ASSUMPTION: this method assumes that this body segment has hit a pebble that hasn't
-  // been encountered
-  // gives the PebbleTile that has not been encountered that hit this body segment
-  ITile pebbleTileHit(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered) {
-    IsPebble isPebble = new IsPebble();
-    Posn current = new Posn(this.pos.x, this.pos.y);
-    for (ITile tile : garden) {
-      if (isPebble.apply(tile) && tile.inRange(current)
-          && !pebEncountered.contains(tile)) {
-        return tile;
-      }
-    }
-    throw new RuntimeException("Pebble not found.");
-  }
-
-  // does this body segment hit a pebble tile in the garden that hasn't been encountered already?
-  boolean hitPebbleTile(ArrayList<ITile> garden, ArrayList<ITile> pebEncountered, int width, int height) {
-    Posn current = new Posn(this.pos.x, this.pos.y);
-    for (ITile tile : garden) {
-      if (tile.inPile(garden, width, height) && tile.inRange(current)
-          && !pebEncountered.contains(tile)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  boolean hitTile(ITile tile) {
-    return tile.inRange(this.pos);
-  }
 }
-
-// represents pebble piles in the game that can slow down the movement of the centipede
-//class PebblePile {
-//  ArrayList<PebbleTile> pebbles;
-//  
-//  PebblePile(ArrayList<PebbleTile> pebbles) {
-//    this.pebbles = pebbles;
-//  }
-//  
-//  // does any of the pebbletile hit the given body segment?
-//  boolean hitBodySeg(BodySeg bodySeg) {
-//    for (PebbleTile pebble : this.pebbles) {
-//      pebble.inRange(pos)
-//      //bodySeg.hitTile(pebble);
-//    }
-//    return false;
-//  }
-//}
 
 // represents a list of all obstacles encountered during a certain period, or iteration, when
 // the centipede was/is moving in
@@ -1078,36 +1181,49 @@ class ObstacleList {
 // represents the actual game world when the player can control the gnome
 class CGameState extends GameState {
   ArrayList<Centipede> cents; // represents all the centipedes in the current world
+  int length;
+  int speed;
   ArrayList<ITile> garden; // represents all the tiles in the current world
   IDart dart;
+  IWaterBalloon waterBalloon;
   Gnome gnome;
   Posn playerDirection; // -1 if player is moving left, 0 is player is not moving,
   // and 1 if player is moving right for the x component,
   // and the same respectively for moving down and up
   int score;
+  int streak;
   int width;
   int height;
 
+
   // the constructor
-  CGameState(ArrayList<Centipede> cents, ArrayList<ITile> garden, Posn playerDirection, Gnome gnome,
-             IDart dart, int score, int width, int height) {
+  CGameState(ArrayList<Centipede> cents, int length, int speed,
+             ArrayList<ITile> garden, Posn playerDirection, Gnome gnome,
+             IDart dart, IWaterBalloon waterBalloon, int score, int streak,
+             int width, int height) {
     if (width < 2 * ITile.WIDTH || height < 2 * ITile.HEIGHT) {
       throw new IllegalArgumentException("Invalid dimensions");
     }
     this.cents = cents;
+    this.length = length;
+    this.speed = speed;
     this.garden = garden;
     this.playerDirection = playerDirection;
     this.gnome = gnome;
     this.dart = dart;
+    this.waterBalloon = waterBalloon;
     this.score = score;
+    this.streak = streak;
     this.width = width;
     this.height = height;
   }
 
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
-    this(new Util().singletonList(new Centipede(10)), garden,
-        new Posn(0, 0), gnome, new NoDart(), 0, ITile.WIDTH * x,
+    this(new Util().singletonList(new Centipede(10, ITile.WIDTH/10)), 10,
+        ITile.WIDTH/10, garden, new Posn(0, 0), gnome,
+        new NoDart(), new NoWaterBalloon(),
+        0, 0, ITile.WIDTH * x,
         ITile.HEIGHT * y);
   }
 
@@ -1116,16 +1232,22 @@ class CGameState extends GameState {
   // EFFECT: changes all the fields except width and height
   // moves every element in the game accordingly after each tick
   public void onTick() {
+    if (this.cents.size() == 0) {
+      this.length += 1;
+      this.speed += 1;
+      this.cents.add(new Centipede(this.length, this.speed));
+    }
     this.collidesDandelion();
     this.collidesCentipede();
+    this.collidesWaterBalloon();
 
     for (Centipede c : this.cents) {
       c.move(this.width, this.height, this.garden);
     }
 
     this.movePlayer();
-
     this.moveDart();
+    this.moveWaterBalloon();
   }
 
   // EFFECT: modifies the player position of this CGameState based on the player direction
@@ -1161,6 +1283,53 @@ class CGameState extends GameState {
     }
   }
 
+  // EFFECT: modifies the IDart and score of this CGameState, either directly modifying the IDart
+  // or setting it equal to a different IDart, and modifying the score when needed
+  // moves the Dart in the game
+  void moveWaterBalloon() {
+    if (this.waterBalloon.offScreen()) {
+      this.waterBalloon = new NoWaterBalloon();
+    } else {
+      this.waterBalloon.move();
+    }
+  }
+
+  void collidesWaterBalloon() {
+    IsDandelion isDandelion = new IsDandelion();
+    for (int index = 0; index < this.garden.size(); index += 1) {
+      ITile tile = this.garden.get(index);
+      if (isDandelion.apply(tile) && this.waterBalloon.hitTile(tile)) {
+        waterBalloon.explode(this.cents, this.garden);
+        this.score += this.numberBodySegHit() * 10;
+        this.waterBalloon = new NoWaterBalloon();
+      }
+    }
+    if (this.hitCentipede()) {
+      this.score += this.numberBodySegHit() * 10;
+      waterBalloon.explode(this.cents, this.garden);
+      this.waterBalloon = new NoWaterBalloon();
+    }
+  }
+
+  int numberBodySegHit() {
+    int ctr = 0;
+    for (Centipede cent : this.cents) {
+      if (cent.targetHit(this.waterBalloon)) {
+        ctr += cent.getIndicesHit(this.waterBalloon).size();
+      }
+    }
+    return ctr;
+  }
+
+  boolean hitCentipede() {
+    for (Centipede cent : this.cents) {
+      if (cent.targetHit(this.waterBalloon)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // EFFECT: modifies the garden and the dart fields of this CGameState
   // alters the state of the game after possible collisions with a dandelion and a dart
   void collidesDandelion() {
@@ -1184,6 +1353,7 @@ class CGameState extends GameState {
     for (Centipede cent : this.cents) {
       if (cent.targetHit(this.dart)) {
         this.score += 10;
+        this.streak += 1;
         new Util().append(cpCent, cent.split(this.dart));
         this.sproutDandelion(cent.positionHit(this.dart));
         this.dart = new NoDart();
@@ -1223,6 +1393,8 @@ class CGameState extends GameState {
 
     this.dart.draw(s);
 
+    this.waterBalloon.draw(s);
+
     WorldImage score = new TextImage("Score: " + this.score, Color.BLACK);
     s.placeImageXY(score, this.width - 5 * ITile.WIDTH / 4, ITile.HEIGHT / 4);
 
@@ -1250,6 +1422,14 @@ class CGameState extends GameState {
     if (s.equals(" ")) {
       if (this.dart.offScreen()) {
         this.dart = this.gnome.generateDart();
+      }
+    }
+
+    if (s.equals("b")) {
+      if (this.waterBalloon.offScreen() && streak >= 3) {
+        this.score -= 5;
+        this.streak = 0;
+        this.waterBalloon = this.gnome.generateWaterBallon();
       }
     }
   }
