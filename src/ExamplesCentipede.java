@@ -21,19 +21,13 @@ class ExamplesCentipede {
         false, true, false, 0);
     bodySeg_1 = new BodySeg(new Posn(340, 60), new Posn(0, 2),
         false, true, false, 0);
-    cent_0 = new Centipede(10);
+    cent_0 = new Centipede(10, 4);
     peb_0 = new PebbleTile(20, 20, 400);
     peb_1 = new PebbleTile(380, 20, 400);
     peb_2 = new PebbleTile(20, 60, 400);
     peb_3 = new PebbleTile(380, 60, 400);
     peb_4 = new PebbleTile(60, 60, 400);
     peb_5 = new PebbleTile(60, 20, 400);
-    System.out.println(peb_0.hitBox());
-    System.out.println(peb_1.hitBox());
-    System.out.println(peb_2.hitBox());
-    System.out.println(peb_3.hitBox());
-    System.out.println(peb_4.hitBox());
-    System.out.println(peb_5.hitBox());
   }
 
   // runs the game
@@ -42,14 +36,5 @@ class ExamplesCentipede {
     int y = 15;
     GameMaster w = new GameMaster(x, y, 20);
     w.bigBang(x * ITile.WIDTH, y * ITile.HEIGHT, 1.0 / 28.0);
-  }
-
-  void testBodySegNextEncountered(Tester t) {
-    this.initTestConditions();
-    ArrayList<Posn> arr = new ArrayList<>();
-    arr.add(new Posn(300, 60));
-    ObstacleList obl = new ObstacleList(0, arr);
-    //return t.checkExpect(b.nextEncountered(obl, 2), true);
-    t.checkExpect(bodySeg_0.nextEncountered(obl, 2), true);
   }
 }
