@@ -1369,6 +1369,7 @@ class CGameState extends GameState {
       ITile tile = this.garden.get(index);
       if (isDandelion.apply(tile) && this.dart.hitTile(tile)) {
         this.dart = new NoDart();
+        this.streak = this.streak + 1;
         tile.lowerHP();
         if (tile.noHP()) {
           this.garden.set(index, new DanToPeb().apply(tile));
@@ -1420,7 +1421,7 @@ class CGameState extends GameState {
     for (Centipede c : this.cents) {
       c.draw(s);
     }
-    this.gnome.draw(s, 0);
+    this.gnome.draw(s, this.streak);
 
     this.dart.draw(s);
 
