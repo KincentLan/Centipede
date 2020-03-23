@@ -1460,6 +1460,13 @@ class CGameState extends GameState {
         new Util().sproutDandelion(cent.positionHit(this.dart), this.garden);
         this.dart = new NoDart();
       }
+      if (cent.targetHit(this.waterBalloon)) {
+        this.score += 10;
+        this.streak += 1;
+        new Util().append(cpCent, cent.split(this.waterBalloon));
+        this.sproutDans(cent.posnsHit(this.waterBalloon));
+        this.waterBalloon = new NoWaterBalloon();
+      }
       else {
         cpCent.add(cent);
       }
@@ -1467,6 +1474,26 @@ class CGameState extends GameState {
     this.cents.clear();
     for (Centipede cent : cpCent) {
       this.cents.add(cent);
+    }
+  }
+  
+  // EFFECT: modifies the garden to change one of the tiles to a dandelion
+  // sprouts a dandelion where a centipede has recently been hit
+  void sproutDandelion(Posn posHit) {
+    IsGrass isGrass = new IsGrass();
+    for (int index = 0; index < this.garden.size(); index += 1) {
+      ITile tile = this.garden.get(index);
+      if (isGrass.apply(tile) && tile.samePos(posHit)) {
+        this.garden.set(index, new GrassToDan().apply(tile));
+      }
+    }
+  }
+  
+  // EFFECT: modifies the garden to change a list of the tiles to a dandelion
+  // sprouts a dandelion where a centipede has recently been hit
+  void sproutDans(ArrayList<Posn> posns) {
+    for (Posn pos : posns) {
+      this.sproutDandelion(pos);
     }
   }
 
