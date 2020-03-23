@@ -408,8 +408,8 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     super(x, y, speed);
   }
 
-  // EFFECT: modifies the given world scene to include this Dart
-  // draws this Dart onto the given world scene
+  // EFFECT: modifies the given world scene to include this Water ballon
+  // draws this Water ballon onto the given world scene
   public void draw(WorldScene s) {
     WorldImage waterBalloon
         = new EllipseImage(ITile.WIDTH / 2, ITile.HEIGHT, OutlineMode.SOLID, Color.BLUE);
