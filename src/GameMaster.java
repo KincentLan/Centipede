@@ -80,6 +80,7 @@ abstract class GameState extends World {
 
   public abstract boolean endGame();
 
+  // gets the score of the current GameState
   public abstract int score();
 }
 
