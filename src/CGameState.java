@@ -146,10 +146,6 @@ abstract class ATile implements ITile {
     this.width = width;
   }
 
-  public String toString() {
-    return "(" + this.row + ", " + this.col + ")";
-  }
-
   @Override
   // draws this ATile - to be implemented by classes that extend ATile
   public abstract void draw(WorldScene s);
@@ -642,6 +638,10 @@ class Gnome {
     return new WaterBalloon((this.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2, this.y,
         ITile.HEIGHT / 2);
   }
+
+  boolean inRange(Posn pos) {
+    return new Util().inRange(new Posn(this.x, this.y), pos);
+  }
 }
 
 // represents a centipede in the centipede game
@@ -670,10 +670,6 @@ class Centipede {
     this.pebsAlreadyOn = pebsAlreadyOn;
   }
 
-  public String toString() {
-    return "" + this.body;
-  }
-
   // the default constructor - constructs the starting centipede in the centipede game
   Centipede(int length, int speed) {
     this(new Util().generateCentBody(length, speed),
@@ -694,6 +690,15 @@ class Centipede {
   boolean targetHit(IDart dart) {
     for (BodySeg bodySeg : this.body) {
       if (dart.hitBodySeg(bodySeg)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean hitPlayer(Gnome gnome) {
+    for (BodySeg bodySeg : this.body) {
+      if (bodySeg.inRange(gnome)) {
         return true;
       }
     }
@@ -845,7 +850,7 @@ class Centipede {
   // gets the position of where the water balloon hit this centipede
   ArrayList<Posn> posnsHit(IWaterBalloon balloon) {
     ArrayList<Integer> indicesHit = this.getIndicesHit(balloon);
-    ArrayList<Posn> posns = new ArrayList<Posn>();
+    ArrayList<Posn> posns = new ArrayList<>();
     for (int index : indicesHit) {
       posns.add(this.body.get(index).tilePosn());
     }
@@ -964,8 +969,6 @@ class BodySeg {
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
   void move(int width, int speed, ObstacleList obl, ArrayList<ITile> garden) {
-    System.out.println(this.pos);
-    System.out.println(this.nextRow);
     boolean leftEdge = Math.abs(this.pos.x - ITile.WIDTH / 2) <= speed/2;
     boolean rightEdge = Math.abs(this.pos.x - (width - ITile.WIDTH/2)) <= speed/2;
     boolean inRow = (this.pos.y - ITile.HEIGHT/2) % ITile.HEIGHT <= speed/2
@@ -1083,12 +1086,15 @@ class BodySeg {
 
   // is this body segment in range of the given posn?
   boolean inRange(Posn p) {
-    System.out.println(this.pos + ", " + p);
     return new Util().inRange(this.pos, p);
   }
 
   boolean inRange(ITile tile) {
     return tile.inRange(this.pos);
+  }
+
+  boolean inRange(Gnome gnome) {
+    return gnome.inRange(this.pos);
   }
 
   // gives the obstacle list that has the same iteration as this body segment
@@ -1332,7 +1338,6 @@ class CGameState extends GameState {
   // moves every element in the game accordingly after each tick
   public void onTick() {
     if (this.cents.size() == 0) {
-      System.out.println(this.cents);
       this.length += 1;
       this.speed += 2;
       this.cents.add(new Centipede(this.length, this.speed));
@@ -1348,6 +1353,25 @@ class CGameState extends GameState {
     this.movePlayer();
     this.moveDart();
     this.moveWaterBalloon();
+  }
+
+  public boolean endGame() {
+    for (Centipede cent : this.cents) {
+      if (cent.hitPlayer(this.gnome)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public WorldScene lastScene(String s) {
+    WorldScene worldScene = new WorldScene(this.width, this.height);
+    WorldImage gg = new TextImage("Game Over", Color.BLACK);
+    WorldImage score = new TextImage("" + this.score, Color.BLACK);
+    worldScene.placeImageXY(gg, width/2, height/2 - 20);
+    worldScene.placeImageXY(score, width/2, height/2);
+    return worldScene;
   }
 
   // EFFECT: modifies the player position of this CGameState based on the player direction
@@ -1517,7 +1541,7 @@ class CGameState extends GameState {
     }
 
     if (s.equals("b")) {
-      if (this.waterBalloon.offScreen()) { // && streak >= 3) {
+      if (this.waterBalloon.offScreen() && streak >= 3) {
         this.score -= 5;
         this.streak = 0;
         this.waterBalloon = this.gnome.generateWaterBallon();
@@ -1541,5 +1565,9 @@ class CGameState extends GameState {
   // continues this CGameState to be used in GameMaster
   public CGameState toCGameState() {
     return this;
+  }
+
+  public int score() {
+    return this.score;
   }
 }

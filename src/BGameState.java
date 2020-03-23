@@ -127,5 +127,13 @@ class BGameState extends GameState {
   public CGameState toCGameState() {
     return new CGameState(this.x, this.y, this.garden, this.gnome);
   }
+
+  public boolean endGame() {
+    return false;
+  }
+
+  public int score() {
+    return 0;
+  }
 }
 
