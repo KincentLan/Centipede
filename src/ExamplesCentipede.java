@@ -18,9 +18,9 @@ class ExamplesCentipede {
   // initializes test conditions
   void initTestConditions() {
     bodySeg_0 = new BodySeg(new Posn(340, 61), new Posn(0, 2),
-        false, true, false, 0);
+        false, true, false, 60, 0);
     bodySeg_1 = new BodySeg(new Posn(340, 60), new Posn(0, 2),
-        false, true, false, 0);
+        false, true, false, 60, 0);
 //    peb_0 = new PebbleTile(20, 20, 400);
 //    peb_1 = new PebbleTile(380, 20, 400);
 //    peb_2 = new PebbleTile(20, 60, 400);
@@ -48,7 +48,5 @@ class ExamplesCentipede {
     ArrayList<Posn> arr = new ArrayList<>();
     arr.add(new Posn(300, 60));
     ObstacleList obl = new ObstacleList(0, arr);
-    //return t.checkExpect(b.nextEncountered(obl, 2), true);
-    t.checkExpect(bodySeg_0.nextEncountered(obl), true);
   }
 }

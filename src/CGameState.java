@@ -15,7 +15,8 @@ class Util {
       Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2,
           ITile.HEIGHT / 2);
       Posn vel = new Posn(speed, 0);
-      BodySeg curr = new BodySeg(pos, vel, head, true, true, 0);
+      BodySeg curr = new BodySeg(pos, vel, head, true, true,
+          3* ITile.HEIGHT/2, 0);
       body.add(curr);
     }
     return body;
@@ -28,6 +29,7 @@ class Util {
     }
     return cpArr;
   }
+
   // takes in an element and generates an arraylist with solely that element
   <T> ArrayList<T> singletonList(T item) {
     ArrayList<T> list = new ArrayList<>();
@@ -129,6 +131,7 @@ abstract class ATile implements ITile {
   public String toString() {
     return "(" + this.row + ", " + this.col + ")";
   }
+
   @Override
   // draws this ATile - to be implemented by classes that extend ATile
   public abstract void draw(WorldScene s);
@@ -463,7 +466,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
 
   ArrayList<Posn> hitBox() {
     ArrayList<Posn> hitBox = new ArrayList<>();
-    Posn p = new Posn(this.x, this.y - ITile.WIDTH/2);
+    Posn p = new Posn(this.x, this.y - ITile.WIDTH / 2);
     hitBox.add(p);
     hitBox.add(new Posn(p.x, p.y - ITile.HEIGHT));
     hitBox.add(new Posn(p.x, p.y + ITile.HEIGHT));
@@ -748,7 +751,7 @@ class Centipede {
     }
     if (indexHit + 1 < this.body.size()) {
       ArrayList<BodySeg> backBody =
-          util.getElementsBetween(this.body, indexHit+1, this.body.size());
+          util.getElementsBetween(this.body, indexHit + 1, this.body.size());
       if (backBody.size() > 0) {
         centipedes.add(this.makeCentipede(backBody));
       }
@@ -837,7 +840,7 @@ class Centipede {
     }
     for (BodySeg bodySeg : this.body) {
       bodySeg.reverseYDirection(height);
-      bodySeg.move(width, this.currSpeed, bodySeg.obstacleList(this.encountered));
+      bodySeg.move(width, this.currSpeed, bodySeg.obstacleList(this.encountered), garden);
     }
     this.removeUnusedObl();
     this.removeUnusedPeb();
@@ -912,22 +915,74 @@ class BodySeg {
   boolean head; // is this body segment the head?
   boolean down; // is this body segment going down?
   boolean right; // is this body segment going right?
+  int nextRow;
   int iteration; // represents the number of times this body segment has bounced
   // (switched directions)
 
   // the constructor
-  BodySeg(Posn pos, Posn velocity, boolean head, boolean down, boolean right,
+  BodySeg(Posn pos, Posn velocity, boolean head, boolean down, boolean right, int nextRow,
           int iteration) {
     this.pos = pos;
     this.velocity = velocity;
     this.head = head;
     this.down = down;
     this.right = right;
+    this.nextRow = nextRow;
     this.iteration = iteration;
   }
 
-  public String toString() {
-    return "" + this.pos;
+  // EFFECT: changes the position and velocity of this body segment
+  // moves this body segment
+  void move(int width, int speed, ObstacleList obl, ArrayList<ITile> garden) {
+    System.out.println(this.pos);
+    System.out.println(this.nextRow);
+    boolean leftEdge = Math.abs(this.pos.x - ITile.WIDTH / 2) <= speed/2;
+    boolean rightEdge = Math.abs(this.pos.x - (width - ITile.WIDTH/2)) <= speed/2;
+    boolean inRow = (this.pos.y - ITile.HEIGHT/2) % ITile.HEIGHT <= speed/2
+        || (this.pos.y - ITile.HEIGHT/2) % ITile.HEIGHT >= ITile.HEIGHT - speed/2;
+    boolean inNextRow = Math.abs(this.pos.y - nextRow) <= speed/2;
+
+    if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right ||
+        this.nextEncountered(obl) && inRow) {
+      int middle_x = (this.pos.x/ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH/2;
+      int excessSpeed = Math.abs(this.pos.x + this.velocity.x - middle_x);
+      if (this.velocity.x == 0) {
+        if (this.down) {
+          this.nextRow += ITile.HEIGHT;
+        } else {
+          this.nextRow -= ITile.HEIGHT;
+        }
+        excessSpeed = Math.abs(this.velocity.y);
+      }
+
+      if (this.down) {
+        this.pos = new Posn(middle_x, this.pos.y + excessSpeed);
+        this.velocity = new Posn(0, speed);
+      } else {
+        this.pos = new Posn(middle_x, this.pos.y - excessSpeed);
+        this.velocity = new Posn(0, -speed);
+      }
+
+      this.right = !this.right;
+
+    } else if (inNextRow && this.velocity.x == 0) {
+      if (this.down) {
+        this.nextRow += ITile.HEIGHT;
+      } else {
+        this.nextRow -= ITile.HEIGHT;
+      }
+      int middle_y = (this.pos.y/ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT/2;
+      int excessSpeed = Math.abs(this.pos.y + this.velocity.y - middle_y);
+      if (this.right) {
+        this.pos = new Posn(this.pos.x + excessSpeed, middle_y);
+        this.velocity = new Posn(speed, 0);
+      } else {
+        this.pos = new Posn(this.pos.x - excessSpeed, middle_y);
+        this.velocity = new Posn(-speed, 0);
+      }
+    } else {
+      this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+    }
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
@@ -967,53 +1022,28 @@ class BodySeg {
     if (Math.abs(vel_x) * 2 <= maxSpeed) {
       vel_x *= 2;
     } else if (Math.abs(vel_x) * 2 > maxSpeed) {
-      vel_x = vel_x/Math.abs(vel_x) * maxSpeed;
+      vel_x = vel_x / Math.abs(vel_x) * maxSpeed;
     }
 
     if (Math.abs(vel_y) * 2 <= maxSpeed) {
       vel_y *= 2;
     } else if (Math.abs(vel_y) * 2 > maxSpeed) {
-      vel_y =  vel_y/Math.abs(vel_y) * maxSpeed;
+      vel_y = vel_y / Math.abs(vel_y) * maxSpeed;
     }
 
     this.velocity = new Posn(vel_x, vel_y);
-    this.correctPos();
   }
 
   void setSpeed(int maxSpeed) {
     int vel_x = this.velocity.x;
     int vel_y = this.velocity.y;
     if (vel_x != 0) {
-      vel_x = Math.abs(vel_x)/vel_x * maxSpeed;
+      vel_x = Math.abs(vel_x) / vel_x * maxSpeed;
     }
     if (vel_y != 0) {
-      vel_y = Math.abs(vel_y)/vel_y * maxSpeed;
+      vel_y = Math.abs(vel_y) / vel_y * maxSpeed;
     }
     this.velocity = new Posn(vel_x, vel_y);
-    this.correctPos();
-  }
-
-  void correctPos() {
-    int distanceToTile_x = Math.abs(ITile.WIDTH - this.pos.x);
-    int distanceToTile_y = Math.abs(ITile.HEIGHT - this.pos.y);
-    int speed_x = Math.abs(this.velocity.x);
-    int speed_y = Math.abs(this.velocity.y);
-
-    if (speed_x != 0 && distanceToTile_x % speed_x > 0) {
-      if (!this.right) {
-        this.pos = new Posn(this.pos.x - distanceToTile_x % speed_x, this.pos.y);
-      } else {
-        this.pos = new Posn(this.pos.x + distanceToTile_x % speed_x, this.pos.y);
-      }
-    }
-
-    if (speed_y != 0 && distanceToTile_y % speed_y > 0) {
-      if (!this.down) {
-        this.pos = new Posn(this.pos.x, this.pos.y - distanceToTile_y % speed_y);
-      } else {
-        this.pos = new Posn(this.pos.x, this.pos.y + distanceToTile_y % speed_y);
-      }
-    }
   }
 
   // determines if the given obstacle list has the same iteration as this body segment
@@ -1023,7 +1053,6 @@ class BodySeg {
 
   // is this body segment in range of the given posn?
   boolean inRange(Posn p) {
-    System.out.println(this.pos + ", " + p);
     return new Util().inRange(this.pos, p);
   }
 
@@ -1049,8 +1078,9 @@ class BodySeg {
   // EFFECT: reverses the direction of this body segment potentially
   // returns true if successful, false if otherwise
   boolean reverseYDirection(int height) {
-    boolean topRow = this.pos.y == ITile.HEIGHT / 2;
-    boolean botRow = this.pos.y == height - ITile.HEIGHT / 2;
+    boolean topRow = this.pos.y/ITile.HEIGHT * ITile.HEIGHT + ITile.HEIGHT/2 == ITile.HEIGHT / 2;
+    boolean botRow = this.pos.y/ITile.HEIGHT * ITile.HEIGHT + ITile.HEIGHT/2 ==
+        height - ITile.HEIGHT / 2;
 
     if (this.down && botRow || !this.down && topRow) {
       this.iteration += 1;
@@ -1060,37 +1090,31 @@ class BodySeg {
     return false;
   }
 
-  // EFFECT: changes the position and velocity of this body segment
-  // moves this body segment
-  void move(int width, int speed, ObstacleList obl) {
-    boolean leftEdge = this.pos.x == ITile.WIDTH/2;
-    boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
-    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
-
-    if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
-        || this.nextEncountered(obl) && inRow) {
-      if (!this.down) {
-        speed *= -1;
-      }
-
-      this.right = !this.right;
-      this.velocity = new Posn(0, speed);
-
-    } else if (inRow && this.velocity.x == 0) {
-      if (!this.right) {
-        speed *= -1;
-      }
-      this.velocity = new Posn(speed, 0);
-    }
-
-    if (this.right && this.pos.x + this.velocity.x > width - ITile.WIDTH/2) {
-      this.pos = new Posn(width - ITile.WIDTH / 2, this.pos.y + this.velocity.y);
-    } else if (!this.right && this.pos.x + this.velocity.x < ITile.WIDTH/2) {
-      this.pos = new Posn(ITile.WIDTH / 2, this.pos.y + this.velocity.y);
-    } else {
-      this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
-    }
-  }
+//  // EFFECT: changes the position and velocity of this body segment
+//  // moves this body segment
+//  void move(int width, int speed, ObstacleList obl) {
+//    boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
+//    boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
+//    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
+//
+//    if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right ||
+//    this.nextEncountered(obl) && inRow) {
+//      if (!this.down) {
+//        speed *= -1;
+//      }
+//
+//      this.right = !this.right;
+//      this.velocity = new Posn(0, speed);
+//
+//    } else if (inRow && this.velocity.x == 0) {
+//      if (!this.right) {
+//        speed *= -1;
+//      }
+//      this.velocity = new Posn(speed, 0);
+//    }
+//
+//    this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+//  }
 
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
@@ -1111,13 +1135,22 @@ class BodySeg {
     return new Posn(x, y);
   }
 
+  Posn centered() {
+    if (this.right && this.pos.x % ITile.WIDTH >= ITile.WIDTH/2
+        || !this.right && this.pos.x % ITile.WIDTH <= ITile.WIDTH/2) {
+      return new Posn(this.pos.x/ITile.WIDTH * ITile.WIDTH + ITile.WIDTH/2, this.pos.y);
+    }
+    return pos;
+  }
+
   // gives the next position (depending on direction) of this body segment
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its direction towards that edge
   Posn nextTilePosn() {
-    Posn ahead = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+    Posn centered = this.centered();
+    Posn ahead = new Posn(centered.x + ITile.WIDTH, centered.y);
     if (!this.right) {
-      ahead = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+      ahead = new Posn(centered.x - ITile.WIDTH, centered.y);
     }
     return ahead;
   }
@@ -1126,19 +1159,24 @@ class BodySeg {
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its opposite direction towards that edge
   Posn prevTilePosn() {
-    Posn behind = new Posn(this.pos.x - ITile.WIDTH, this.pos.y);
+    Posn centered = this.centered();
+    Posn behind = new Posn(centered.x - ITile.WIDTH, centered.y);
     if (!this.right) {
-      behind = new Posn(this.pos.x + ITile.WIDTH, this.pos.y);
+      behind = new Posn(centered.x + ITile.WIDTH, centered.y);
     }
     return behind;
   }
 
   // is there a dandelion ahead of this body segment?
   boolean aheadDandelion(ArrayList<ITile> garden) {
-    IsDandelion isDandelion = new IsDandelion();
     Posn ahead = this.nextTilePosn();
+    return this.danAheadPos(ahead, garden);
+  }
+
+  boolean danAheadPos(Posn position, ArrayList<ITile> garden) {
+    IsDandelion isDandelion = new IsDandelion();
     for (ITile tile : garden) {
-      if (isDandelion.apply(tile) && tile.samePos(ahead)) {
+      if (isDandelion.apply(tile) && tile.samePos(position)) {
         return true;
       }
     }
@@ -1250,8 +1288,8 @@ class CGameState extends GameState {
 
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
-    this(new Util().singletonList(new Centipede(10, ITile.WIDTH/10)), 10,
-        ITile.WIDTH/10, garden, new Posn(0, 0), gnome,
+    this(new Util().singletonList(new Centipede(10, 4)), 10,
+        4, garden, new Posn(0, 0), gnome,
         new NoDart(), new NoWaterBalloon(),
         0, 0, ITile.WIDTH * x,
         ITile.HEIGHT * y);
@@ -1264,7 +1302,7 @@ class CGameState extends GameState {
   public void onTick() {
     if (this.cents.size() == 0) {
       this.length += 1;
-      this.speed += 1;
+      this.speed += 2;
       this.cents.add(new Centipede(this.length, this.speed));
     }
     this.collidesDandelion();
