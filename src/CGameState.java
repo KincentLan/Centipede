@@ -431,10 +431,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     ArrayList<Centipede> cpCent = new ArrayList<>();
     Util util = new Util();
     for (Centipede cent : cents) {
-      System.out.println("Centipede: " + cent);
-      if (cent.targetHit(this)) {
-        System.out.println("this ran.");
-        System.out.println(cent.split(this));
+      if (cent.splashHit(this)) {
         util.append(cpCent, cent.split(this));
       } else {
         cpCent.add(cent);
@@ -476,7 +473,6 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     hitBox.add(new Posn(p.x - ITile.WIDTH, p.y - ITile.HEIGHT));
     hitBox.add(new Posn(p.x - ITile.WIDTH, p.y + ITile.HEIGHT));
     hitBox.add(new Posn(p.x + ITile.WIDTH, p.y - ITile.HEIGHT));
-    System.out.println("Hitbox: " + hitBox);
     return hitBox;
   }
 }
@@ -681,6 +677,15 @@ class Centipede {
   boolean targetHit(IWaterBalloon waterBalloon) {
     for (BodySeg bodySeg : this.body) {
       if (waterBalloon.hitBodySeg(bodySeg)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean splashHit(IWaterBalloon waterBalloon) {
+    for (BodySeg bodySeg : this.body) {
+      if (waterBalloon.inHitBox(bodySeg)) {
         return true;
       }
     }
@@ -1313,8 +1318,8 @@ class CGameState extends GameState {
     for (int index = 0; index < this.garden.size(); index += 1) {
       ITile tile = this.garden.get(index);
       if (isDandelion.apply(tile) && this.waterBalloon.hitTile(tile)) {
-        waterBalloon.explode(this.cents, this.garden);
         this.score += this.numberBodySegHit() * 10;
+        waterBalloon.explode(this.cents, this.garden);
         this.waterBalloon = new NoWaterBalloon();
       }
     }
@@ -1328,7 +1333,7 @@ class CGameState extends GameState {
   int numberBodySegHit() {
     int ctr = 0;
     for (Centipede cent : this.cents) {
-      if (cent.targetHit(this.waterBalloon)) {
+      if (cent.splashHit(this.waterBalloon)) {
         ctr += cent.getIndicesHit(this.waterBalloon).size();
       }
     }
