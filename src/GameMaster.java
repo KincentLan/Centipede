@@ -27,6 +27,9 @@ class GameMaster extends World {
   // EFFECT: modifies the current GameState by modifying its fields after each tick
   // moves the world along after each tick
   public void onTick() {
+    if (this.gameState.endGame()) {
+      this.endOfWorld("" + this.gameState.score());
+    }
     this.gameState.onTick();
   }
 
@@ -51,12 +54,16 @@ class GameMaster extends World {
     this.gameState.onKeyReleased(s);
   }
 
-
   @Override
   // EFFECT: changes the current GameState by modifying its fields after each mouse click
   // changes the world accordingly in response to the position and mouse button click by the user
   public void onMouseClicked(Posn mouse, String bName) {
     this.gameState.onMouseClicked(mouse, bName);
+  }
+
+  @Override
+  public WorldScene lastScene(String s) {
+    return this.gameState.lastScene(s);
   }
 }
 
@@ -70,6 +77,10 @@ abstract class GameState extends World {
   // in essence, it "starts" the game if this GameState is a BGameState, if this GameState is a
   // CGameState, then it just "continues" the game as normal
   public abstract CGameState toCGameState();
+
+  public abstract boolean endGame();
+
+  public abstract int score();
 }
 
 
