@@ -721,9 +721,21 @@ class Centipede {
     return false;
   }
 
+  // is any of this centipede's body segment in range of the given tile?
   boolean anyInRange(ITile tile) {
     for (BodySeg bodySeg : this.body) {
       if (bodySeg.inRange(tile)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // is any of this centipede's body segment has the same posn
+  // as the given posn?
+  boolean anyInPosn(Posn pos) {
+    for (BodySeg bodySeg : this.body) {
+      if (bodySeg.inRange(pos)) {
         return true;
       }
     }
@@ -1053,6 +1065,7 @@ class BodySeg {
 
   // is this body segment in range of the given posn?
   boolean inRange(Posn p) {
+    System.out.println(this.pos + ", " + p);
     return new Util().inRange(this.pos, p);
   }
 
@@ -1316,6 +1329,7 @@ class CGameState extends GameState {
     this.movePlayer();
     this.moveDart();
     this.moveWaterBalloon();
+    this.endGame();
   }
 
   // EFFECT: modifies the player position of this CGameState based on the player direction
@@ -1427,6 +1441,13 @@ class CGameState extends GameState {
         new Util().append(cpCent, cent.split(this.dart));
         this.sproutDandelion(cent.positionHit(this.dart));
         this.dart = new NoDart();
+      }
+      if (cent.targetHit(this.waterBalloon)) {
+        this.score += 10;
+        this.streak += 1;
+        new Util().append(cpCent, cent.split(this.waterBalloon));
+        this.sproutDans(cent.posnsHit(this.waterBalloon));
+        this.waterBalloon = new NoWaterBalloon();
       } else {
         cpCent.add(cent);
       }
@@ -1446,6 +1467,14 @@ class CGameState extends GameState {
       if (isGrass.apply(tile) && tile.samePos(posHit)) {
         this.garden.set(index, new GrassToDan().apply(tile));
       }
+    }
+  }
+
+  // EFFECT: modifies the garden to change a list of the tiles to a dandelion
+  // sprouts a dandelion where a centipede has recently been hit
+  void sproutDans(ArrayList<Posn> posns) {
+    for (Posn pos : posns) {
+      this.sproutDandelion(pos);
     }
   }
 
@@ -1520,5 +1549,19 @@ class CGameState extends GameState {
   // continues this CGameState to be used in GameMaster
   public CGameState toCGameState() {
     return this;
+  }
+
+  @Override
+  // ends the world when the gnome is hit by a segment of a centipede.
+  // the player loses and its final score will be displayed
+  public void endGame() {
+    Posn player = new Posn(gnome.x, gnome.y);
+    System.out.println(player);
+    for (Centipede cent : cents) {
+      if (cent.anyInPosn(player)) {
+        System.out.println(player);
+        this.endOfWorld("YOU LOST. Final Score: " + this.score);
+      }
+    }
   }
 }
