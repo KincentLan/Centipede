@@ -764,19 +764,16 @@ class Centipede {
   // splits this centipede into multiple centipedes depending on where the dart hit this
   // centipede
   ArrayList<Centipede> split(IDart dart) {
-    int indexHit = this.getIndexHit(dart);
-    if (this.body.size() <= 1) {
-      return new ArrayList<>();
-    }
-    Util util = new Util();
     ArrayList<Centipede> centipedes = new ArrayList<>();
-    ArrayList<BodySeg> frontBody = util.getElementsBetween(this.body, 0, indexHit);
+    int indexHit = this.getIndexHit(dart);
+    ArrayList<BodySeg> frontBody = new Util().getElementsBetween(this.body, 0, indexHit);
+    System.out.println(frontBody);
     if (frontBody.size() > 0) {
       centipedes.add(this.makeCentipede(frontBody));
     }
     if (indexHit + 1 < this.body.size()) {
       ArrayList<BodySeg> backBody =
-          util.getElementsBetween(this.body, indexHit + 1, this.body.size());
+          new Util().getElementsBetween(this.body, indexHit + 1, this.body.size());
       if (backBody.size() > 0) {
         centipedes.add(this.makeCentipede(backBody));
       }
@@ -1325,7 +1322,7 @@ class CGameState extends GameState {
 
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
-    this(new Util().singletonList(new Centipede(10, 4)), 8,
+    this(new Util().singletonList(new Centipede(10, 4)), 1,
         4, garden, new Posn(0, 0), gnome,
         new NoDart(), new NoWaterBalloon(),
         0, 0, ITile.WIDTH * x,
@@ -1484,13 +1481,6 @@ class CGameState extends GameState {
         new Util().sproutDandelion(cent.positionHit(this.dart), this.garden);
         this.dart = new NoDart();
       }
-      if (cent.targetHit(this.waterBalloon)) {
-        this.score += 10;
-        this.streak += 1;
-        new Util().append(cpCent, cent.split(this.waterBalloon));
-        this.sproutDans(cent.posnsHit(this.waterBalloon));
-        this.waterBalloon = new NoWaterBalloon();
-      }
       else {
         cpCent.add(cent);
       }
@@ -1498,26 +1488,6 @@ class CGameState extends GameState {
     this.cents.clear();
     for (Centipede cent : cpCent) {
       this.cents.add(cent);
-    }
-  }
-  
-  // EFFECT: modifies the garden to change one of the tiles to a dandelion
-  // sprouts a dandelion where a centipede has recently been hit
-  void sproutDandelion(Posn posHit) {
-    IsGrass isGrass = new IsGrass();
-    for (int index = 0; index < this.garden.size(); index += 1) {
-      ITile tile = this.garden.get(index);
-      if (isGrass.apply(tile) && tile.samePos(posHit)) {
-        this.garden.set(index, new GrassToDan().apply(tile));
-      }
-    }
-  }
-  
-  // EFFECT: modifies the garden to change a list of the tiles to a dandelion
-  // sprouts a dandelion where a centipede has recently been hit
-  void sproutDans(ArrayList<Posn> posns) {
-    for (Posn pos : posns) {
-      this.sproutDandelion(pos);
     }
   }
 
