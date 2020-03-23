@@ -535,10 +535,15 @@ class Gnome {
 
   // EFFECT: changes the given world scene by adding this gnome onto it
   // draws this gnome onto the given world scene
-  void draw(WorldScene s) {
+  void draw(WorldScene s, int streak) {
     WorldImage player =
         new StarImage(ITile.WIDTH / 2 - 1, 8,
             2, OutlineMode.SOLID, Color.ORANGE);
+    WorldImage playerBallon =
+        new CircleImage(ITile.WIDTH / 2 - 1, OutlineMode.SOLID, Color.BLUE);
+    if (streak >= 3) {
+      s.placeImageXY(playerBallon, this.x, this.y);
+    }
     s.placeImageXY(player, this.x, this.y);
   }
 
@@ -1078,7 +1083,13 @@ class BodySeg {
       this.velocity = new Posn(speed, 0);
     }
 
-    this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+    if (this.right && this.pos.x + this.velocity.x > width - ITile.WIDTH/2) {
+      this.pos = new Posn(width - ITile.WIDTH / 2, this.pos.y + this.velocity.y);
+    } else if (!this.right && this.pos.x + this.velocity.x < ITile.WIDTH/2) {
+      this.pos = new Posn(ITile.WIDTH / 2, this.pos.y + this.velocity.y);
+    } else {
+      this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+    }
   }
 
   // is there a position to the right or left of this body segment (depending on direction)
@@ -1293,6 +1304,7 @@ class CGameState extends GameState {
   void moveDart() {
     if (this.dart.missed()) {
       this.score -= 1;
+      this.streak = 0;
     }
 
     if (this.dart.offScreen()) {
@@ -1408,7 +1420,7 @@ class CGameState extends GameState {
     for (Centipede c : this.cents) {
       c.draw(s);
     }
-    this.gnome.draw(s);
+    this.gnome.draw(s, 0);
 
     this.dart.draw(s);
 
