@@ -78,6 +78,7 @@ abstract class GameState extends World {
   // CGameState, then it just "continues" the game as normal
   public abstract CGameState toCGameState();
 
+  // has the game ended?
   public abstract boolean endGame();
 
   // gets the score of the current GameState
