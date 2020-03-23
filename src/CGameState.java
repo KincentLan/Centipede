@@ -22,6 +22,8 @@ class Util {
     return body;
   }
 
+  // constructs an arraylist that has the elements of the given arraylist from the start to the
+  // end
   <T> ArrayList<T> getElementsBetween(ArrayList<T> src, int start, int end) {
     ArrayList<T> cpArr = new ArrayList<>();
     for (int index = start; index < end; index += 1) {
@@ -74,13 +76,17 @@ class Util {
     }
   }
 
+  // ASSUMPTION: the second posn is meant to be a tile posn; otherwise this method would not make
+  // sense
+  // are the two posns in range of each other?
   boolean inRange(Posn pos, Posn tilePosn) {
     return Math.abs(tilePosn.x - pos.x) <= ITile.WIDTH / 2
         && Math.abs(tilePosn.y - pos.y) <= ITile.HEIGHT / 2;
   }
 
-  // EFFECT: modifies the garden to change one of the tiles to a dandelion
-  // sprouts a dandelion where a centipede has recently been hit
+  // EFFECT: modifies the givengarden to change one of the tiles to a dandelion
+  // sprouts a dandelion in the given posn; in effect, replacing one of the tiles in the garden
+  // with a dandelion tile
   void sproutDandelion(Posn posHit, ArrayList<ITile> garden) {
     IsGrass isGrass = new IsGrass();
     for (int index = 0; index < garden.size(); index += 1) {
@@ -91,6 +97,9 @@ class Util {
     }
   }
 
+  // EFFECT: modifies the given garden to change multiple tiles to a dandelion
+  // sprouts dandelions in the given positions; in effect, replacing multiple tiles in the garden
+  // with dandelion tiles
   void sproutDanInPosns(ArrayList<Posn> hitbox, ArrayList<ITile> garden) {
     for (Posn hitboxSeg : hitbox) {
       this.sproutDandelion(hitboxSeg, garden);
@@ -100,11 +109,11 @@ class Util {
 
 // represents a tile and introduces the tile's height and width constants
 interface ITile {
-  int HEIGHT = 40;
+  int HEIGHT = 40; // the height of a tile cell in pixels
 
-  int WIDTH = 40;
+  int WIDTH = 40; // the width of a tile cell in pixels
 
-  int DEF_HP = 3;
+  int FULL_HP = 3; // to represent the default health of a dandelion tile
 
   // draws this tile onto the world scene given
   void draw(WorldScene s);
@@ -128,16 +137,18 @@ interface ITile {
   // is the HP of this ITile zero or less?
   boolean noHP();
 
+  // recovers the HP of this ITile to full if this ITile has an HP unit
   void fullHP();
 
+  // gets a list of Posns representing the hitbox of this ITile
   ArrayList<Posn> hitBox();
 }
 
 // implements ITile and introduces the row and col fields, which represent x and y indices
 abstract class ATile implements ITile {
-  int row;
-  int col;
-  int width;
+  int row; // to represent the row of this ATile in terms of the grid in pixels
+  int col; // to represent the col of this ATile in terms of the grid in pixels
+  int width; // to represent the width of the garden this ATile is inin pixels
 
   // the constructor
   ATile(int row, int col, int width) {
@@ -185,11 +196,11 @@ abstract class ATile implements ITile {
 
   @Override
   // by default, an ATile does not have an HP unit, so this method does nothing
-  public void lowerHP() {
-  }
+  public void lowerHP() { }
 
-  public void fullHP() {
-  }
+  @Override
+  // by default, an ATile does not have an HP unit, so this method does nothing
+  public void fullHP() { }
 
   @Override
   // by default, an ATile does not have an HP unit, so it does not make sense to have noHP, so
@@ -198,6 +209,9 @@ abstract class ATile implements ITile {
     return false;
   }
 
+  @Override
+  // by default, this ATile's hitbox is just the current tile; so the only thing added to the
+  // hitbox of this ATile is this ATile's center (row, col)
   public ArrayList<Posn> hitBox() {
     ArrayList<Posn> hitBox = new ArrayList<>();
     hitBox.add(new Posn(this.row, this.col));
@@ -232,7 +246,7 @@ class GrassTile extends ATile {
      * parameters: none Methods on parameters: none
      */
     if (bName.equals("LeftButton") && this.col != botCol) {
-      return new DandelionTile(this.row, this.col, DEF_HP, this.width);
+      return new DandelionTile(this.row, this.col, FULL_HP, this.width);
     } else if (bName.equals("RightButton") && this.col != botCol) {
       return new PebbleTile(this.row, this.col, this.width);
     }
@@ -269,6 +283,9 @@ class PebbleTile extends ATile {
     return visitor.visitPeb(this);
   }
 
+  @Override
+  // the hitbox of this PebbleTile is eight tiles around this pebble tile including it's tile
+  // position
   public ArrayList<Posn> hitBox() {
     boolean leftEdge = ITile.WIDTH / 2 == this.row;
     boolean rightEdge = this.width - ITile.WIDTH / 2 == this.row;
@@ -306,7 +323,7 @@ class DandelionTile extends ATile {
   @Override
   // draws a DandelionTile, with the color depending on the HP, onto the given world scene
   public void draw(WorldScene s) {
-    Color color = new Color(255, 255, -(this.hp - DEF_HP) * 75);
+    Color color = new Color(255, 255, -(this.hp - FULL_HP) * 75);
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
     WorldImage grass = new RectangleImage(WIDTH - 1,
         HEIGHT - 1, OutlineMode.SOLID, color);
@@ -327,7 +344,7 @@ class DandelionTile extends ATile {
   }
 
   public void fullHP() {
-    this.hp = DEF_HP;
+    this.hp = FULL_HP;
   }
 
   @Override
@@ -767,7 +784,6 @@ class Centipede {
     ArrayList<Centipede> centipedes = new ArrayList<>();
     int indexHit = this.getIndexHit(dart);
     ArrayList<BodySeg> frontBody = new Util().getElementsBetween(this.body, 0, indexHit);
-    System.out.println(frontBody);
     if (frontBody.size() > 0) {
       centipedes.add(this.makeCentipede(frontBody));
     }

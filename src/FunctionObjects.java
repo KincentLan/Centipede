@@ -128,7 +128,7 @@ class GrassToDan implements ITileVisitor<ITile> {
   // in effect, this function does nothing to a grass because it is not a
   // dandelion
   public ITile visitGrass(GrassTile tile) {
-    return new DandelionTile(tile.row, tile.col, ITile.DEF_HP, tile.width);
+    return new DandelionTile(tile.row, tile.col, ITile.FULL_HP, tile.width);
   }
 
   // changes the given DandelionTile to a PebbleTile
