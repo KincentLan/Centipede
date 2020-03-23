@@ -1506,7 +1506,13 @@ class CGameState extends GameState {
     this.dart.draw(s);
 
     this.waterBalloon.draw(s);
-
+    
+    WorldImage streaktext = new TextImage("Water Balloon is Ready", Color.BLUE);
+    if (this.streak < 3) {
+      streaktext = new TextImage("Streak: " + this.streak, Color.BLUE);
+    }
+    s.placeImageXY(streaktext, this.width - 8 * ITile.WIDTH / 4, ITile.HEIGHT);
+    
     WorldImage score = new TextImage("Score: " + this.score, Color.BLACK);
     s.placeImageXY(score, this.width - 5 * ITile.WIDTH / 4, ITile.HEIGHT / 4);
 
