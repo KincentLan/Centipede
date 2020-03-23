@@ -34,7 +34,7 @@ class BGameState extends GameState {
     for (ITile tile : this.garden) {
       tile.draw(s);
     }
-    this.gnome.draw(s);
+    this.gnome.draw(s, 0);
     return s;
   }
 

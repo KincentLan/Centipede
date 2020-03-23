@@ -529,10 +529,15 @@ class Gnome {
 
   // EFFECT: changes the given world scene by adding this gnome onto it
   // draws this gnome onto the given world scene
-  void draw(WorldScene s) {
+  void draw(WorldScene s, int streak) {
     WorldImage player =
         new StarImage(ITile.WIDTH / 2 - 1, 8,
             2, OutlineMode.SOLID, Color.ORANGE);
+    WorldImage playerWithBallon =
+        new CircleImage(ITile.WIDTH / 2 - 1, OutlineMode.SOLID, Color.BLUE);
+    if (streak >= 3) {
+      s.placeImageXY(playerWithBallon, this.x, this.y);
+    }
     s.placeImageXY(player, this.x, this.y);
   }
 
@@ -1270,6 +1275,7 @@ class CGameState extends GameState {
   void moveDart() {
     if (this.dart.missed()) {
       this.score -= 1;
+      this.streak = 0;
     }
 
     if (this.dart.offScreen()) {
@@ -1334,6 +1340,7 @@ class CGameState extends GameState {
       ITile tile = this.garden.get(index);
       if (isDandelion.apply(tile) && this.dart.hitTile(tile)) {
         this.dart = new NoDart();
+        this.streak = this.streak + 1;
         tile.lowerHP();
         if (tile.noHP()) {
           this.garden.set(index, new DanToPeb().apply(tile));
@@ -1385,7 +1392,7 @@ class CGameState extends GameState {
     for (Centipede c : this.cents) {
       c.draw(s);
     }
-    this.gnome.draw(s);
+    this.gnome.draw(s, this.streak);
 
     this.dart.draw(s);
 
