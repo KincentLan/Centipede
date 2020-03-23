@@ -1058,10 +1058,6 @@ class BodySeg {
     this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
   }
 
-  public String toString() {
-    return "" + this.velocity;
-  }
-
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
   boolean nextEncountered(ObstacleList obl) {
