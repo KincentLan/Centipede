@@ -880,8 +880,19 @@ class BodySeg {
       }
       this.velocity = new Posn(speed, 0);
     }
-
-    this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+    int nextRow = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + 3 * ITile.HEIGHT / 2;
+    if (!this.down) {
+      nextRow = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT - 3 * ITile.HEIGHT / 2;
+    }
+    if (this.pos.x + this.velocity.x > width - ITile.WIDTH / 2) {
+      this.pos = new Posn(width - ITile.WIDTH / 2, this.pos.y);
+    } else if (this.pos.x + this.velocity.x < ITile.WIDTH / 2) {
+      this.pos = new Posn(ITile.WIDTH/2, this.pos.y);
+    } else if (this.pos.y + this.velocity.y > nextRow) {
+      this.pos = new Posn(ITile.WIDTH/2, this.pos.y);
+    } else {
+      this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+    }
   }
 
   // is there a position to the right or left of this body segment (depending on direction)
