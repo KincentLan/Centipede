@@ -417,24 +417,15 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
   }
 
   public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
-    IsDandelion isDandelion = new IsDandelion();
-    for (int index = 0; index < garden.size(); index += 1) {
-      ITile tile = garden.get(index);
-      if (isDandelion.apply(tile) && this.inHitBox(tile)) {
-        if (tile.inRange(new Posn(this.x, this.y))) {
-          garden.set(index, new DanToPeb().apply(tile));
-        } else {
-          tile.fullHP();
-        }
+    for (ITile tile : garden) {
+      if (new IsDandelion().apply(tile) && this.inHitBox(tile)) {
+        tile.fullHP();
       }
     }
     ArrayList<Centipede> cpCent = new ArrayList<>();
     Util util = new Util();
     for (Centipede cent : cents) {
-      System.out.println("Centipede: " + cent);
       if (cent.targetHit(this)) {
-        System.out.println("this ran.");
-        System.out.println(cent.split(this));
         util.append(cpCent, cent.split(this));
       } else {
         cpCent.add(cent);
@@ -476,7 +467,6 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     hitBox.add(new Posn(p.x - ITile.WIDTH, p.y - ITile.HEIGHT));
     hitBox.add(new Posn(p.x - ITile.WIDTH, p.y + ITile.HEIGHT));
     hitBox.add(new Posn(p.x + ITile.WIDTH, p.y - ITile.HEIGHT));
-    System.out.println("Hitbox: " + hitBox);
     return hitBox;
   }
 }
@@ -645,10 +635,6 @@ class Centipede {
     this.currSpeed = currSpeed;
     this.encountered = encountered;
     this.pebsAlreadyOn = pebsAlreadyOn;
-  }
-
-  public String toString() {
-    return "" + this.body;
   }
 
   // the default constructor - constructs the starting centipede in the centipede game
@@ -916,10 +902,6 @@ class BodySeg {
     this.iteration = iteration;
   }
 
-  public String toString() {
-    return "" + this.pos;
-  }
-
   // EFFECT: changes the given world scene by adding this body segment onto it
   // draws this body segment onto the given world scene
   void draw(WorldScene s) {
@@ -1013,8 +995,8 @@ class BodySeg {
 
   // is this body segment in range of the given posn?
   boolean inRange(Posn p) {
-    System.out.println(this.pos + ", " + p);
-    return new Util().inRange(this.pos, p);
+    return Math.abs(this.pos.x - p.x) <= ITile.WIDTH / 2
+        && Math.abs(this.pos.y - p.y) <= ITile.HEIGHT / 2;
   }
 
   boolean inRange(ITile tile) {
@@ -1440,7 +1422,7 @@ class CGameState extends GameState {
     }
 
     if (s.equals("b")) {
-      if (this.waterBalloon.offScreen()) { // && streak >= 3) {
+      if (this.waterBalloon.offScreen() && streak >= 3) {
         this.score -= 5;
         this.streak = 0;
         this.waterBalloon = this.gnome.generateWaterBallon();
