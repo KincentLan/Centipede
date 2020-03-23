@@ -127,5 +127,9 @@ class BGameState extends GameState {
   public CGameState toCGameState() {
     return new CGameState(this.x, this.y, this.garden, this.gnome);
   }
+
+  @Override
+  public void endGame() {
+  }
 }
 

@@ -58,6 +58,11 @@ class GameMaster extends World {
   public void onMouseClicked(Posn mouse, String bName) {
     this.gameState.onMouseClicked(mouse, bName);
   }
+  
+  @Override
+  public void endOfWorld(String s) {
+    this.gameState.endGame();
+  }
 }
 
 // represents a game state in the centipede game which could be a BGameState (setup)
@@ -70,6 +75,8 @@ abstract class GameState extends World {
   // in essence, it "starts" the game if this GameState is a BGameState, if this GameState is a
   // CGameState, then it just "continues" the game as normal
   public abstract CGameState toCGameState();
+  
+  public abstract void endGame();
 }
 
 

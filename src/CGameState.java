@@ -718,9 +718,21 @@ class Centipede {
     return false;
   }
 
+  // is any of this centipede's body segment in range of the given tile?
   boolean anyInRange(ITile tile) {
     for (BodySeg bodySeg : this.body) {
       if (bodySeg.inRange(tile)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  // is any of this centipede's body segment has the same posn
+  // as the given posn?
+  boolean anyInPosn(Posn pos) {
+    for (BodySeg bodySeg : this.body) {
+      if (bodySeg.inRange(pos)) {
         return true;
       }
     }
@@ -1033,7 +1045,6 @@ class BodySeg {
 
   // is this body segment in range of the given posn?
   boolean inRange(Posn p) {
-    System.out.println(this.pos + ", " + p);
     return new Util().inRange(this.pos, p);
   }
 
@@ -1070,37 +1081,31 @@ class BodySeg {
     return false;
   }
 
-  // EFFECT: changes the position and velocity of this body segment
-  // moves this body segment
-  void move(int width, int speed, ObstacleList obl) {
-    boolean leftEdge = this.pos.x == ITile.WIDTH/2;
-    boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
-    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
+//EFFECT: changes the position and velocity of this body segment
+ // moves this body segment
+ void move(int width, int speed, ObstacleList obl) {
+   boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
+   boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
+   boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
 
-    if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
-        || this.nextEncountered(obl) && inRow) {
-      if (!this.down) {
-        speed *= -1;
-      }
+   if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right
+      || this.nextEncountered(obl) && inRow)  {
+     if (!this.down) {
+       speed *= -1;
+     }
 
-      this.right = !this.right;
-      this.velocity = new Posn(0, speed);
+     this.right = !this.right;
+     this.velocity = new Posn(0, speed);
 
-    } else if (inRow && this.velocity.x == 0) {
-      if (!this.right) {
-        speed *= -1;
-      }
-      this.velocity = new Posn(speed, 0);
-    }
+   } else if (inRow && this.velocity.x == 0) {
+     if (!this.right) {
+       speed *= -1;
+     }
+     this.velocity = new Posn(speed, 0);
+   }
 
-    if (this.right && this.pos.x + this.velocity.x > width - ITile.WIDTH/2) {
-      this.pos = new Posn(width - ITile.WIDTH / 2, this.pos.y + this.velocity.y);
-    } else if (!this.right && this.pos.x + this.velocity.x < ITile.WIDTH/2) {
-      this.pos = new Posn(ITile.WIDTH / 2, this.pos.y + this.velocity.y);
-    } else {
-      this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
-    }
-  }
+   this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
+ }
 
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
@@ -1288,6 +1293,7 @@ class CGameState extends GameState {
     this.movePlayer();
     this.moveDart();
     this.moveWaterBalloon();
+    this.endGame();
   }
 
   // EFFECT: modifies the player position of this CGameState based on the player direction
@@ -1507,5 +1513,19 @@ class CGameState extends GameState {
   // continues this CGameState to be used in GameMaster
   public CGameState toCGameState() {
     return this;
+  }
+  
+  @Override
+  // ends the world when the gnome is hit by a segment of a centipede.
+  // the player loses and its final score will be displayed
+  public void endGame() {
+    Posn player = new Posn(gnome.x, gnome.y);
+    System.out.println(player);
+    for (Centipede cent : cents) {
+      if (cent.anyInPosn(player)) {
+        System.out.println(player);
+        this.endOfWorld("YOU LOST. Final Score: " + this.score);
+      }
+    }
   }
 }
