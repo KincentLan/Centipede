@@ -157,17 +157,14 @@ abstract class ATile implements ITile {
     this.width = width;
   }
 
-  @Override
   // draws this ATile - to be implemented by classes that extend ATile
   public abstract void draw(WorldScene s);
 
-  @Override
   // is this ATile at the same position of the given Posn?
   public boolean samePos(Posn pos) {
     return this.row == pos.x && this.col == pos.y;
   }
 
-  @Override
   // in effect, this gives the "replacement" of this ATile with a new tile
   // with the same position given the mouse button name and the bottom column of the board
   public ITile replaceTile(String bName, int botCol) {
@@ -178,7 +175,6 @@ abstract class ATile implements ITile {
     }
   }
 
-  @Override
   // is this ATile in range of the given posn?
   public boolean inRange(Posn pos) {
     Util util = new Util();
@@ -190,28 +186,23 @@ abstract class ATile implements ITile {
     return false;
   }
 
-  @Override
   // to return the result of applying the given visitor to this ATile
   public abstract <R> R accept(ITileVisitor<R> visitor);
 
-  @Override
   // by default, an ATile does not have an HP unit, so this method does nothing
   public void lowerHP() {
   }
 
-  @Override
   // by default, an ATile does not have an HP unit, so this method does nothing
   public void fullHP() {
   }
 
-  @Override
   // by default, an ATile does not have an HP unit, so it does not make sense to have noHP, so
   // it just returns false
   public boolean noHP() {
     return false;
   }
 
-  @Override
   // by default, this ATile's hitbox is just the current tile; so the only thing added to the
   // hitbox of this ATile is this ATile's center (row, col)
   public ArrayList<Posn> hitBox() {
@@ -228,7 +219,6 @@ class GrassTile extends ATile {
     super(row, col, width);
   }
 
-  @Override
   // draws a GrassTile, a solid green cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
@@ -238,15 +228,10 @@ class GrassTile extends ATile {
     s.placeImageXY(grass, this.row, this.col);
   }
 
-  @Override
   // if this tile's indices match a given set of indices, returns a Dandelion
   // if left botton is clicked) or Pebble (if right botton is clicked) with those
   // indices
   public ITile replaceTile(String bName, int botCol) {
-    /*
-     * replaceTile template: everything in the ATile template, plus Fields of
-     * parameters: none Methods on parameters: none
-     */
     if (bName.equals("LeftButton") && this.col != botCol) {
       return new DandelionTile(this.row, this.col, FULL_HP, this.width);
     } else if (bName.equals("RightButton") && this.col != botCol) {
@@ -255,21 +240,19 @@ class GrassTile extends ATile {
     return this;
   }
 
-  @Override
   // to return the result of applying the given visitor to this GrassTile
   public <R> R accept(ITileVisitor<R> visitor) {
     return visitor.visitGrass(this);
   }
 }
 
-// represents a tile with a pebble tile
+// represents a pebble tile
 class PebbleTile extends ATile {
   // the constructor
   PebbleTile(int row, int col, int width) {
     super(row, col, width);
   }
 
-  @Override
   // draws a PebbleTile, a solid gray cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
@@ -339,12 +322,13 @@ class DandelionTile extends ATile {
     return visitor.visitDan(this);
   }
 
-  @Override
-  // lowers the HP of this DandelionTile
+  // EFFECT: lowers the HP of this DandelionTile
   public void lowerHP() {
     this.hp -= 1;
   }
 
+  @Override
+  // EFFECT: turns the health back to full health
   public void fullHP() {
     this.hp = FULL_HP;
   }
@@ -356,23 +340,25 @@ class DandelionTile extends ATile {
   }
 }
 
+// represents a moving projectile in the centipede game
 interface IProjectile {
-  // draws this IWaterBallon onto the given world scene
+  // draws this IProjectile onto the given world scene
   void draw(WorldScene s);
 
-  // updates this IWaterBallon (with a new y position) after 1 tick;
+  // updates this IProjectile (with a new y position) after 1 tick;
   void move();
 
-  // is this IWaterBallon off the screen?
+  // is this IProjectile off the screen?
   boolean offScreen();
 
-  // is this IWaterBallon in the same tile as the given body seg?
+  // is this IProjectile in the same tile as the given body seg?
   boolean hitBodySeg(BodySeg bodySeg);
 
-  // can this IWaterBallon hit the given ITile?
+  // can this IProjectile hit the given ITile?
   boolean hitTile(ITile tile);
 }
 
+// represents an abstract projectile in the centipede game
 abstract class AProjectile implements IProjectile {
   int x; // represents the x position of the dart in pixels
   int y; // represents the y position of the dart in pixels
@@ -385,73 +371,84 @@ abstract class AProjectile implements IProjectile {
     this.speed = speed;
   }
 
+  // draws this AProjectile onto the given world scene
   public abstract void draw(WorldScene s);
 
-  // draws this Dart onto the given world scene
+  // move this AProjectile down by its speed
   public void move() {
     this.y -= this.speed;
   }
 
-  // is this Dart off the screen?
+  // is this AProjectile off the screen?
   public boolean offScreen() {
     return this.y <= 0;
   }
 
-  // is this Dart in the same tile as the given position?
+  // is this AProjectile in the same tile as the given body segment?
   public boolean hitBodySeg(BodySeg bodySeg) {
     return bodySeg.posnInRange(new Posn(this.x, this.y));
   }
 
-  // can this Dart hit the given tile?
+  // can this AProjectile hit the given tile?
   public boolean hitTile(ITile tile) {
     return tile.inRange(new Posn(this.x, this.y));
   }
 }
 
+// represents a non-existing projectile in the game
 abstract class ANoProjectile implements IProjectile {
-  // draws this NoDart onto the given world scene, which in essence does nothing
+  // draws this ANoProjectile onto the given world scene, which in essence does nothing
   public void draw(WorldScene s) {
   }
 
-  // draws this NoDart onto the given world scene, which in essence does nothing
+  // draws this ANoProjectile onto the given world scene, which in essence does nothing
   public void move() {
   }
 
-  // is this NoDart off the screen? Yes, always
+  // is this ANoProjectile off the screen? Yes, always
   public boolean offScreen() {
     return true;
   }
 
-  // does this NoDart have the given posn? Never.
+  // does this ANoProjectile have the given posn? Never.
   public boolean hitBodySeg(BodySeg bodySeg) {
     return false;
   }
 
-  // can this NoDart hit any dandelion tile given the garden? No.
+  // can this ANoProjectile hit any dandelion tile given the garden? No.
   public boolean hitTile(ITile tile) {
     return false;
   }
 }
 
+// represents a water balloon in the game
 interface IWaterBalloon extends IProjectile {
+  
+  // explodes this IWaterBalloon if it hits the centipede or a dandelion in the
+  // list of centipedes and garden
   void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden);
 
+  // is this IWaterBallon in the hitbo (the cell itself and its adjacent 8 cells)
+  // of the given body segment? 
   boolean inHitBox(BodySeg bodySeg);
 }
 
+// represents a moving water ballon in the game
 class WaterBalloon extends AProjectile implements IWaterBalloon {
   public WaterBalloon(int x, int y, int speed) {
     super(x, y, speed);
   }
 
-  // EFFECT: modifies the given world scene to include this Dart
-  // draws this Dart onto the given world scene
+  // EFFECT: modifies the given world scene to include this WaterBalloon
+  // draws this WaterBalloon onto the given world scene
   public void draw(WorldScene s) {
     WorldImage waterBalloon
         = new EllipseImage(ITile.WIDTH / 2, ITile.HEIGHT, OutlineMode.SOLID, Color.BLUE);
     s.placeImageXY(waterBalloon, this.x, this.y);
   }
 
+  // EFFECT: modifies the given list of centipedes and list of tiles if any of the body segment 
+  // or dandelions if the water balloon or its splash collides with them
   public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
     IsDandelion isDandelion = new IsDandelion();
     for (int index = 0; index < garden.size(); index += 1) {
@@ -480,6 +477,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     }
   }
 
+  // is this water balloon or its splash inside the given body segment?
   public boolean inHitBox(BodySeg bodySeg) {
     for (Posn p : this.hitBox()) {
       if (bodySeg.posnInRange(p)) {
@@ -489,6 +487,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     return false;
   }
 
+  //is this water balloon or its splash inside the given ITile?
   boolean inHitBox(ITile tile) {
     for (Posn p : this.hitBox()) {
       if (tile.inRange(p)) {
@@ -498,6 +497,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     return false;
   }
 
+  // generates a list of posns for the water balloon and its splashes
   ArrayList<Posn> hitBox() {
     ArrayList<Posn> hitBox = new ArrayList<>();
     Posn p = new Posn(this.x, this.y - ITile.WIDTH / 2);
@@ -514,12 +514,16 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
   }
 }
 
+// represents a non-existing water balloon
 class NoWaterBalloon extends ANoProjectile implements IWaterBalloon {
+  
   @Override
+  // explodes this non-existing, which has no effect
   public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
   }
 
   @Override
+  //is this water balloon or its splash inside the given body segment? No
   public boolean inHitBox(BodySeg bodySeg) {
     return false;
   }
@@ -527,12 +531,14 @@ class NoWaterBalloon extends ANoProjectile implements IWaterBalloon {
 
 // represents a dart that can be fired in the centipede game
 interface IDart extends IProjectile {
+  
   // did this IDart miss anything on the board?
   boolean missed();
 }
 
 // represents a non-existent dart in the centipede game
 class NoDart extends ANoProjectile implements IDart {
+  
   // NoDart cannot miss since there isn't a dart
   public boolean missed() {
     return false;
@@ -552,6 +558,7 @@ class Dart extends AProjectile implements IDart {
     s.placeImageXY(dart, this.x, this.y);
   }
 
+  // is this dart off the board?
   public boolean missed() {
     return this.y <= 0;
   }
@@ -658,6 +665,7 @@ class Gnome {
         ITile.HEIGHT / 2);
   }
 
+  // is this gnome inside the same tile as the given posn?
   boolean inRange(Posn pos) {
     return new Util().inRange(new Posn(this.x, this.y), pos);
   }
@@ -715,6 +723,7 @@ class Centipede {
     return false;
   }
 
+  // does this centipede touch the given gnome?
   boolean hitPlayer(Gnome gnome) {
     for (BodySeg bodySeg : this.body) {
       if (bodySeg.gnomeInRange(gnome)) {
@@ -734,6 +743,7 @@ class Centipede {
     return false;
   }
 
+  // does the given water balloon (or its splash) hit this centipede?
   boolean splashHit(IWaterBalloon waterBalloon) {
     for (BodySeg bodySeg : this.body) {
       if (waterBalloon.inHitBox(bodySeg)) {
@@ -755,6 +765,7 @@ class Centipede {
     return false;
   }
 
+  // is this given tile one of this centipede's already encountered pebble list?
   boolean inPebsAlreadyOn(ITile tile) {
     for (ITile pebble : this.pebsAlreadyOn) {
       if (pebble == tile) {
@@ -896,6 +907,7 @@ class Centipede {
     this.removeUnusedPeb();
   }
 
+  // removes any pebbles that was not stepped on
   void removeUnusedPeb() {
     ArrayList<ITile> usedPebs = new ArrayList<>();
     for (ITile tile : this.pebsAlreadyOn) {
@@ -911,6 +923,7 @@ class Centipede {
     }
   }
 
+  // EFFECT: doubles this centipede's speed if it does not reach the maximum
   void doubleSpeed() {
     if (this.currSpeed * 2 <= this.maxSpeed) {
       this.currSpeed *= 2;
@@ -922,6 +935,7 @@ class Centipede {
     }
   }
 
+  // EFFECT: halves this centipede's speed if it is greater than 1
   void halveSpeed() {
     if (this.currSpeed > 1) {
       this.currSpeed /= 2;
@@ -1028,6 +1042,7 @@ class BodySeg {
     }
   }
 
+  // is there a dandelion ahead of this centipede?
   boolean obstacleAhead(Posn p, int speed, int width, ObstacleList obl) {
     boolean leftEdge = Math.abs(p.x - ITile.WIDTH / 2) <= speed / 2;
     boolean rightEdge = Math.abs(p.x - (width - ITile.WIDTH / 2)) <= speed / 2;
@@ -1061,6 +1076,7 @@ class BodySeg {
     this.head = true;
   }
 
+  // EFFECT: halves both the vertical and horizontal speed of this body segment if its not 1
   void halveSpeed() {
     int vel_x = this.velocity.x;
     int vel_y = this.velocity.y;
@@ -1073,6 +1089,7 @@ class BodySeg {
     this.velocity = new Posn(vel_x, vel_y);
   }
 
+  // EFFECT: doubles both the vertical and horizontal speed of this body segment if its not 1
   void doubleSpeed(int maxSpeed) {
     int vel_x = this.velocity.x;
     int vel_y = this.velocity.y;
@@ -1091,6 +1108,7 @@ class BodySeg {
     this.velocity = new Posn(vel_x, vel_y);
   }
 
+  // offsets both the vertical and horizontal speed so they do not go over the maximum
   void setSpeed(int maxSpeed) {
     int vel_x = this.velocity.x;
     int vel_y = this.velocity.y;
@@ -1113,10 +1131,12 @@ class BodySeg {
     return new Util().inRange(this.pos, p);
   }
 
+  // is this body segment inside the given tile?
   boolean tileInRange(ITile tile) {
     return tile.inRange(this.pos);
   }
 
+  // does this body segment touch the given gnome?
   boolean gnomeInRange(Gnome gnome) {
     return gnome.inRange(this.pos);
   }
@@ -1151,32 +1171,6 @@ class BodySeg {
     return false;
   }
 
-//  // EFFECT: changes the position and velocity of this body segment
-//  // moves this body segment
-//  void move(int width, int speed, ObstacleList obl) {
-//    boolean leftEdge = this.pos.x == ITile.WIDTH / 2;
-//    boolean rightEdge = this.pos.x == width - ITile.WIDTH / 2;
-//    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT == 0;
-//
-//    if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right ||
-//    this.nextEncountered(obl) && inRow) {
-//      if (!this.down) {
-//        speed *= -1;
-//      }
-//
-//      this.right = !this.right;
-//      this.velocity = new Posn(0, speed);
-//
-//    } else if (inRow && this.velocity.x == 0) {
-//      if (!this.right) {
-//        speed *= -1;
-//      }
-//      this.velocity = new Posn(speed, 0);
-//    }
-//
-//    this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
-//  }
-
   // is there a position to the right or left of this body segment (depending on direction)
   // where it will collide in the given list?
   boolean nextEncountered(ObstacleList obl) {
@@ -1196,6 +1190,7 @@ class BodySeg {
     return new Posn(x, y);
   }
 
+  // returns the center of this tile
   Posn centered() {
     if (this.right && this.pos.x % ITile.WIDTH >= ITile.WIDTH / 2
         || !this.right && this.pos.x % ITile.WIDTH <= ITile.WIDTH / 2) {
@@ -1234,16 +1229,6 @@ class BodySeg {
     IsDandelion isDandelion = new IsDandelion();
     for (ITile tile : garden) {
       if (isDandelion.apply(tile) && tile.samePos(ahead)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  boolean danInPosn(Posn p, ArrayList<ITile> garden) {
-    IsDandelion isDandelion = new IsDandelion();
-    for (ITile tile : garden) {
-      if (isDandelion.apply(tile) && tile.inRange(p)) {
         return true;
       }
     }
@@ -1330,6 +1315,11 @@ class CGameState extends GameState {
   int width;
   int height;
 
+  //the default constructor, only requiring how big the board should be
+  CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
+    this(new Util().singletonList(new Centipede(10, 4)), 10, 4, garden, new Posn(0, 0), gnome,
+        new NoDart(), new NoWaterBalloon(), 0, 0, ITile.WIDTH * x, ITile.HEIGHT * y);
+  }
 
   // the constructor
   CGameState(ArrayList<Centipede> cents, int length, int speed,
@@ -1353,19 +1343,9 @@ class CGameState extends GameState {
     this.height = height;
   }
 
-  // the default constructor, only requiring how big the board should be
-  CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
-    this(new Util().singletonList(new Centipede(5, 6)), 10,
-        6, garden, new Posn(0, 0), gnome,
-        new NoDart(), new NoWaterBalloon(),
-        0, 0, ITile.WIDTH * x,
-        ITile.HEIGHT * y);
-  }
-
   @Override
-  // TODO : elaborate on the effect statement
-  // EFFECT: changes all the fields except width and height
-  // moves every element in the game accordingly after each tick
+  // EFFECT: modifies the centipedes, the garden, the player, dart, water balloon, score,
+  // and streak, after they interact with each other after each tick.
   public void onTick() {
     if (this.cents.size() == 0) {
       this.length += 1;
@@ -1385,6 +1365,7 @@ class CGameState extends GameState {
     this.moveWaterBalloon();
   }
 
+  // is the game over? (did the centipede touch the gnome?)
   public boolean endGame() {
     for (Centipede cent : this.cents) {
       if (cent.hitPlayer(this.gnome)) {
@@ -1394,7 +1375,8 @@ class CGameState extends GameState {
     return false;
   }
 
-  @Override
+  // generates a worldscene that displays the game over message and 
+  // the final score when the game ends
   public WorldScene lastScene(String s) {
     WorldScene worldScene = new WorldScene(this.width, this.height);
     WorldImage gg = new TextImage("Game Over", Color.BLACK);
@@ -1449,6 +1431,7 @@ class CGameState extends GameState {
     }
   }
 
+  // EFFECT: updates the water balloon and the garden after they interact with each other
   void collidesWaterBalloon() {
     IsDandelion isDandelion = new IsDandelion();
     for (int index = 0; index < this.garden.size(); index += 1) {
@@ -1466,6 +1449,7 @@ class CGameState extends GameState {
     }
   }
 
+  // counts the number of body segments that is hit by the splashes of the water balloon
   int numberBodySegHit() {
     int ctr = 0;
     for (Centipede cent : this.cents) {
@@ -1476,6 +1460,7 @@ class CGameState extends GameState {
     return ctr;
   }
 
+  // did the centipede get hit by the water balloon?
   boolean hitCentipede() {
     for (Centipede cent : this.cents) {
       if (cent.targetHit(this.waterBalloon)) {
@@ -1602,6 +1587,7 @@ class CGameState extends GameState {
     return this;
   }
 
+  // returns the score of this game
   public int score() {
     return this.score;
   }

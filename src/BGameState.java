@@ -128,10 +128,13 @@ class BGameState extends GameState {
     return new CGameState(this.x, this.y, this.garden, this.gnome);
   }
 
+  // is this game ended? No, since we haven't started the game
   public boolean endGame() {
     return false;
   }
 
+  // returns the score of the game. It is 0 because we haven't 
+  // started the game
   public int score() {
     return 0;
   }
