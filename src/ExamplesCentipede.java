@@ -93,6 +93,9 @@ class ExamplesCentipede {
   BodySeg bodySeg_9;
   BodySeg bodySeg_10;
   BodySeg bodySeg_11;
+  BodySeg bodySeg_12;
+  BodySeg bodySeg_13;
+  BodySeg bodySeg_14;
   ArrayList<BodySeg> bseg_0;
   ArrayList<BodySeg> bseg_1;
   ArrayList<BodySeg> bseg_2;
@@ -237,6 +240,12 @@ class ExamplesCentipede {
     bseg_2.add(bodySeg_10);
 
     bodySeg_11 = new BodySeg(new Posn(220, 100), new Posn(-6, 0),
+        false, true, false, 60, 0);
+    bodySeg_12 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
+        false, true, true, 60, 0);
+    bodySeg_13 = new BodySeg(new Posn(25, 20), new Posn(6, 0),
+        false, true, true, 60, 0);
+    bodySeg_14 = new BodySeg(new Posn(57, 20), new Posn(-6, 0),
         false, true, false, 60, 0);
 
     cent_0 = new Centipede(10, 4);
@@ -868,6 +877,13 @@ class ExamplesCentipede {
   // tests for BodySeg
 
   // draw() can be seen in the big bang world
+
+  // tests BodySeg spawnTilePosn()
+  boolean testBodySegSpawnTilePosn(Tester t) {
+    return t.checkExpect(bodySeg_12.spawnTilePosn(), new Posn(20, 20))
+        && t.checkExpect(bodySeg_13.spawnTilePosn(), new Posn(60, 20))
+        && t.checkExpect(bodySeg_14.spawnTilePosn(), new Posn(20, 20));
+  }
 
   // already checked tilePosn() in explode() of IWaterBalloon and posnInRange(Posn pos)
   // and bodySegInRange() of IProjectile
