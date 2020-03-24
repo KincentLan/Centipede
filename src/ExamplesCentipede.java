@@ -112,6 +112,8 @@ class ExamplesCentipede {
   Gnome player;
   Gnome player_1;
   Gnome player_2;
+  Gnome player_3;
+  Gnome player_4;
   CGameState cgame_0;
   CGameState cgame_1;
   BGameState bgame_0;
@@ -272,6 +274,8 @@ class ExamplesCentipede {
     player = new Gnome(20, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
     player_1 = new Gnome(25, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
     player_2 = new Gnome(45, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
+    player_3 = new Gnome(100, 20, 8);
+    player_4 = new Gnome(100, 60, 8);
 
     cgame_0 = new CGameState(3, 3, garden_1, player);
     cgame_1 = new CGameState(5, 5, garden_2, player);
@@ -798,7 +802,68 @@ class ExamplesCentipede {
   // draw() can be seen in the big bang world
 
   // already checked splashHit(IWaterBalloon), getIndicesHit(IWaterBalloon), posnsHit(IWaterBalloon)
-  // in explode() of IWaterBalloon
+  // in explode() of IWaterBalloon, and waterBalloonHit(IWaterBalloon) from IProjectile
+
+  // tests Centipede dartHit(IDart)
+  boolean testCentipedeDartHit(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(cent_0.dartHit(dart_4), true)
+        && t.checkExpect(cent_4.dartHit(dart_5), true)
+        && t.checkExpect(cent_3.dartHit(dart_4), false)
+        && t.checkExpect(cent_2.dartHit(dart_3), false);
+  }
+
+  // tests Centipede waterBalloonHit(IWaterBalloon)
+  boolean testCentipedeWaterBalloonHit(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(cent_0.waterBalloonHit(waterBalloon_4), true)
+        && t.checkExpect(cent_4.waterBalloonHit(waterBalloon_5), true)
+        && t.checkExpect(cent_3.waterBalloonHit(waterBalloon_4), false)
+        && t.checkExpect(cent_2.waterBalloonHit(waterBalloon_3), false);
+  }
+
+  // tests Centipede hitPlayer(Gnome)
+  boolean testCentipedeHitPlayer(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(cent_4.hitPlayer(player_3), true)
+        && t.checkExpect(cent_3.hitPlayer(player_4), false)
+        && t.checkExpect(cent_4.hitPlayer(player_4), true);
+  }
+
+  // tests Centipede onPebble(ArrayList<ITile>)
+  void testCentipedeOnPebble(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(cent_4.onPebble(garden_5), true);
+    ArrayList<ITile> pebs = new ArrayList<>();
+    pebs.add(garden_5.get(4));
+    t.checkExpect(cent_4.pebsAlreadyOn, pebs);
+
+    this.initTestConditions();
+    t.checkExpect(cent_3.onPebble(garden_5), false);
+    t.checkExpect(cent_3.pebsAlreadyOn, new ArrayList<>());
+
+    this.initTestConditions();
+    t.checkExpect(cent_0.onPebble(garden_5), false);
+    t.checkExpect(cent_0.pebsAlreadyOn, new ArrayList<>());
+  }
+
+  // tests Centipede inPebsAlreadyOn(ITile)
+  void testCentipedeInPebsAlreadyOn(Tester t) {
+    this.initTestConditions();
+    // onPebble is supposed to add it to the ArrayList
+    cent_4.onPebble(garden_5);
+    t.checkExpect(cent_4.inPebsAlreadyOn(garden_5.get(4)), true);
+    ITile pebble = new PebbleTile(60, 60, 120);
+    t.checkExpect(cent_4.inPebsAlreadyOn(pebble), false);
+    // there is no way to remove a pebble currently, so it will always be the same
+    // reference, thus the == comparison
+    this.initTestConditions();
+    cent_0.onPebble(garden_5);
+    t.checkExpect(cent_0.inPebsAlreadyOn(garden_5.get(4)), false);
+    t.checkExpect(cent_4.inPebsAlreadyOn(garden_5.get(4)), false);
+  }
+
+  // Centipede onPebble already tested anyInRange(ITile tile)
 
   // tests for BodySeg
 

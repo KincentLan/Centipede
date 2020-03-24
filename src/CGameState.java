@@ -673,8 +673,8 @@ class Gnome {
 class Centipede {
   ArrayList<BodySeg> body; // represents all the body segments of this centipede
   // NOTE: the centipede's head is at the end of the list
-  int maxSpeed;
-  int currSpeed; // how fast the centipede should be moving
+  int maxSpeed; // the maximum speed the centipede can go in pixels
+  int currSpeed; // how fast the centipede is currently moving in pixels
   ArrayList<ObstacleList> encountered; // represents all the dandelions this centipede has
   // encountered for every direction it has been in
   ArrayList<ITile> pebsAlreadyOn; // represents all the pebbles this centipede has encountered
@@ -712,7 +712,7 @@ class Centipede {
   }
 
   // did the given dart hit any part of this centipede?
-  boolean targetHit(IDart dart) {
+  boolean dartHit(IDart dart) {
     for (BodySeg bodySeg : this.body) {
       if (dart.hitBodySeg(bodySeg)) {
         return true;
@@ -732,7 +732,7 @@ class Centipede {
   }
 
   // did the given water balloon hit any part of this centipede?
-  boolean targetHit(IWaterBalloon waterBalloon) {
+  boolean waterBalloonHit(IWaterBalloon waterBalloon) {
     for (BodySeg bodySeg : this.body) {
       if (waterBalloon.hitBodySeg(bodySeg)) {
         return true;
@@ -751,7 +751,9 @@ class Centipede {
     return false;
   }
 
-  // EFFECT:
+  // EFFECT: adds a pebble tile to this centipede's encountered pebble list to prevent double
+  // counting
+  // is this centipede on a pebble it wasn't on before?
   boolean onPebble(ArrayList<ITile> garden) {
     IsPebble isPebble = new IsPebble();
     for (ITile tile : garden) {
@@ -1466,7 +1468,7 @@ class CGameState extends GameState {
   // did any of the centipedes get hit by the water balloon?
   boolean hitCentipede() {
     for (Centipede cent : this.cents) {
-      if (cent.targetHit(this.waterBalloon)) {
+      if (cent.waterBalloonHit(this.waterBalloon)) {
         return true;
       }
     }
@@ -1495,7 +1497,7 @@ class CGameState extends GameState {
   void collidesCentipede() {
     ArrayList<Centipede> cpCent = new ArrayList<>();
     for (Centipede cent : this.cents) {
-      if (cent.targetHit(this.dart)) {
+      if (cent.dartHit(this.dart)) {
         this.score += 10;
         this.streak += 1;
         new Util().append(cpCent, cent.split(this.dart));
