@@ -3,6 +3,7 @@ import javalib.worldimages.CircleImage;
 import javalib.worldimages.OutlineMode;
 import javalib.worldimages.Posn;
 import javalib.worldimages.StarImage;
+import javalib.worldimages.TextImage;
 import javalib.worldimages.WorldImage;
 import tester.*;                // The tester library
 
@@ -373,6 +374,8 @@ class ExamplesCentipede {
     bg1 = new WorldScene(10, 15);
   }
 
+  // test methods for Gnome
+  
   // test the method draw in Gnome class
   void testGnomeDraw(Tester t) {
     this.initTestConditions();
@@ -450,6 +453,8 @@ class ExamplesCentipede {
     t.checkExpect(player.x, 20);
     t.checkExpect(player.y, 580);
   }
+  
+  // tests for BGameState
 
   // test the method endGame in BGameState class
   boolean testBEndGame(Tester t) {
@@ -503,9 +508,158 @@ class ExamplesCentipede {
         && t.checkExpect(bgame_1.toCGameState(), new CGameState(3, 3, garden_1, player));
   }
   
-  // we did not test makeScene in the BGameState class, because we can visualize it when we 
-  // run bigBang, and check if things are drawn correctly from there, which they were.
+  // we did not test makeScene in the BGameState or CGameState class, because we can visualize 
+  // it when we run bigBang, and check if things are drawn correctly from there, which they were.
 
+  // tests for CGameState
+  
+  // test the method collidesCentipede in CGameState
+  void testCollidesCent(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(cgame_0.cents, new Util().singletonList(new Centipede(10, 4)));
+    t.checkExpect(cgame_0.garden, garden_1);
+    cgame_0.collidesCentipede();
+    t.checkExpect(cgame_0.cents, new Util().singletonList(new Centipede(10, 4)));
+    t.checkExpect(cgame_0.garden, garden_1);
+    t.checkExpect(cgame_1.cents, new Util().singletonList(new Centipede(10, 4)));
+    t.checkExpect(cgame_1.garden, garden_2);
+    cgame_1.collidesCentipede();
+    t.checkExpect(cgame_1.cents, new Util().singletonList(new Centipede(10, 4)));
+    t.checkExpect(cgame_1.garden, garden_2);
+  }
+  
+  // test the method moveDart in CGameState
+  void testMoveDart(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(cgame_0.dart, new NoDart());
+    cgame_0.moveDart();
+    t.checkExpect(cgame_0.dart, new NoDart());
+    cgame_1.dart = new Dart(20, 20, 5);
+    cgame_1.moveDart();
+    t.checkExpect(cgame_1.dart, new Dart(20, 15, 5));
+    cgame_1.dart = new Dart(20, 0, 5);
+    cgame_1.moveDart();
+    t.checkExpect(cgame_1.dart, new NoDart());
+  }
+  
+  // test the method movePlayer in CGameState
+  void testMovePlayer(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(cgame_0.gnome, player);
+    cgame_0.movePlayer();
+    t.checkExpect(cgame_0.gnome, player);
+    t.checkExpect(cgame_1.gnome, player);
+    cgame_1.playerDirection = new Posn(- 1, 0);
+    cgame_1.movePlayer();
+    t.checkExpect(cgame_1.gnome, player);
+    cgame_1.playerDirection = new Posn(1, 0);
+    cgame_1.movePlayer();
+    t.checkExpect(cgame_1.gnome, new Gnome(25, 580, 5));
+    cgame_1.playerDirection = new Posn(0, - 1);
+    cgame_1.movePlayer();
+    t.checkExpect(cgame_1.gnome, new Gnome(25, 580, 5));
+    cgame_1.playerDirection = new Posn(0, 1);
+    cgame_1.movePlayer();
+    t.checkExpect(cgame_1.gnome, new Gnome(25, 575, 5));
+  }
+  
+  // test the method moveWaterBalloon in CGameState
+  // test the method moveDart in CGameState
+  void testMoveWaterBalloon(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(cgame_0.waterBalloon, new NoWaterBalloon());
+    cgame_0.moveWaterBalloon();
+    t.checkExpect(cgame_0.waterBalloon, new NoWaterBalloon());
+    cgame_1.waterBalloon = new WaterBalloon(20, 20, 5);
+    cgame_1.moveWaterBalloon();
+    t.checkExpect(cgame_1.waterBalloon, new WaterBalloon(20, 15, 5));
+    cgame_1.waterBalloon = new WaterBalloon(20, 0, 5);
+    cgame_1.moveWaterBalloon();
+    t.checkExpect(cgame_1.waterBalloon, new NoWaterBalloon());
+  }
+  
+  // we did not test the method lastScene, because we can visualize it in big bang
+  // and it is behaving as desired
+  
+  // test the method onKeyEvent in CGameState
+  void testOnKeyEvent(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(cgame_0.playerDirection, new Posn(0,0));
+    cgame_0.onKeyEvent("left");
+    t.checkExpect(cgame_0.playerDirection, new Posn(-1,0));
+    cgame_0.onKeyEvent("right");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1,0));
+    cgame_0.onKeyEvent("up");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, 1));
+    cgame_0.onKeyEvent("down");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    cgame_0.onKeyEvent("q");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    t.checkExpect(cgame_0.dart, new NoDart());
+    cgame_0.onKeyEvent(" ");
+    t.checkExpect(cgame_0.dart, new Dart(20, 580, 20));
+    cgame_0.onKeyEvent(" ");
+    t.checkExpect(cgame_0.dart, new Dart(20, 580, 20));
+    t.checkExpect(cgame_0.waterBalloon, new NoWaterBalloon());
+    cgame_0.onKeyEvent("b");
+    t.checkExpect(cgame_1.waterBalloon, new NoWaterBalloon());
+    cgame_1.streak = 3;
+    cgame_1.score = 10;
+    cgame_1.onKeyEvent("b");
+    t.checkExpect(cgame_1.waterBalloon, new WaterBalloon(20, 580, 20));
+    t.checkExpect(cgame_1.streak, 0);
+    t.checkExpect(cgame_1.score, 5);
+  }
+  
+  // test the method onKeyReleased in CGameState
+  void testOnKeyRealease(Tester t) {
+    this.initTestConditions();
+    cgame_0.playerDirection = new Posn(1, 1);
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, 1));
+    cgame_0.onKeyReleased("left");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 1));
+    cgame_0.onKeyReleased("right");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 1));
+    cgame_0.onKeyReleased("up");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
+    cgame_0.onKeyReleased("down");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
+    cgame_0.onKeyReleased("p");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
+  }
+  
+  // test the method onTick in CGameState
+  void testOnTick(Tester t) {
+    this.initTestConditions();
+    Centipede cent_ = new Centipede(10, 4);
+    ArrayList<Centipede> centA = new Util().singletonList(cent_);
+    t.checkExpect(cgame_0.cents, centA);
+    cgame_0.onTick();
+    cent_.move(3, 3, garden_1);
+    t.checkExpect(cgame_0.cents, centA);
+    cgame_0.dart = new Dart(20, 50, 20);
+    cgame_0.onTick();
+    t.checkExpect(cgame_0.dart, new Dart(20, 30, 20));
+    cgame_1.waterBalloon = new WaterBalloon(20, 50, 20);
+    cgame_1.onTick();
+    t.checkExpect(cgame_1.waterBalloon, new WaterBalloon(20, 30, 20));
+  }
+  
+  // test the method score in CGameState
+  boolean testScore(Tester t) {
+    this.initTestConditions();
+    cgame_1.score = 130;
+    return t.checkExpect(cgame_0.score, 0)
+        && t.checkExpect(cgame_1.score, 130);
+  }
+  
+  // test the method toCGameState in CGameState
+  boolean testCToCGame(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(cgame_0.toCGameState(), cgame_0)
+        && t.checkExpect(cgame_1.toCGameState(), cgame_1);
+  }
+  
   // function object tests
 
   // tests IsGrass, IsPebble, IsDandelion apply(ITile)
@@ -525,7 +679,6 @@ class ExamplesCentipede {
         && t.checkExpect(isGrass.apply(tile_2), false)
         && t.checkExpect(isPebble.apply(tile_2), false)
         && t.checkExpect(isDandelion.apply(tile_2), true);
-
   }
 
   // tests GrassToDan apply(ITile)
