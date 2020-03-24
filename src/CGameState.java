@@ -465,7 +465,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     for (Centipede cent : cents) {
       if (cent.splashHit(this)) {
         util.sproutDanInPosns(cent.posnsHit(this), garden);
-        util.append(cpCent, cent.split(this));
+        util.append(cpCent, cent.splitWaterBalloon(this));
       } else {
         cpCent.add(cent);
       }
@@ -793,7 +793,7 @@ class Centipede {
 
   // splits this centipede into multiple centipedes depending on where the dart hit this
   // centipede
-  ArrayList<Centipede> split(IDart dart) {
+  ArrayList<Centipede> splitDart(IDart dart) {
     ArrayList<Centipede> centipedes = new ArrayList<>();
     int indexHit = this.getIndexHit(dart);
     ArrayList<BodySeg> frontBody = new Util().getElementsBetween(this.body, 0, indexHit);
@@ -812,7 +812,7 @@ class Centipede {
 
   // splits this centipede into multiple centipedes depending on where the water balloon hit this
   // centipede
-  ArrayList<Centipede> split(IWaterBalloon waterBalloon) {
+  ArrayList<Centipede> splitWaterBalloon(IWaterBalloon waterBalloon) {
     ArrayList<Integer> indicesHit = this.getIndicesHit(waterBalloon);
     ArrayList<Centipede> centipedes = new ArrayList<>();
     Util util = new Util();
@@ -1476,7 +1476,7 @@ class CGameState extends GameState {
       if (cent.dartHit(this.dart)) {
         this.score += 10;
         this.streak += 1;
-        new Util().append(cpCent, cent.split(this.dart));
+        new Util().append(cpCent, cent.splitDart(this.dart));
         new Util().sproutDandelion(cent.positionHit(this.dart), this.garden);
         this.dart = new NoDart();
       } else {

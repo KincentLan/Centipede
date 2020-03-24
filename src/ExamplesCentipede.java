@@ -83,6 +83,7 @@ class ExamplesCentipede {
   IDart dart_3;
   IDart dart_4;
   IDart dart_5;
+  IDart dart_6;
   BodySeg bodySeg_0;
   BodySeg bodySeg_1;
   BodySeg bodySeg_2;
@@ -112,14 +113,23 @@ class ExamplesCentipede {
   BodySeg bodySeg_26;
   BodySeg bodySeg_27;
   BodySeg bodySeg_28;
+  BodySeg bodySeg_29;
+  BodySeg bodySeg_30;
+  BodySeg bodySeg_31;
+  BodySeg bodySeg_32;
   ArrayList<BodySeg> bseg_0;
   ArrayList<BodySeg> bseg_1;
   ArrayList<BodySeg> bseg_2;
+  ArrayList<BodySeg> bseg_3;
   Centipede cent_0;
   Centipede cent_1;
   Centipede cent_2;
   Centipede cent_3;
   Centipede cent_4;
+  Centipede cent_5;
+  Centipede cent_6;
+  ArrayList<ITile> peb_0;
+  ArrayList<ITile> peb_1;
   ArrayList<Centipede> cent_arr_0;
   ArrayList<Centipede> cent_arr_01;
   ArrayList<Centipede> cent_arr_23;
@@ -176,6 +186,11 @@ class ExamplesCentipede {
     tile_14 = new PebbleTile(380, 20, 400);
     tile_15 = new GrassTile(20, 20, 400);
     tile_16 = new PebbleTile(420, 20, 440);
+    peb_0 = new ArrayList<>();
+    peb_0.add(new PebbleTile(20, 20, 400));
+    peb_1 = new ArrayList<>();
+    peb_1.add(new PebbleTile(20, 20, 400));
+    peb_1.add(new PebbleTile(220, 220, 400));
     garden_0 = new ArrayList<>();
     garden_0.add(tile_0);
     garden_0.add(tile_1);
@@ -225,6 +240,7 @@ class ExamplesCentipede {
     dart_3 = new NoDart();
     dart_4 = new Dart(20, 20, 10);
     dart_5 = new Dart(20, 32, 10);
+    dart_6 = new Dart(60, 20, 10);
 
     bseg_0 = new ArrayList<>();
     bodySeg_0 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
@@ -238,7 +254,7 @@ class ExamplesCentipede {
     bodySeg_2 = new BodySeg(new Posn(60, 22), new Posn(0, 2),
         false, true, false, 60, 0);
     bodySeg_3 = new BodySeg(new Posn(22, 20), new Posn(2, 0),
-        false, true, true, 60, 0);
+        false, true, true, 60, 1);
     bseg_1.add(bodySeg_2);
     bseg_1.add(bodySeg_3);
 
@@ -305,15 +321,28 @@ class ExamplesCentipede {
     bodySeg_28 = new BodySeg(new Posn(22, 20), new Posn(-6, 0),
         false, true, false, 20, 1);
 
+    bodySeg_29 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
+        false, true, true, 60, 1);
+    bodySeg_30 = new BodySeg(new Posn(60, 20), new Posn(6, 0),
+        false, true, true, 60, 1);
+    bodySeg_31 = new BodySeg(new Posn(100, 20), new Posn(6, 0),
+        false, true, true, 60, 1);
+    bseg_3 = new ArrayList<>();
+    bseg_3.add(bodySeg_29);
+    bseg_3.add(bodySeg_30);
+    bseg_3.add(bodySeg_31);
+
+    bodySeg_32 = new BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 60, 1);
+
     cent_0 = new Centipede(10, 4);
-    cent_1 = new Centipede(bseg_0, 8,
-        10, new ArrayList<>(), new ArrayList<>());
-    cent_2 = new Centipede(bseg_1, 8,
-        10, new ArrayList<>(), new ArrayList<>());
-    cent_3 = new Centipede(util.singletonList(bodySeg_11), 8,
-        10, obl_list_0, new ArrayList<>());
-    cent_4 = new Centipede(bseg_2, 8,
-        10, new ArrayList<>(), new ArrayList<>());
+    cent_1 = new Centipede(bseg_0, 8, 10, new ArrayList<>(), new ArrayList<>());
+    cent_2 = new Centipede(bseg_1, 8, 10, obl_list_0, new ArrayList<>());
+    cent_3 = new Centipede(util.singletonList(bodySeg_11), 8, 10, obl_list_0, new ArrayList<>());
+    cent_4 = new Centipede(bseg_2, 8, 10, new ArrayList<>(), new ArrayList<>());
+    cent_5 = new Centipede(bseg_3, 6, 6, obl_list_0, new ArrayList<>());
+    cent_6 = new Centipede(util.singletonList(bodySeg_32), 8, 10, util.singletonList(new ObstacleList(1)),
+        new ArrayList<>());
+
     cent_arr_0 = new ArrayList<>();
     cent_arr_0.add(cent_0);
     cent_arr_01 = new ArrayList<>();
@@ -328,9 +357,7 @@ class ExamplesCentipede {
     cent_arr_4 = new ArrayList<>();
     cent_arr_4.add(cent_4);
 
-    ArrayList<Posn> posns_0 = new ArrayList<>();
-    posns_0.add(new Posn(280, 60));
-    obl_0 = new ObstacleList(0, posns_0);
+    obl_0 = new ObstacleList(0, new ArrayList<>());
 
     ArrayList<Posn> posns_1 = new ArrayList<>();
     posns_1.add(new Posn(20, 20));
@@ -375,7 +402,7 @@ class ExamplesCentipede {
   }
 
   // test methods for Gnome
-  
+
   // test the method draw in Gnome class
   void testGnomeDraw(Tester t) {
     this.initTestConditions();
@@ -394,6 +421,7 @@ class ExamplesCentipede {
   }
 
   Gnome player_ = new Gnome(0, 580, 5);
+
   // test the method generateDart
   boolean testGnomeGenerateDart(Tester t) {
     this.initTestConditions();
@@ -453,7 +481,7 @@ class ExamplesCentipede {
     t.checkExpect(player.x, 20);
     t.checkExpect(player.y, 580);
   }
-  
+
   // tests for BGameState
 
   // test the method endGame in BGameState class
@@ -508,11 +536,11 @@ class ExamplesCentipede {
         && t.checkExpect(bgame_1.toCGameState(), new CGameState(3, 3, garden_1, player));
   }
   
-  // we did not test makeScene in the BGameState or CGameState class, because we can visualize 
+  // we did not test makeScene in the BGameState or CGameState class, because we can visualize
   // it when we run bigBang, and check if things are drawn correctly from there, which they were.
 
   // tests for CGameState
-  
+
   // test the method collidesCentipede in CGameState
   void testCollidesCent(Tester t) {
     this.initTestConditions();
@@ -527,7 +555,7 @@ class ExamplesCentipede {
     t.checkExpect(cgame_1.cents, new Util().singletonList(new Centipede(10, 4)));
     t.checkExpect(cgame_1.garden, garden_2);
   }
-  
+
   // test the method moveDart in CGameState
   void testMoveDart(Tester t) {
     this.initTestConditions();
@@ -541,7 +569,7 @@ class ExamplesCentipede {
     cgame_1.moveDart();
     t.checkExpect(cgame_1.dart, new NoDart());
   }
-  
+
   // test the method movePlayer in CGameState
   void testMovePlayer(Tester t) {
     this.initTestConditions();
@@ -562,7 +590,7 @@ class ExamplesCentipede {
     cgame_1.movePlayer();
     t.checkExpect(cgame_1.gnome, new Gnome(25, 575, 5));
   }
-  
+
   // test the method moveWaterBalloon in CGameState
   // test the method moveDart in CGameState
   void testMoveWaterBalloon(Tester t) {
@@ -577,10 +605,10 @@ class ExamplesCentipede {
     cgame_1.moveWaterBalloon();
     t.checkExpect(cgame_1.waterBalloon, new NoWaterBalloon());
   }
-  
+
   // we did not test the method lastScene, because we can visualize it in big bang
   // and it is behaving as desired
-  
+
   // test the method onKeyEvent in CGameState
   void testOnKeyEvent(Tester t) {
     this.initTestConditions();
@@ -610,7 +638,7 @@ class ExamplesCentipede {
     t.checkExpect(cgame_1.streak, 0);
     t.checkExpect(cgame_1.score, 5);
   }
-  
+
   // test the method onKeyReleased in CGameState
   void testOnKeyRealease(Tester t) {
     this.initTestConditions();
@@ -627,7 +655,7 @@ class ExamplesCentipede {
     cgame_0.onKeyReleased("p");
     t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
   }
-  
+
   // test the method onTick in CGameState
   void testOnTick(Tester t) {
     this.initTestConditions();
@@ -644,7 +672,7 @@ class ExamplesCentipede {
     cgame_1.onTick();
     t.checkExpect(cgame_1.waterBalloon, new WaterBalloon(20, 30, 20));
   }
-  
+
   // test the method score in CGameState
   boolean testScore(Tester t) {
     this.initTestConditions();
@@ -652,16 +680,16 @@ class ExamplesCentipede {
     return t.checkExpect(cgame_0.score, 0)
         && t.checkExpect(cgame_1.score, 130);
   }
-  
+
   // test the method toCGameState in CGameState
   boolean testCToCGame(Tester t) {
     this.initTestConditions();
     return t.checkExpect(cgame_0.toCGameState(), cgame_0)
         && t.checkExpect(cgame_1.toCGameState(), cgame_1);
   }
-  
+
   // tests for GameMaster class
-  
+
   // test the method onKeyEvent in GameMaster
   void testGMOnKey(Tester t) {
     this.initTestConditions();
@@ -691,7 +719,7 @@ class ExamplesCentipede {
     t.checkExpect(cgame_1.waterBalloon, new WaterBalloon(20, 580, 20));
     t.checkExpect(cgame_1.streak, 0);
     t.checkExpect(cgame_1.score, 5);
-    
+
     t.checkExpect(gm_1.gameState, bgame_0);
     t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
     t.checkExpect(bgame_0.gnome, new Gnome(20, 100, 5));
@@ -704,7 +732,7 @@ class ExamplesCentipede {
     gm_1.onKeyEvent("r");
     t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
   }
-  
+
   // function object tests
 
   // tests IsGrass, IsPebble, IsDandelion apply(ITile)
@@ -1240,6 +1268,183 @@ class ExamplesCentipede {
     return t.checkExpect(cent_0.getIndicesHit(waterBalloon_4), indices_0)
         && t.checkExpect(cent_4.getIndicesHit(waterBalloon_5), indices_1)
         && t.checkExpect(cent_3.getIndicesHit(waterBalloon_4), new ArrayList<>());
+  }
+
+  // tests Centipede getIndexHit(IDart)
+  boolean testCentipedeGetIndexHit(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(cent_0.getIndexHit(dart_4), 9)
+        && t.checkExpect(cent_4.getIndexHit(dart_5), 0)
+        && t.checkException(new RuntimeException("The dart did not hit any of the body segments."),
+        cent_3, "getIndexHit", dart_4);
+  }
+
+  // tests Centipede splitDart(IDart)
+  boolean testCentipedeSplitDart(Tester t) {
+    this.initTestConditions();
+    ArrayList<BodySeg> cent_0_body = util.getElementsBetween(cent_0.body, 0, 9);
+    Centipede cent_0_front = cent_0.makeCentipede(cent_0_body);
+
+    ArrayList<BodySeg> cent_4_body = util.getElementsBetween(cent_4.body, 1, cent_4.body.size());
+    Centipede cent_4_back = cent_4.makeCentipede(cent_4_body);
+
+    ArrayList<BodySeg> cent_5_body = util.getElementsBetween(cent_5.body, 0, 1);
+    ArrayList<BodySeg> cent_5_body_2 = util.getElementsBetween(cent_5.body, 2, 3);
+    Centipede cent_5_back = cent_5.makeCentipede(cent_5_body);
+    Centipede cent_5_front = cent_5.makeCentipede(cent_5_body_2);
+    ArrayList<Centipede> newCent5 = new ArrayList<>();
+    newCent5.add(cent_5_back);
+    newCent5.add(cent_5_front);
+
+    return t.checkExpect(util.singletonList(cent_0_front), cent_0.splitDart(dart_4))
+        && t.checkExpect(util.singletonList(cent_4_back), cent_4.splitDart(dart_5))
+        && t.checkExpect(newCent5, cent_5.splitDart(dart_6));
+  }
+
+  // tests Centipede splitWaterBalloon(IWaterBalloon)
+  boolean testCentipedeSplitWaterBalloon(Tester t) {
+    this.initTestConditions();
+    ArrayList<BodySeg> body_seg_0 = util.getElementsBetween(cent_0.body, 0, 8);
+    ArrayList<BodySeg> body_seg_4_1 = util.getElementsBetween(cent_4.body, 2, 3);
+    ArrayList<BodySeg> bodySegs_4_2 = util.getElementsBetween(cent_4.body, 5, cent_4.body.size());
+    ArrayList<Centipede> newCent4 = new ArrayList<>();
+    newCent4.add(cent_4.makeCentipede(body_seg_4_1));
+    newCent4.add(cent_4.makeCentipede(bodySegs_4_2));
+
+    return t.checkExpect(cent_0.splitWaterBalloon(waterBalloon_4),
+        util.singletonList(cent_0.makeCentipede(body_seg_0)))
+        && t.checkExpect(cent_4.splitWaterBalloon(waterBalloon_5), newCent4);
+  }
+
+  // tests Centipede removeUnusedPeb()
+  // NOTE: tests Centipede usedObl(ObstacleList)
+  void testCentipedeRemoveUnusedObl(Tester t) {
+    this.initTestConditions();
+    cent_5.removeUnusedObl();
+    ArrayList<ObstacleList> newObl = new ArrayList<>();
+    newObl.add(obl_1);
+
+    t.checkExpect(cent_5.encountered, newObl);
+
+    cent_5.removeUnusedObl();
+
+    t.checkExpect(cent_5.encountered, newObl);
+
+    this.initTestConditions();
+    cent_2.removeUnusedObl();
+    newObl.clear();
+    newObl.add(obl_0);
+    newObl.add(obl_1);
+    t.checkExpect(cent_2.encountered, newObl);
+  }
+
+  void testCentipedeRemoveUnusedPeb(Tester t) {
+    this.initTestConditions();
+    cent_4.pebsAlreadyOn = peb_0;
+    cent_4.removeUnusedPeb();
+
+    t.checkExpect(cent_4.pebsAlreadyOn, util.singletonList(new PebbleTile(20, 20, 400)));
+
+    this.initTestConditions();
+
+    cent_4.pebsAlreadyOn = peb_1;
+    cent_4.removeUnusedPeb();
+
+    t.checkExpect(cent_4.pebsAlreadyOn, util.singletonList(new PebbleTile(20, 20, 400)));
+  }
+
+  // tests Centipede doubleSpeed()
+  void testCentipedeDoubleSpeed(Tester t) {
+    this.initTestConditions();
+    cent_5.currSpeed = 1;
+    ArrayList<BodySeg> cpCent5 = util.copy(cent_5.body);
+    for (BodySeg bodySeg : cpCent5) {
+      bodySeg.setSpeed(3);
+    }
+    cent_5.doubleSpeed();
+    t.checkExpect(cent_5.currSpeed, 3);
+    t.checkExpect(cent_5.body, cpCent5);
+    for (BodySeg bodySeg : cpCent5) {
+      bodySeg.setSpeed(6);
+    }
+    cent_5.doubleSpeed();
+    t.checkExpect(cent_5.currSpeed, 6);
+    t.checkExpect(cent_5.body, cpCent5);
+
+    cent_5.doubleSpeed();
+    t.checkExpect(cent_5.currSpeed, 6);
+    t.checkExpect(cent_5.body, cpCent5);
+  }
+
+  // tests Centipede halveSpeed()
+  void testCentipedeHalveSpeed(Tester t) {
+    this.initTestConditions();
+    cent_5.currSpeed = cent_5.maxSpeed;
+    ArrayList<BodySeg> cpCent5 = util.copy(cent_5.body);
+    for (BodySeg bodySeg : cpCent5) {
+      bodySeg.setSpeed(3);
+    }
+    cent_5.halveSpeed();
+    t.checkExpect(cent_5.currSpeed, 3);
+    t.checkExpect(cent_5.body, cpCent5);
+
+    for (BodySeg bodySeg : cpCent5) {
+      bodySeg.setSpeed(1);
+    }
+    cent_5.halveSpeed();
+    t.checkExpect(cent_5.currSpeed, 1);
+    t.checkExpect(cent_5.body, cpCent5);
+
+    cent_5.halveSpeed();
+    t.checkExpect(cent_5.currSpeed, 1);
+    t.checkExpect(cent_5.body, cpCent5);
+  }
+
+  // tests Centipede move()
+  void testCentipedeMove(Tester t) {
+    this.initTestConditions();
+    ArrayList<BodySeg> bodySeg_0 = util.generateCentBody(10, 4);
+    for (BodySeg b : bodySeg_0) {
+      b.move(140, 4, obl_0);
+    }
+
+    cent_0.move(140, 140, garden_3);
+    t.checkExpect(cent_0.body, bodySeg_0);
+
+    this.initTestConditions();
+    cent_0.pebsAlreadyOn.add(new PebbleTile(20, 20, 140));
+    bodySeg_0 = util.generateCentBody(10, 4);
+    for (BodySeg b : bodySeg_0) {
+      b.setSpeed(2);
+      b.move(140, 4, obl_0);
+    }
+
+    garden_3.set(0, new PebbleTile(20, 20, 140));
+    cent_0.move(140, 4, garden_3);
+    t.checkExpect(cent_0.body, bodySeg_0);
+    t.checkExpect(cent_0.currSpeed, 2);
+
+    this.initTestConditions();
+    t.checkExpect(cent_6.encountered.size(), 1);
+    bodySeg_0 = util.singletonList(new
+        BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 60, 1));
+    bodySeg_0.get(0).reverseYDirection(140);
+    bodySeg_0.get(0).move(140, 4, obl_0);
+    cent_6.move(140, 140, garden_3);
+    t.checkExpect(cent_6.body, bodySeg_0);
+    t.checkExpect(cent_6.encountered.size(), 1);
+    t.checkExpect(util.singletonList(new ObstacleList(2)), cent_6.encountered);
+
+    this.initTestConditions();
+    cent_6.encountered.get(0).addToObstacles(new Posn(60, 20));
+    bodySeg_0 = util.singletonList(new
+        BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 60, 1));
+    bodySeg_0.get(0).reverseYDirection(140);
+    bodySeg_0.get(0).move(140, 4, obl_0);
+    cent_6.move(140, 140, garden_3);
+    t.checkExpect(cent_6.body, bodySeg_0);
+    t.checkExpect(cent_6.encountered.size(), 1);
+    t.checkExpect(util.singletonList(new ObstacleList(2)), cent_6.encountered);
   }
 
   // Centipede onPebble already tested anyInRange(ITile tile)
