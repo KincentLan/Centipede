@@ -1051,6 +1051,14 @@ class ExamplesCentipede {
         && t.checkExpect(bodySeg_16.generateObstacleList(), new ObstacleList(1));
   }
 
+  boolean testTrapped(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(bodySeg_22.trapped(400, obl_3), true)
+        && t.checkExpect(bodySeg_23.trapped(400, obl_4), true)
+        && t.checkExpect(bodySeg_19.trapped(400, obl_3), false)
+        && t.checkExpect(bodySeg_13.trapped(400, obl_1), false);
+  }
+
   // tests in ObstacleList
 
   // all tests in ObstacleList have been tested by BodySeg and Centipede
