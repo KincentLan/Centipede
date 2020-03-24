@@ -1,6 +1,12 @@
+import javalib.impworld.WorldScene;
+import javalib.worldimages.CircleImage;
+import javalib.worldimages.OutlineMode;
 import javalib.worldimages.Posn;
+import javalib.worldimages.StarImage;
+import javalib.worldimages.WorldImage;
 import tester.*;                // The tester library
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -79,6 +85,8 @@ class ExamplesCentipede {
   ObstacleList obl_1;
   ObstacleList obl_2;
   Gnome player;
+  Gnome player_1;
+  Gnome player_2;
   CGameState cgame_0;
   CGameState cgame_1;
   BGameState bgame_0;
@@ -87,6 +95,8 @@ class ExamplesCentipede {
   GameState gamestate_1;
   GameMaster gm_0;
   GameMaster gm_1;
+  WorldScene bg;
+  WorldScene bg1;
 
   // initializes test conditions
   void initTestConditions() {
@@ -171,7 +181,9 @@ class ExamplesCentipede {
     obl_2 = new ObstacleList(2, new ArrayList<>());
 
     player = new Gnome(20, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
-
+    player_1 = new Gnome(25, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
+    player_2 = new Gnome(45, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
+    
     cgame_0 = new CGameState(3, 3, garden_1, player);
     cgame_1 = new CGameState(5, 5, garden_2, player);
 
@@ -183,8 +195,88 @@ class ExamplesCentipede {
 
     gm_0 = new GameMaster(gamestate_0);
     gm_1 = new GameMaster(gamestate_1);
+    bg = new WorldScene(10, 15);
+    bg1 = new WorldScene(10, 15);
+  }
+  
+  // test the method draw in Gnome class
+  void testGnomeDraw(Tester t) {
+    this.initTestConditions();
+    WorldImage gnome =
+        new StarImage(ITile.WIDTH / 2 - 1, 8,
+            2, OutlineMode.SOLID, Color.ORANGE);
+    WorldImage gnomeBallon =
+        new CircleImage(ITile.WIDTH / 2 - 1, OutlineMode.SOLID, Color.BLUE);
+    t.checkExpect(bg, bg1);
+    bg1.placeImageXY(gnome, 20, 580);
+    player.draw(bg, 2);
+    t.checkExpect(bg, bg1);
+    player.draw(bg, 4);
+    bg1.placeImageXY(gnomeBallon, 20, 580);
+    t.checkExpect(bg, bg1);
+  }
+  
+  Gnome player_ = new Gnome(0, 580, 5);
+  // test the method generateDart
+  boolean testGnomeGenerateDart(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(player.generateDart(), new Dart(20, 580, 20))
+        && t.checkExpect(player_.generateDart(), new Dart(20, 580, 20))
+        && t.checkExpect(player_2.generateDart(), new Dart(60, 580, 20));
+  }
+  
+  // test the method generateWaterBallon in Gnome class
+  boolean testGnomeGenerateWaterBallon(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(player.generateWaterBallon(), new WaterBalloon(20, 580, 20))
+        && t.checkExpect(player_.generateWaterBallon(), new WaterBalloon(20, 580, 20))
+        && t.checkExpect(player_2.generateWaterBallon(), new WaterBalloon(60, 580, 20));
   }
 
+  // test the method inRange in Gnome class
+  boolean testGnomeInRange(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(player.inRange(new Posn(20, 580)), true)
+        && t.checkExpect(player.inRange(new Posn(0, 560)), true)
+        && t.checkExpect(player.inRange(new Posn(20, 550)), false)
+        && t.checkExpect(player_.inRange(new Posn(30, 590)), false)
+        && t.checkExpect(player_2.inRange(new Posn(50, 50)), false);
+  }
+  
+  // test the method move in Gnome class
+  void testGnomeMove(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(player.x, 20);
+    t.checkExpect(player.y, 580);
+    player.move("left", 400, 600, new ArrayList<ITile>());
+    t.checkExpect(player.x, 20);
+    player.move("right", 400, 600, new ArrayList<ITile>());
+    t.checkExpect(player.x, 25);
+    player.move("down", 400, 600, garden_1);
+    t.checkExpect(player.y, 580);
+    player.move("up", 400, 600, garden_2);
+    t.checkExpect(player.y, 575);
+  }
+  
+  // test the method moveCell in Gnome class
+  void testGnomeMoveCell(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(player.x, 20);
+    t.checkExpect(player.y, 580);
+    player.moveCell("left", 400);
+    t.checkExpect(player.x, 20);
+    t.checkExpect(player.y, 580);
+    player.moveCell("right", 400);
+    t.checkExpect(player.x, 60);
+    t.checkExpect(player.y, 580);
+    player.moveCell("left", 300);
+    t.checkExpect(player.x, 20);
+    t.checkExpect(player.y, 580);
+    player.moveCell("right", 40);
+    t.checkExpect(player.x, 20);
+    t.checkExpect(player.y, 580);
+  }
+  
   // function object tests
 
   // tests IsGrass, IsPebble, IsDandelion apply(ITile)
@@ -471,10 +563,10 @@ class ExamplesCentipede {
   // draw(WorldScene) can be seen in the big bang world
 
   // runs the game - the setup first, then the game by pressing "s"
-  void testBigBang(Tester t) {
-    int x = 10;
-    int y = 15;
-    GameMaster w = new GameMaster(x, y, 20);
-    w.bigBang(x * ITile.WIDTH, y * ITile.HEIGHT, 1.0 / 28.0);
-  }
+//  void testBigBang(Tester t) {
+//    int x = 10;
+//    int y = 15;
+//    GameMaster w = new GameMaster(x, y, 20);
+//    w.bigBang(x * ITile.WIDTH, y * ITile.HEIGHT, 1.0 / 28.0);
+//  }
 }
