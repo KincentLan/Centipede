@@ -287,7 +287,7 @@ class ExamplesCentipede {
     bodySeg_22 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
         false, false, true, 20, 1);
     bodySeg_23 = new BodySeg(new Posn(60, 20), new Posn(6, 0),
-        false, true, true, 20, 1);
+        false, true, true, 20, 0);
 
     cent_0 = new Centipede(10, 4);
     cent_1 = new Centipede(bseg_0, 8,
@@ -323,6 +323,7 @@ class ExamplesCentipede {
 
     ArrayList<Posn> posns_2 = new ArrayList<>();
     posns_2.add(new Posn(60, 20));
+    posns_2.add(new Posn(60, 100));
     obl_3 = new ObstacleList(1, posns_2);
 
     ArrayList<Posn> posns_3 = new ArrayList<>();
@@ -1103,6 +1104,7 @@ class ExamplesCentipede {
         && t.checkExpect(bodySeg_16.generateObstacleList(), new ObstacleList(1));
   }
 
+<<<<<<< HEAD
 //  boolean testTrapped(Tester t) {
 //    this.initTestConditions();
 //    return t.checkExpect(bodySeg_22.trapped(400, obl_3), true)
@@ -1110,6 +1112,15 @@ class ExamplesCentipede {
 //        && t.checkExpect(bodySeg_19.trapped(400, obl_3), false)
 //        && t.checkExpect(bodySeg_13.trapped(400, obl_1), false);
 //  }
+=======
+  boolean testBodySegTrapped(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(bodySeg_22.trapped(400, obl_3), true);
+//        && t.checkExpect(bodySeg_23.trapped(400, obl_4), true);
+//        && t.checkExpect(bodySeg_19.trapped(400, obl_3), false)
+//        && t.checkExpect(bodySeg_13.trapped(400, obl_1), false);
+  }
+>>>>>>> ca349c6058a206b2fdc8bbba791d37ded3a76dcf
 
   // tests in ObstacleList
 
