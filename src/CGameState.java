@@ -16,7 +16,7 @@ class Util {
           ITile.HEIGHT / 2);
       Posn vel = new Posn(speed, 0);
       BodySeg curr = new BodySeg(pos, vel, head, true, true,
-          3 * ITile.HEIGHT/2, 0);
+          3 * ITile.HEIGHT / 2, 0);
       body.add(curr);
     }
     return body;
@@ -196,11 +196,13 @@ abstract class ATile implements ITile {
 
   @Override
   // by default, an ATile does not have an HP unit, so this method does nothing
-  public void lowerHP() { }
+  public void lowerHP() {
+  }
 
   @Override
   // by default, an ATile does not have an HP unit, so this method does nothing
-  public void fullHP() { }
+  public void fullHP() {
+  }
 
   @Override
   // by default, an ATile does not have an HP unit, so it does not make sense to have noHP, so
@@ -397,7 +399,7 @@ abstract class AProjectile implements IProjectile {
 
   // is this Dart in the same tile as the given position?
   public boolean hitBodySeg(BodySeg bodySeg) {
-    return bodySeg.inRange(new Posn(this.x, this.y));
+    return bodySeg.posnInRange(new Posn(this.x, this.y));
   }
 
   // can this Dart hit the given tile?
@@ -480,7 +482,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
 
   public boolean inHitBox(BodySeg bodySeg) {
     for (Posn p : this.hitBox()) {
-      if (bodySeg.inRange(p)) {
+      if (bodySeg.posnInRange(p)) {
         return true;
       }
     }
@@ -715,7 +717,7 @@ class Centipede {
 
   boolean hitPlayer(Gnome gnome) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.inRange(gnome)) {
+      if (bodySeg.gnomeInRange(gnome)) {
         return true;
       }
     }
@@ -765,7 +767,7 @@ class Centipede {
   // is any of this centipede's body segment in range of the given tile?
   boolean anyInRange(ITile tile) {
     for (BodySeg bodySeg : this.body) {
-      if (bodySeg.inRange(tile)) {
+      if (bodySeg.tileInRange(tile)) {
         return true;
       }
     }
@@ -982,15 +984,10 @@ class BodySeg {
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
   void move(int width, int speed, ObstacleList obl, ArrayList<ITile> garden) {
-    boolean leftEdge = Math.abs(this.pos.x - ITile.WIDTH / 2) <= speed/2;
-    boolean rightEdge = Math.abs(this.pos.x - (width - ITile.WIDTH/2)) <= speed/2;
-    boolean inRow = (this.pos.y - ITile.HEIGHT/2) % ITile.HEIGHT <= speed/2
-        || (this.pos.y - ITile.HEIGHT/2) % ITile.HEIGHT >= ITile.HEIGHT - speed/2;
-    boolean inNextRow = Math.abs(this.pos.y - nextRow) <= speed/2;
+    boolean inNextRow = Math.abs(this.pos.y - nextRow) <= speed / 2;
 
-    if (leftEdge && inRow && !this.right || rightEdge && inRow && this.right ||
-        this.nextEncountered(obl) && inRow) {
-      int middle_x = (this.pos.x/ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH/2;
+    if (this.obstacleAhead(this.pos, speed, width, obl)) {
+      int middle_x = (this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2;
       int excessSpeed = Math.abs(this.pos.x + this.velocity.x - middle_x);
       if (this.velocity.x == 0) {
         if (this.down) {
@@ -1017,7 +1014,7 @@ class BodySeg {
       } else {
         this.nextRow -= ITile.HEIGHT;
       }
-      int middle_y = (this.pos.y/ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT/2;
+      int middle_y = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2;
       int excessSpeed = Math.abs(this.pos.y + this.velocity.y - middle_y);
       if (this.right) {
         this.pos = new Posn(this.pos.x + excessSpeed, middle_y);
@@ -1029,6 +1026,20 @@ class BodySeg {
     } else {
       this.pos = new Posn(this.pos.x + this.velocity.x, this.pos.y + this.velocity.y);
     }
+  }
+
+  boolean obstacleAhead(Posn p, int speed, int width, ObstacleList obl) {
+    boolean leftEdge = Math.abs(p.x - ITile.WIDTH / 2) <= speed / 2;
+    boolean rightEdge = Math.abs(p.x - (width - ITile.WIDTH / 2)) <= speed / 2;
+    boolean inRow = (p.y - ITile.HEIGHT / 2) % ITile.HEIGHT <= speed / 2
+        || (p.y - ITile.HEIGHT / 2) % ITile.HEIGHT >= ITile.HEIGHT - speed / 2;
+
+    if (this.nextEncountered(obl) && inRow
+        || leftEdge && inRow && !this.right
+        || rightEdge && inRow && this.right) {
+      return true;
+    }
+    return false;
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
@@ -1098,15 +1109,15 @@ class BodySeg {
   }
 
   // is this body segment in range of the given posn?
-  boolean inRange(Posn p) {
+  boolean posnInRange(Posn p) {
     return new Util().inRange(this.pos, p);
   }
 
-  boolean inRange(ITile tile) {
+  boolean tileInRange(ITile tile) {
     return tile.inRange(this.pos);
   }
 
-  boolean inRange(Gnome gnome) {
+  boolean gnomeInRange(Gnome gnome) {
     return gnome.inRange(this.pos);
   }
 
@@ -1128,8 +1139,8 @@ class BodySeg {
   // EFFECT: reverses the direction of this body segment potentially
   // returns true if successful, false if otherwise
   boolean reverseYDirection(int height) {
-    boolean topRow = this.pos.y/ITile.HEIGHT * ITile.HEIGHT + ITile.HEIGHT/2 == ITile.HEIGHT / 2;
-    boolean botRow = this.pos.y/ITile.HEIGHT * ITile.HEIGHT + ITile.HEIGHT/2 ==
+    boolean topRow = this.pos.y / ITile.HEIGHT * ITile.HEIGHT + ITile.HEIGHT / 2 == ITile.HEIGHT / 2;
+    boolean botRow = this.pos.y / ITile.HEIGHT * ITile.HEIGHT + ITile.HEIGHT / 2 ==
         height - ITile.HEIGHT / 2;
 
     if (this.down && botRow || !this.down && topRow) {
@@ -1186,9 +1197,9 @@ class BodySeg {
   }
 
   Posn centered() {
-    if (this.right && this.pos.x % ITile.WIDTH >= ITile.WIDTH/2
-        || !this.right && this.pos.x % ITile.WIDTH <= ITile.WIDTH/2) {
-      return new Posn(this.pos.x/ITile.WIDTH * ITile.WIDTH + ITile.WIDTH/2, this.pos.y);
+    if (this.right && this.pos.x % ITile.WIDTH >= ITile.WIDTH / 2
+        || !this.right && this.pos.x % ITile.WIDTH <= ITile.WIDTH / 2) {
+      return new Posn(this.pos.x / ITile.WIDTH * ITile.WIDTH + ITile.WIDTH / 2, this.pos.y);
     }
     return pos;
   }
@@ -1220,13 +1231,19 @@ class BodySeg {
   // is there a dandelion ahead of this body segment?
   boolean aheadDandelion(ArrayList<ITile> garden) {
     Posn ahead = this.nextTilePosn();
-    return this.danAheadPos(ahead, garden);
-  }
-
-  boolean danAheadPos(Posn position, ArrayList<ITile> garden) {
     IsDandelion isDandelion = new IsDandelion();
     for (ITile tile : garden) {
-      if (isDandelion.apply(tile) && tile.samePos(position)) {
+      if (isDandelion.apply(tile) && tile.samePos(ahead)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean danInPosn(Posn p, ArrayList<ITile> garden) {
+    IsDandelion isDandelion = new IsDandelion();
+    for (ITile tile : garden) {
+      if (isDandelion.apply(tile) && tile.inRange(p)) {
         return true;
       }
     }
@@ -1338,8 +1355,8 @@ class CGameState extends GameState {
 
   // the default constructor, only requiring how big the board should be
   CGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome) {
-    this(new Util().singletonList(new Centipede(10, 4)), 1,
-        4, garden, new Posn(0, 0), gnome,
+    this(new Util().singletonList(new Centipede(5, 6)), 10,
+        6, garden, new Posn(0, 0), gnome,
         new NoDart(), new NoWaterBalloon(),
         0, 0, ITile.WIDTH * x,
         ITile.HEIGHT * y);
@@ -1382,8 +1399,8 @@ class CGameState extends GameState {
     WorldScene worldScene = new WorldScene(this.width, this.height);
     WorldImage gg = new TextImage("Game Over", Color.BLACK);
     WorldImage score = new TextImage("" + this.score, Color.BLACK);
-    worldScene.placeImageXY(gg, width/2, height/2 - 20);
-    worldScene.placeImageXY(score, width/2, height/2);
+    worldScene.placeImageXY(gg, width / 2, height / 2 - 20);
+    worldScene.placeImageXY(score, width / 2, height / 2);
     return worldScene;
   }
 
@@ -1496,8 +1513,7 @@ class CGameState extends GameState {
         new Util().append(cpCent, cent.split(this.dart));
         new Util().sproutDandelion(cent.positionHit(this.dart), this.garden);
         this.dart = new NoDart();
-      }
-      else {
+      } else {
         cpCent.add(cent);
       }
     }
@@ -1522,13 +1538,13 @@ class CGameState extends GameState {
     this.dart.draw(s);
 
     this.waterBalloon.draw(s);
-    
+
     WorldImage streaktext = new TextImage("Water Balloon is Ready", Color.BLUE);
     if (this.streak < 3) {
       streaktext = new TextImage("Streak: " + this.streak, Color.BLUE);
     }
     s.placeImageXY(streaktext, this.width - 8 * ITile.WIDTH / 4, ITile.HEIGHT);
-    
+
     WorldImage score = new TextImage("Score: " + this.score, Color.BLACK);
     s.placeImageXY(score, this.width - 5 * ITile.WIDTH / 4, ITile.HEIGHT / 4);
 

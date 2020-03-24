@@ -9,7 +9,7 @@ class BGameState extends GameState {
   int y; // the amount of rows there are (height)
   ArrayList<ITile> garden; // represents all the tiles in the current world
   Gnome gnome; // represents the player in the current world
-  Random rand;
+  Random rand; // the random object to generate
 
   // the constructor
   BGameState(int x, int y, ArrayList<ITile> garden, Gnome gnome, Random rand) {
