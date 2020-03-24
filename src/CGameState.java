@@ -925,13 +925,14 @@ class Centipede {
 
   // EFFECT: doubles this centipede's speed if it does not reach the maximum
   void doubleSpeed() {
-    if (this.currSpeed * 2 <= this.maxSpeed) {
-      this.currSpeed *= 2;
-    } else {
-      this.currSpeed = this.maxSpeed;
+    int currSpeed = this.maxSpeed;
+    while (currSpeed/2 > this.currSpeed) {
+      currSpeed /= 2;
     }
+    this.currSpeed = currSpeed;
+
     for (BodySeg bodySeg : this.body) {
-      bodySeg.doubleSpeed(this.maxSpeed);
+      bodySeg.setSpeed(this.currSpeed);
     }
   }
 
@@ -941,7 +942,7 @@ class Centipede {
       this.currSpeed /= 2;
     }
     for (BodySeg bodySeg : this.body) {
-      bodySeg.halveSpeed();
+      bodySeg.setSpeed(this.currSpeed);
     }
   }
 
@@ -1076,47 +1077,16 @@ class BodySeg {
     this.head = true;
   }
 
-  // EFFECT: halves both the vertical and horizontal speed of this body segment if its not 1
-  void halveSpeed() {
-    int vel_x = this.velocity.x;
-    int vel_y = this.velocity.y;
-    if (Math.abs(vel_x) != 1) {
-      vel_x /= 2;
-    }
-    if (Math.abs(vel_y) != 1) {
-      vel_y /= 2;
-    }
-    this.velocity = new Posn(vel_x, vel_y);
-  }
 
-  // EFFECT: doubles both the vertical and horizontal speed of this body segment if its not 1
-  void doubleSpeed(int maxSpeed) {
-    int vel_x = this.velocity.x;
-    int vel_y = this.velocity.y;
-    if (Math.abs(vel_x) * 2 <= maxSpeed) {
-      vel_x *= 2;
-    } else if (Math.abs(vel_x) * 2 > maxSpeed) {
-      vel_x = vel_x / Math.abs(vel_x) * maxSpeed;
-    }
-
-    if (Math.abs(vel_y) * 2 <= maxSpeed) {
-      vel_y *= 2;
-    } else if (Math.abs(vel_y) * 2 > maxSpeed) {
-      vel_y = vel_y / Math.abs(vel_y) * maxSpeed;
-    }
-
-    this.velocity = new Posn(vel_x, vel_y);
-  }
-
-  // offsets both the vertical and horizontal speed so they do not go over the maximum
-  void setSpeed(int maxSpeed) {
+  // offsets both the vertical and horizontal velocity's to the given speed
+  void setSpeed(int speed) {
     int vel_x = this.velocity.x;
     int vel_y = this.velocity.y;
     if (vel_x != 0) {
-      vel_x = Math.abs(vel_x) / vel_x * maxSpeed;
+      vel_x = Math.abs(vel_x) / vel_x * speed;
     }
     if (vel_y != 0) {
-      vel_y = Math.abs(vel_y) / vel_y * maxSpeed;
+      vel_y = Math.abs(vel_y) / vel_y * speed;
     }
     this.velocity = new Posn(vel_x, vel_y);
   }
@@ -1156,7 +1126,8 @@ class BodySeg {
     return new ObstacleList(this.iteration);
   }
 
-  // EFFECT: reverses the direction of this body segment potentially
+  // EFFECT: reverses the direction of this body segment potentially, also increments
+  // the iteration by one since it has just "bounced"
   // returns true if successful, false if otherwise
   boolean reverseYDirection(int height) {
     boolean topRow = this.pos.y / ITile.HEIGHT * ITile.HEIGHT + ITile.HEIGHT / 2 == ITile.HEIGHT / 2;
@@ -1190,13 +1161,16 @@ class BodySeg {
     return new Posn(x, y);
   }
 
+  // gets the tile posn this BodySeg is currently on
   Posn tilePosn() {
     return new Posn((this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2,
         (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2);
   }
 
-  // returns the center of this tile
-  Posn centered() {
+  // returns the center of this tile if it is nearing a tile (meaning it is equal to
+  // or greater than the middle (or less if going left), otherwise it just returns
+  // the current posn
+  Posn centeredGreater() {
     if (this.right && this.pos.x % ITile.WIDTH >= ITile.WIDTH / 2
         || !this.right && this.pos.x % ITile.WIDTH <= ITile.WIDTH / 2) {
       return new Posn(this.pos.x / ITile.WIDTH * ITile.WIDTH + ITile.WIDTH / 2, this.pos.y);
@@ -1208,7 +1182,7 @@ class BodySeg {
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its direction towards that edge
   Posn nextTilePosn() {
-    Posn centered = this.centered();
+    Posn centered = this.centeredGreater();
     Posn ahead = new Posn(centered.x + ITile.WIDTH, centered.y);
     if (!this.right) {
       ahead = new Posn(centered.x - ITile.WIDTH, centered.y);
@@ -1220,7 +1194,7 @@ class BodySeg {
   // NOTE: this will give an invalid position if the centipede is at one of the edges in which
   // the body segment maintains its opposite direction towards that edge
   Posn prevTilePosn() {
-    Posn centered = this.centered();
+    Posn centered = this.centeredGreater();
     Posn behind = new Posn(centered.x - ITile.WIDTH, centered.y);
     if (!this.right) {
       behind = new Posn(centered.x + ITile.WIDTH, centered.y);
