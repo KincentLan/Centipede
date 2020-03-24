@@ -423,17 +423,16 @@ abstract class ANoProjectile implements IProjectile {
 
 // represents a water balloon in the game
 interface IWaterBalloon extends IProjectile {
-
   // explodes this IWaterBalloon if it hits the centipede or a dandelion in the
   // list of centipedes and garden
   void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden);
 
   // is this IWaterBallon in the hitbo (the cell itself and its adjacent 8 cells)
   // of the given body segment?
-  boolean inHitBox(BodySeg bodySeg);
+  boolean bodySegInHitbox(BodySeg bodySeg);
 }
 
-// represents a moving water ballon in the game
+// represents a moving water balloon in the game
 class WaterBalloon extends AProjectile implements IWaterBalloon {
   public WaterBalloon(int x, int y, int speed) {
     super(x, y, speed);
@@ -453,7 +452,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     IsDandelion isDandelion = new IsDandelion();
     for (int index = 0; index < garden.size(); index += 1) {
       ITile tile = garden.get(index);
-      if (isDandelion.apply(tile) && this.inHitBox(tile)) {
+      if (isDandelion.apply(tile) && this.tileInHitBox(tile)) {
         if (tile.inRange(new Posn(this.x, this.y))) {
           garden.set(index, new DanToPeb().apply(tile));
         } else {
@@ -478,7 +477,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
   }
 
   // is this water balloon or its splash inside the given body segment?
-  public boolean inHitBox(BodySeg bodySeg) {
+  public boolean bodySegInHitbox(BodySeg bodySeg) {
     for (Posn p : this.hitBox()) {
       if (bodySeg.posnInRange(p)) {
         return true;
@@ -488,7 +487,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
   }
 
   //is this water balloon or its splash inside the given ITile?
-  boolean inHitBox(ITile tile) {
+  boolean tileInHitBox(ITile tile) {
     for (Posn p : this.hitBox()) {
       if (tile.inRange(p)) {
         return true;
@@ -524,14 +523,13 @@ class NoWaterBalloon extends ANoProjectile implements IWaterBalloon {
 
   @Override
   //is this water balloon or its splash inside the given body segment? No
-  public boolean inHitBox(BodySeg bodySeg) {
+  public boolean bodySegInHitbox(BodySeg bodySeg) {
     return false;
   }
 }
 
 // represents a dart that can be fired in the centipede game
 interface IDart extends IProjectile {
-
   // did this IDart miss anything on the board?
   boolean missed();
 }
@@ -746,7 +744,7 @@ class Centipede {
   // does the given water balloon (or its splash) hit this centipede?
   boolean splashHit(IWaterBalloon waterBalloon) {
     for (BodySeg bodySeg : this.body) {
-      if (waterBalloon.inHitBox(bodySeg)) {
+      if (waterBalloon.bodySegInHitbox(bodySeg)) {
         return true;
       }
     }
@@ -788,7 +786,7 @@ class Centipede {
   // gets the position of where the dart hit this centipede
   Posn positionHit(IDart dart) {
     int indexHit = this.getIndexHit(dart);
-    return this.body.get(indexHit).tilePosn();
+    return this.body.get(indexHit).spawnTilePosn();
   }
 
   // splits this centipede into multiple centipedes depending on where the dart hit this
@@ -856,7 +854,7 @@ class Centipede {
   ArrayList<Integer> getIndicesHit(IWaterBalloon waterBalloon) {
     ArrayList<Integer> indicesHit = new ArrayList<>();
     for (int index = 0; index < this.body.size(); index += 1) {
-      if (waterBalloon.inHitBox(this.body.get(index))) {
+      if (waterBalloon.bodySegInHitbox(this.body.get(index))) {
         indicesHit.add(index);
       }
     }
@@ -901,7 +899,7 @@ class Centipede {
     }
     for (BodySeg bodySeg : this.body) {
       bodySeg.reverseYDirection(height);
-      bodySeg.move(width, this.currSpeed, bodySeg.obstacleList(this.encountered), garden);
+      bodySeg.move(width, this.currSpeed, bodySeg.obstacleList(this.encountered));
     }
     this.removeUnusedObl();
     this.removeUnusedPeb();
@@ -997,7 +995,7 @@ class BodySeg {
 
   // EFFECT: changes the position and velocity of this body segment
   // moves this body segment
-  void move(int width, int speed, ObstacleList obl, ArrayList<ITile> garden) {
+  void move(int width, int speed, ObstacleList obl) {
     boolean inNextRow = Math.abs(this.pos.y - nextRow) <= speed / 2;
 
     if (this.obstacleAhead(this.pos, speed, width, obl)) {
@@ -1178,8 +1176,8 @@ class BodySeg {
     return obl.inObstacles(pos);
   }
 
-  // gets the tile position of this body segment
-  Posn tilePosn() {
+  // gets the tile position of this body segment to spawn
+  Posn spawnTilePosn() {
     int x = (this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2;
     int y = (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2;
     if (this.right && this.pos.x % ITile.WIDTH > ITile.WIDTH / 2) {
@@ -1188,6 +1186,11 @@ class BodySeg {
       x -= ITile.WIDTH;
     }
     return new Posn(x, y);
+  }
+
+  Posn tilePosn() {
+    return new Posn((this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2,
+        (this.pos.y / ITile.HEIGHT) * ITile.HEIGHT + ITile.HEIGHT / 2);
   }
 
   // returns the center of this tile
@@ -1460,7 +1463,7 @@ class CGameState extends GameState {
     return ctr;
   }
 
-  // did the centipede get hit by the water balloon?
+  // did any of the centipedes get hit by the water balloon?
   boolean hitCentipede() {
     for (Centipede cent : this.cents) {
       if (cent.targetHit(this.waterBalloon)) {

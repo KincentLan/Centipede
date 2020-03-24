@@ -58,29 +58,54 @@ class ExamplesCentipede {
   ITile tile_12;
   ITile tile_13;
   ITile tile_14;
+  ITile tile_15;
+  ITile tile_16;
   ArrayList<ITile> garden_0;
   ArrayList<ITile> garden_1;
   ArrayList<ITile> garden_2;
   ArrayList<ITile> garden_3;
   ArrayList<ITile> garden_4;
+  ArrayList<ITile> garden_5;
   IWaterBalloon waterBalloon_0;
   IWaterBalloon waterBalloon_1;
   IWaterBalloon waterBalloon_2;
   IWaterBalloon waterBalloon_3;
+  IWaterBalloon waterBalloon_4;
+  IWaterBalloon waterBalloon_5;
+  IWaterBalloon waterBalloon_6;
+  IWaterBalloon waterBalloon_7;
+  WaterBalloon waterBalloon_8;
   IDart dart_0;
   IDart dart_1;
   IDart dart_2;
   IDart dart_3;
-  ArrayList<BodySeg> bseg_0;
-  ArrayList<BodySeg> bseg_1;
+  IDart dart_4;
+  IDart dart_5;
   BodySeg bodySeg_0;
   BodySeg bodySeg_1;
   BodySeg bodySeg_2;
   BodySeg bodySeg_3;
+  BodySeg bodySeg_4;
+  BodySeg bodySeg_5;
+  BodySeg bodySeg_6;
+  BodySeg bodySeg_7;
+  BodySeg bodySeg_8;
+  BodySeg bodySeg_9;
+  BodySeg bodySeg_10;
+  BodySeg bodySeg_11;
+  ArrayList<BodySeg> bseg_0;
+  ArrayList<BodySeg> bseg_1;
+  ArrayList<BodySeg> bseg_2;
   Centipede cent_0;
   Centipede cent_1;
   Centipede cent_2;
   Centipede cent_3;
+  Centipede cent_4;
+  ArrayList<Centipede> cent_arr_0;
+  ArrayList<Centipede> cent_arr_01;
+  ArrayList<Centipede> cent_arr_23;
+  ArrayList<Centipede> cent_arr_34;
+  ArrayList<Centipede> cent_arr_4;
   ObstacleList obl_0;
   ObstacleList obl_1;
   ObstacleList obl_2;
@@ -125,6 +150,8 @@ class ExamplesCentipede {
     tile_12 = new DandelionTile(60, 20, 3, 80);
     tile_13 = new PebbleTile(60, 20, 400);
     tile_14 = new PebbleTile(380, 20, 400);
+    tile_15 = new GrassTile(20, 20, 400);
+    tile_16 = new PebbleTile(420, 20, 440);
     garden_0 = new ArrayList<>();
     garden_0.add(tile_0);
     garden_0.add(tile_1);
@@ -139,37 +166,99 @@ class ExamplesCentipede {
     garden_2.add(tile_9);
     garden_3 = util.generateGrassBoard(3, 3);
     garden_4 = util.generateGrassBoard(5, 5);
+    garden_5 = new ArrayList<>();
+    garden_5.add(new DandelionTile(20, 20, 3, 120));
+    garden_5.add(new DandelionTile(20, 60, 3, 120));
+    garden_5.add(new DandelionTile(20, 100, 3, 120));
+    garden_5.add(new DandelionTile(60, 20, 3, 120));
+    garden_5.add(new PebbleTile(60, 60, 120));
+    garden_5.add(new DandelionTile(60, 100, 3, 120));
+    garden_5.add(new DandelionTile(100, 20, 3, 120));
+    garden_5.add(new DandelionTile(100, 60, 3, 120));
+    garden_5.add(new DandelionTile(100, 100, 3, 120));
     waterBalloon_0 = new WaterBalloon(0, 0, 10);
-    waterBalloon_1 = new WaterBalloon(2, 1, 3);
+    waterBalloon_1 = new WaterBalloon(2, -1, 3);
     waterBalloon_2 = new WaterBalloon(2, 3, 4);
     waterBalloon_3 = new NoWaterBalloon();
+    waterBalloon_4 = new WaterBalloon(20, 20, 10);
+    waterBalloon_5 = new WaterBalloon(20, 32, 10);
+    waterBalloon_6 = new WaterBalloon(20, 20, 10);
+    waterBalloon_7 = new WaterBalloon(60, 60, 10);
+    waterBalloon_8 = new WaterBalloon(60, 60, 10);
     dart_0 = new Dart(0, 0, 10);
-    dart_1 = new Dart(2, 1, 11);
+    dart_1 = new Dart(2, -1, 11);
     dart_2 = new Dart(5, 5, 10);
     dart_3 = new NoDart();
+    dart_4 = new Dart(20, 20, 10);
+    dart_5 = new Dart(20, 32, 10);
 
     bseg_0 = new ArrayList<>();
-    bodySeg_0 = new BodySeg(new Posn(380, 60), new Posn(0, 6),
-        false, true, false, 60, 0);
-    bodySeg_1 = new BodySeg(new Posn(340, 60), new Posn(0, 2),
+    bodySeg_0 = new BodySeg(new Posn(20, 20), new Posn(0, 6),
+        false, true, true, 60, 0);
+    bodySeg_1 = new BodySeg(new Posn(60, 20), new Posn(-6, 0),
         false, true, false, 60, 0);
     bseg_0.add(bodySeg_0);
     bseg_0.add(bodySeg_1);
 
     bseg_1 = new ArrayList<>();
-    bodySeg_2 = new BodySeg(new Posn(380, 20), new Posn(0, 2),
+    bodySeg_2 = new BodySeg(new Posn(60, 22), new Posn(0, 2),
         false, true, false, 60, 0);
-    bodySeg_3 = new BodySeg(new Posn(376, 20), new Posn(0, 2),
-        false, true, false, 60, 0);
+    bodySeg_3 = new BodySeg(new Posn(22, 20), new Posn(2, 0),
+        false, true, true, 60, 0);
     bseg_1.add(bodySeg_2);
     bseg_1.add(bodySeg_3);
+
+    bodySeg_4 = new BodySeg(new Posn(100, 20), new Posn(0, 6),
+        false, true, true, 60, 0);
+    bodySeg_5 = new BodySeg(new Posn(20, 60), new Posn(-6, 0),
+        false, true, false, 60, 0);
+    bodySeg_6 = new BodySeg(new Posn(60, 60), new Posn(0, 6),
+        false, true, true, 60, 0);
+    bodySeg_7 = new BodySeg(new Posn(98, 60), new Posn(-6, 0),
+        false, true, false, 60, 0);
+    bodySeg_8 = new BodySeg(new Posn(20, 100), new Posn(0, 6),
+        false, true, true, 60, 0);
+    bodySeg_9 = new BodySeg(new Posn(60, 100), new Posn(-6, 0),
+        false, true, false, 60, 0);
+    bodySeg_10 = new BodySeg(new Posn(100, 100), new Posn(-6, 0),
+        false, true, false, 60, 0);
+
+    bseg_2 = new ArrayList<>();
+    bseg_2.add(bodySeg_0);
+    bseg_2.add(bodySeg_1);
+    bseg_2.add(bodySeg_4);
+    bseg_2.add(bodySeg_5);
+    bseg_2.add(bodySeg_6);
+    bseg_2.add(bodySeg_7);
+    bseg_2.add(bodySeg_8);
+    bseg_2.add(bodySeg_9);
+    bseg_2.add(bodySeg_10);
+
+    bodySeg_11 = new BodySeg(new Posn(220, 100), new Posn(-6, 0),
+        false, true, false, 60, 0);
 
     cent_0 = new Centipede(10, 4);
     cent_1 = new Centipede(bseg_0, 8,
         10, new ArrayList<>(), new ArrayList<>());
-    cent_2 = new Centipede(bseg_0, 8,
+    cent_2 = new Centipede(bseg_1, 8,
         10, new ArrayList<>(), new ArrayList<>());
-    cent_3 = new Centipede(1, 4);
+    cent_3 = new Centipede(util.singletonList(bodySeg_11), 8,
+        10, new ArrayList<>(), new ArrayList<>());
+    cent_4 = new Centipede(bseg_2, 8,
+        10, new ArrayList<>(), new ArrayList<>());
+    cent_arr_0 = new ArrayList<>();
+    cent_arr_0.add(cent_0);
+    cent_arr_01 = new ArrayList<>();
+    cent_arr_01.add(cent_0);
+    cent_arr_01.add(cent_1);
+    cent_arr_23 = new ArrayList<>();
+    cent_arr_23.add(cent_2);
+    cent_arr_23.add(cent_3);
+    cent_arr_34 = new ArrayList<>();
+    cent_arr_34.add(cent_3);
+    cent_arr_34.add(cent_4);
+    cent_arr_4 = new ArrayList<>();
+    cent_arr_4.add(cent_4);
 
     ArrayList<Posn> posns_0 = new ArrayList<>();
     posns_0.add(new Posn(280, 60));
@@ -183,7 +272,7 @@ class ExamplesCentipede {
     player = new Gnome(20, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
     player_1 = new Gnome(25, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
     player_2 = new Gnome(45, 15 * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7);
-    
+
     cgame_0 = new CGameState(3, 3, garden_1, player);
     cgame_1 = new CGameState(5, 5, garden_2, player);
 
@@ -198,7 +287,7 @@ class ExamplesCentipede {
     bg = new WorldScene(10, 15);
     bg1 = new WorldScene(10, 15);
   }
-  
+
   // test the method draw in Gnome class
   void testGnomeDraw(Tester t) {
     this.initTestConditions();
@@ -215,7 +304,7 @@ class ExamplesCentipede {
     bg1.placeImageXY(gnomeBallon, 20, 580);
     t.checkExpect(bg, bg1);
   }
-  
+
   Gnome player_ = new Gnome(0, 580, 5);
   // test the method generateDart
   boolean testGnomeGenerateDart(Tester t) {
@@ -224,7 +313,7 @@ class ExamplesCentipede {
         && t.checkExpect(player_.generateDart(), new Dart(20, 580, 20))
         && t.checkExpect(player_2.generateDart(), new Dart(60, 580, 20));
   }
-  
+
   // test the method generateWaterBallon in Gnome class
   boolean testGnomeGenerateWaterBallon(Tester t) {
     this.initTestConditions();
@@ -242,7 +331,7 @@ class ExamplesCentipede {
         && t.checkExpect(player_.inRange(new Posn(30, 590)), false)
         && t.checkExpect(player_2.inRange(new Posn(50, 50)), false);
   }
-  
+
   // test the method move in Gnome class
   void testGnomeMove(Tester t) {
     this.initTestConditions();
@@ -257,7 +346,7 @@ class ExamplesCentipede {
     player.move("up", 400, 600, garden_2);
     t.checkExpect(player.y, 575);
   }
-  
+
   // test the method moveCell in Gnome class
   void testGnomeMoveCell(Tester t) {
     this.initTestConditions();
@@ -276,7 +365,7 @@ class ExamplesCentipede {
     t.checkExpect(player.x, 20);
     t.checkExpect(player.y, 580);
   }
-  
+
   // function object tests
 
   // tests IsGrass, IsPebble, IsDandelion apply(ITile)
@@ -302,6 +391,7 @@ class ExamplesCentipede {
   // tests GrassToDan apply(ITile)
   // NOTE: all the other methods in this ITileVisitor's are tested implicitly
   boolean testGrassToDanApply(Tester t) {
+    this.initTestConditions();
     GrassToDan grassToDan = new GrassToDan();
     return t.checkExpect(grassToDan.apply(tile_0), new DandelionTile(20, 60, 3, 400))
         && t.checkExpect(grassToDan.apply(tile_1), tile_1)
@@ -311,6 +401,7 @@ class ExamplesCentipede {
   // tests DanToPeb apply(ITile)
   // NOTE: all the other methods in these ITileVisitor's are tested implicitly
   boolean testDanToPebApply(Tester t) {
+    this.initTestConditions();
     DanToPeb danToPeb = new DanToPeb();
     return t.checkExpect(danToPeb.apply(tile_0), tile_0)
         && t.checkExpect(danToPeb.apply(tile_1), tile_1)
@@ -542,7 +633,7 @@ class ExamplesCentipede {
         && t.checkExpect(tile_14.hitBox(), hitBoxFour);
   }
 
-  // tests ITile inRange()
+  // tests ITile inRange(Posn)
   void testITileInRange(Tester t) {
     this.initTestConditions();
     Posn first = new Posn(21, 21);
@@ -562,7 +653,161 @@ class ExamplesCentipede {
 
   // draw(WorldScene) can be seen in the big bang world
 
-  // runs the game - the setup first, then the game by pressing "s"
+  // tests IProjectile move()
+  void testIProjectileMove(Tester t) {
+    this.initTestConditions();
+
+    IWaterBalloon waterBalloon_0 = new WaterBalloon(0, -10, 10);
+    this.waterBalloon_0.move();
+    t.checkExpect(this.waterBalloon_0, waterBalloon_0);
+
+    IWaterBalloon waterBalloon_2 = new WaterBalloon(2, -1, 4);
+    this.waterBalloon_2.move();
+    t.checkExpect(this.waterBalloon_2, waterBalloon_2);
+
+    IWaterBalloon noBalloon = new NoWaterBalloon();
+    waterBalloon_3.move();
+    t.checkExpect(waterBalloon_3, noBalloon);
+
+    IDart dart_0 = new Dart(0, -10, 10);
+    this.dart_0.move();
+    t.checkExpect(this.dart_0, dart_0);
+
+    IDart dart_1 = new Dart(2, -12, 11);
+    this.dart_1.move();
+    t.checkExpect(this.dart_1, dart_1);
+
+    IDart noDart = new NoDart();
+    dart_3.move();
+    t.checkExpect(dart_3, noDart);
+  }
+
+  // tests IProjectile offScreen()
+  boolean testIProjectileOffScreen(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(waterBalloon_0.offScreen(), true)
+        && t.checkExpect(waterBalloon_1.offScreen(), true)
+        && t.checkExpect(waterBalloon_2.offScreen(), false)
+        && t.checkExpect(waterBalloon_3.offScreen(), true)
+        && t.checkExpect(dart_0.offScreen(), true)
+        && t.checkExpect(dart_1.offScreen(), true)
+        && t.checkExpect(dart_2.offScreen(), false)
+        && t.checkExpect(dart_3.offScreen(), true);
+  }
+
+  // tests IProjectile hitBodySeg(BodySeg)
+  boolean testIProjectileHitBodySeg(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(waterBalloon_1.hitBodySeg(bodySeg_0), false)
+        && t.checkExpect(waterBalloon_4.hitBodySeg(bodySeg_0), true)
+        && t.checkExpect(waterBalloon_5.hitBodySeg(bodySeg_0), true)
+        && t.checkExpect(waterBalloon_3.hitBodySeg(bodySeg_1), false)
+        && t.checkExpect(dart_1.hitBodySeg(bodySeg_0), false)
+        && t.checkExpect(dart_4.hitBodySeg(bodySeg_0), true)
+        && t.checkExpect(dart_5.hitBodySeg(bodySeg_0), true)
+        && t.checkExpect(dart_3.hitBodySeg(bodySeg_1), false);
+  }
+
+  // tests IProjectile hitTile(ITile)
+  boolean testIProjectHitTile(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(waterBalloon_1.hitTile(tile_0), false)
+        && t.checkExpect(waterBalloon_4.hitTile(tile_15), true)
+        && t.checkExpect(waterBalloon_5.hitTile(tile_15), true)
+        && t.checkExpect(waterBalloon_3.hitTile(tile_2), false)
+        && t.checkExpect(dart_1.hitTile(tile_15), false)
+        && t.checkExpect(dart_4.hitTile(tile_15), true)
+        && t.checkExpect(dart_5.hitTile(tile_15), true)
+        && t.checkExpect(dart_3.hitTile(tile_5), false);
+  }
+
+  // tests for IDart
+
+  // tests IDart missed()
+  boolean testIDartMissed(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(dart_0.missed(), true)
+        && t.checkExpect(dart_1.missed(), true)
+        && t.checkExpect(dart_2.missed(), false)
+        && t.checkExpect(dart_3.missed(), false);
+  }
+
+  // tests for IWaterBalloon
+
+  // test WaterBalloon tileInHitBox(ITile)
+  // NOTE: this implicitly tests hitBox() in WaterBalloon
+  void testWaterBalloonTileInHitbox(Tester t) {
+    for (ITile tile : garden_5) {
+      t.checkExpect(waterBalloon_8.tileInHitBox(tile), true);
+    }
+    t.checkExpect(waterBalloon_8.tileInHitBox(tile_16), false);
+    t.checkExpect(waterBalloon_8.tileInHitBox(tile_14), false);
+  }
+
+  // test WaterBalloon bodySegInHitbox(BodySeg)
+  boolean testIWaterBalloonBodySegInHitbox(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_0), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_1), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_4), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_5), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_6), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_7), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_8), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_9), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_10), true)
+        && t.checkExpect(waterBalloon_7.bodySegInHitbox(bodySeg_11), false)
+        && t.checkExpect(waterBalloon_3.bodySegInHitbox(bodySeg_0), false);
+  }
+
+  // test IWaterBalloon explode(ArrayList<Centipede>, ArrayList<ITile>)
+  void testIWaterBalloonExplode(Tester t) {
+    this.initTestConditions();
+    IWaterBalloon noBalloon = new NoWaterBalloon();
+
+    waterBalloon_3.explode(cent_arr_0, garden_1);
+    t.checkExpect(waterBalloon_3, noBalloon);
+
+    waterBalloon_7.explode(cent_arr_4, garden_3);
+
+    ArrayList<ITile> newGarden = util.generateGrassBoard(3, 3);
+    for (int index = 0; index < newGarden.size(); index += 1) {
+      newGarden.set(index, new GrassToDan().apply(newGarden.get(index)));
+    }
+
+    t.checkExpect(cent_arr_4, new ArrayList<>());
+    t.checkExpect(garden_3, newGarden);
+
+    this.initTestConditions();
+    waterBalloon_7.explode(cent_arr_34, garden_3);
+    t.checkExpect(cent_arr_34, util.singletonList(cent_3));
+
+    this.initTestConditions();
+
+    for (int index = 0; index < garden_3.size(); index += 1) {
+      garden_3.set(index, new GrassToDan().apply(newGarden.get(index)));
+      garden_3.get(index).lowerHP();
+    }
+    waterBalloon_7.explode(cent_arr_4, garden_3);
+    t.checkExpect(cent_arr_4, new ArrayList<>());
+    t.checkExpect(garden_3, garden_5);
+  }
+
+  // tests for Centipede
+
+  // draw() can be seen in the big bang world
+
+  // already checked splashHit(IWaterBalloon), getIndicesHit(IWaterBalloon), posnsHit(IWaterBalloon)
+  // in explode() of IWaterBalloon
+
+  // tests for BodySeg
+
+  // draw() can be seen in the big bang world
+
+  // already checked tilePosn() in explode() of IWaterBalloon and posnInRange(Posn pos)
+  // and bodySegInRange() of IProjectile
+
+//  // runs the game - the setup first, then the game by pressing "s"
 //  void testBigBang(Tester t) {
 //    int x = 10;
 //    int y = 15;
