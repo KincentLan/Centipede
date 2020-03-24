@@ -660,6 +660,51 @@ class ExamplesCentipede {
         && t.checkExpect(cgame_1.toCGameState(), cgame_1);
   }
   
+  // tests for GameMaster class
+  
+  // test the method onKeyEvent in GameMaster
+  void testGMOnKey(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(gm_0.gameState, cgame_0);
+    t.checkExpect(cgame_0.playerDirection, new Posn(0,0));
+    gm_0.onKeyEvent("left");
+    t.checkExpect(cgame_0.playerDirection, new Posn(-1,0));
+    gm_0.onKeyEvent("right");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1,0));
+    gm_0.onKeyEvent("up");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, 1));
+    gm_0.onKeyEvent("down");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    gm_0.onKeyEvent("q");
+    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    t.checkExpect(cgame_0.dart, new NoDart());
+    gm_0.onKeyEvent(" ");
+    t.checkExpect(cgame_0.dart, new Dart(20, 580, 20));
+    gm_0.onKeyEvent(" ");
+    t.checkExpect(cgame_0.dart, new Dart(20, 580, 20));
+    t.checkExpect(cgame_0.waterBalloon, new NoWaterBalloon());
+    gm_0.onKeyEvent("b");
+    t.checkExpect(cgame_1.waterBalloon, new NoWaterBalloon());
+    cgame_1.streak = 3;
+    cgame_1.score = 10;
+    cgame_1.onKeyEvent("b");
+    t.checkExpect(cgame_1.waterBalloon, new WaterBalloon(20, 580, 20));
+    t.checkExpect(cgame_1.streak, 0);
+    t.checkExpect(cgame_1.score, 5);
+    
+    t.checkExpect(gm_1.gameState, bgame_0);
+    t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
+    t.checkExpect(bgame_0.gnome, new Gnome(20, 100, 5));
+    gm_1.onKeyEvent("left");
+    t.checkExpect(bgame_0.gnome, new Gnome(20, 100, 5));
+    gm_1.onKeyEvent("right");
+    t.checkExpect(bgame_0.gnome, new Gnome(60, 100, 5));
+    gm_1.onKeyEvent("up");
+    t.checkExpect(bgame_0.gnome, new Gnome(60, 100, 5));
+    gm_1.onKeyEvent("r");
+    t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
+  }
+  
   // function object tests
 
   // tests IsGrass, IsPebble, IsDandelion apply(ITile)
