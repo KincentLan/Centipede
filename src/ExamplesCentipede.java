@@ -433,7 +433,59 @@ class ExamplesCentipede {
     t.checkExpect(player.x, 20);
     t.checkExpect(player.y, 580);
   }
+  
+  // test the method endGame in BGameState class
+  boolean testBEndGame(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(bgame_0.endGame(), false) 
+        && t.checkExpect(bgame_1.endGame(), false);
+  }
+  
+  // tests for onMouseClicked in BGameState class
+  void testBGameOnMouseClicked(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
+    bgame_0.onMouseClicked(new Posn(0, 0), "RightButton");
+    ArrayList<ITile> garden_ = new Util().generateGrassBoard(3, 3);
+    garden_.set(0, new PebbleTile(20, 20, 120));
+    t.checkExpect(bgame_0.garden, garden_);
+    bgame_0.onMouseClicked(new Posn(60, 60), "LeftButton");
+    garden_.set(4, new DandelionTile(60, 60, 3, 120));
+    t.checkExpect(bgame_0.garden, garden_);
+    bgame_0.onMouseClicked(new Posn(500, 600), "LeftButton");
+    t.checkExpect(bgame_0.garden, garden_);
+  }
+  
+  // tests for onKeyEvent in BGameState class
+  void testBGameOnKeyEvent(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
+    t.checkExpect(bgame_0.gnome, new Gnome(20, 100, 5));
+    bgame_0.onKeyEvent("left");
+    t.checkExpect(bgame_0.gnome, new Gnome(20, 100, 5));
+    bgame_0.onKeyEvent("right");
+    t.checkExpect(bgame_0.gnome, new Gnome(60, 100, 5));
+    bgame_0.onKeyEvent("up");
+    t.checkExpect(bgame_0.gnome, new Gnome(60, 100, 5));
+    bgame_0.onKeyEvent("r");
+    t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
+  }
+  
+  // test the method score in BGameState class
+  boolean testBScore(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(bgame_0.score(), 0)
+        && t.checkExpect(bgame_1.score(), 0);
+  }
 
+  // test the method toCGameState in BGameState class
+  boolean testToCGame(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(bgame_0.toCGameState(),
+        new CGameState(3, 3, new Util().generateGrassBoard(3, 3), new Gnome(20, 100, 5)))
+        && t.checkExpect(bgame_1.toCGameState(), new CGameState(3, 3, garden_1, player));
+  }
+  
   // function object tests
 
   // tests IsGrass, IsPebble, IsDandelion apply(ITile)
@@ -1051,13 +1103,13 @@ class ExamplesCentipede {
         && t.checkExpect(bodySeg_16.generateObstacleList(), new ObstacleList(1));
   }
 
-  boolean testTrapped(Tester t) {
-    this.initTestConditions();
-    return t.checkExpect(bodySeg_22.trapped(400, obl_3), true)
-        && t.checkExpect(bodySeg_23.trapped(400, obl_4), true)
-        && t.checkExpect(bodySeg_19.trapped(400, obl_3), false)
-        && t.checkExpect(bodySeg_13.trapped(400, obl_1), false);
-  }
+//  boolean testTrapped(Tester t) {
+//    this.initTestConditions();
+//    return t.checkExpect(bodySeg_22.trapped(400, obl_3), true)
+//        && t.checkExpect(bodySeg_23.trapped(400, obl_4), true)
+//        && t.checkExpect(bodySeg_19.trapped(400, obl_3), false)
+//        && t.checkExpect(bodySeg_13.trapped(400, obl_1), false);
+//  }
 
   // tests in ObstacleList
 
