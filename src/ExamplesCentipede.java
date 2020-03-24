@@ -12,7 +12,7 @@ import java.util.Random;
 
   /* DOCUMENTATION for known/potential bugs:
      The move() for BodySeg has a slight bug where it will try to move towards a Dandelion
-     when moving down/up sometimes. It will re-orient itself to the correct position
+     when moving down sometimes depending on speed. It will re-orient itself to the correct position
      but this leads to janky movement to the eyes. If there was more time, the move() would have
      been fixed by checking if there was a dandelion and adding the excess speed to the y
      position, while mutating all its related fields.
@@ -338,7 +338,6 @@ class ExamplesCentipede {
 
     ArrayList<Posn> posns_2 = new ArrayList<>();
     posns_2.add(new Posn(60, 20));
-    posns_2.add(new Posn(60, 100));
     obl_3 = new ObstacleList(1, posns_2);
 
     ArrayList<Posn> posns_3 = new ArrayList<>();
