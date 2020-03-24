@@ -502,6 +502,9 @@ class ExamplesCentipede {
         new CGameState(3, 3, new Util().generateGrassBoard(3, 3), new Gnome(20, 100, 5)))
         && t.checkExpect(bgame_1.toCGameState(), new CGameState(3, 3, garden_1, player));
   }
+  
+  // we did not test makeScene in the BGameState class, because we can visualize it when we 
+  // run bigBang, and check if things are drawn correctly from there, which they were.
 
   // function object tests
 
