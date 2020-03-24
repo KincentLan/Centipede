@@ -689,6 +689,10 @@ class ExamplesCentipede {
   }
 
   // tests for GameMaster class
+  
+  // we did not write tests for the lastScene and makeScene methods because
+  // we can visualize the graph when we ran bigbang, and everything behaves as
+  // desired.
 
   // test the method onKeyEvent in GameMaster
   void testGMOnKey(Tester t) {
@@ -731,6 +735,76 @@ class ExamplesCentipede {
     t.checkExpect(bgame_0.gnome, new Gnome(60, 100, 5));
     gm_1.onKeyEvent("r");
     t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
+  }
+  
+  // test the method onKeyRealease in GameMaster class
+  void GMOnKeyRealease(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(gm_0.gameState, cgame_0);
+    cgame_0.playerDirection = new Posn(1, 1);
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, 1));
+    gm_0.onKeyReleased("left");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 1));
+    gm_0.onKeyReleased("right");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 1));
+    gm_0.onKeyReleased("up");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
+    gm_0.onKeyReleased("down");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
+    gm_0.onKeyReleased("p");
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
+    
+    t.checkExpect(gm_1.gameState, bgame_0);
+    gm_1.onKeyReleased("left");
+    t.checkExpect(gm_1.gameState, bgame_0);
+    gm_1.onKeyReleased("right");
+    t.checkExpect(gm_1.gameState, bgame_0);
+  }
+  
+  // test the method onMouseClick in GameMaster class
+  void testGMMouseClick(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(gm_1.gameState, bgame_0);
+    t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
+    gm_1.onMouseClicked(new Posn(0, 0), "RightButton");
+    ArrayList<ITile> garden_ = new Util().generateGrassBoard(3, 3);
+    garden_.set(0, new PebbleTile(20, 20, 120));
+    t.checkExpect(bgame_0.garden, garden_);
+    gm_1.onMouseClicked(new Posn(60, 60), "LeftButton");
+    garden_.set(4, new DandelionTile(60, 60, 3, 120));
+    t.checkExpect(bgame_0.garden, garden_);
+    gm_1.onMouseClicked(new Posn(500, 600), "LeftButton");
+    t.checkExpect(bgame_0.garden, garden_);
+    
+    t.checkExpect(gm_0.gameState, cgame_0);
+    gm_0.onMouseClicked(new Posn(60, 60), "LeftButton");;
+    t.checkExpect(gm_0.gameState, cgame_0);
+    gm_0.onMouseClicked(new Posn(0, 0), "RightButton");
+    t.checkExpect(gm_0.gameState, cgame_0);
+  }
+  
+  // test the method onTick in GameMaster class
+  void testGMOnTick(Tester t) {
+    this.initTestConditions();
+    t.checkExpect(gm_1.gameState, bgame_0);
+    gm_1.onTick();
+    t.checkExpect(gm_1.gameState, bgame_0);
+    gm_1.onTick();
+    t.checkExpect(gm_1.gameState, bgame_0);
+    
+    Centipede cent1 = new Centipede(10, 4);
+    ArrayList<Centipede> centB = new Util().singletonList(cent1);
+    t.checkExpect(gm_0.gameState, cgame_0);
+    t.checkExpect(cgame_0.cents, centB);
+    gm_0.onTick();
+    cent1.move(3, 3, garden_1);
+    t.checkExpect(cgame_0.cents, centB);
+    cgame_0.dart = new Dart(20, 50, 20);
+    gm_0.onTick();
+    t.checkExpect(cgame_0.dart, new Dart(20, 30, 20));
+    cgame_0.waterBalloon = new WaterBalloon(20, 50, 20);
+    gm_0.onTick();
+    t.checkExpect(cgame_0.waterBalloon, new WaterBalloon(20, 30, 20));
   }
 
   // function object tests
