@@ -2,7 +2,7 @@ import javalib.impworld.*;
 import javalib.worldimages.*;
 
 // represents a centipede game that manages the current GameState, which could be the setup or the
-// actual game
+// actual game, a wrapper class
 class GameMaster extends World {
   GameState gameState;
 

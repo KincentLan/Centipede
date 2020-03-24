@@ -54,7 +54,7 @@ class Util {
   void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col, int row) {
     for (int index = 0; index < col; index += 1) {
       garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH / 2,
-          index * ITile.HEIGHT + ITile.HEIGHT / 2, row));
+          index * ITile.HEIGHT + ITile.HEIGHT / 2, row * ITile.WIDTH));
     }
   }
 
@@ -148,7 +148,7 @@ interface ITile {
 abstract class ATile implements ITile {
   int row; // to represent the row of this ATile in terms of the grid in pixels
   int col; // to represent the col of this ATile in terms of the grid in pixels
-  int width; // to represent the width of the garden this ATile is inin pixels
+  int width; // to represent the width of the garden this ATile is in pixels
 
   // the constructor
   ATile(int row, int col, int width) {
@@ -169,7 +169,7 @@ abstract class ATile implements ITile {
   // with the same position given the mouse button name and the bottom column of the board
   public ITile replaceTile(String bName, int botCol) {
     if (bName.equals("LeftButton") && this.col != botCol) {
-      return new GrassTile(this.row, this.col, this.row);
+      return new GrassTile(this.row, this.col, this.width);
     } else {
       return this;
     }
@@ -423,13 +423,13 @@ abstract class ANoProjectile implements IProjectile {
 
 // represents a water balloon in the game
 interface IWaterBalloon extends IProjectile {
-  
+
   // explodes this IWaterBalloon if it hits the centipede or a dandelion in the
   // list of centipedes and garden
   void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden);
 
   // is this IWaterBallon in the hitbo (the cell itself and its adjacent 8 cells)
-  // of the given body segment? 
+  // of the given body segment?
   boolean inHitBox(BodySeg bodySeg);
 }
 
@@ -447,7 +447,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     s.placeImageXY(waterBalloon, this.x, this.y);
   }
 
-  // EFFECT: modifies the given list of centipedes and list of tiles if any of the body segment 
+  // EFFECT: modifies the given list of centipedes and list of tiles if any of the body segment
   // or dandelions if the water balloon or its splash collides with them
   public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
     IsDandelion isDandelion = new IsDandelion();
@@ -516,7 +516,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
 
 // represents a non-existing water balloon
 class NoWaterBalloon extends ANoProjectile implements IWaterBalloon {
-  
+
   @Override
   // explodes this non-existing, which has no effect
   public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
@@ -531,14 +531,14 @@ class NoWaterBalloon extends ANoProjectile implements IWaterBalloon {
 
 // represents a dart that can be fired in the centipede game
 interface IDart extends IProjectile {
-  
+
   // did this IDart miss anything on the board?
   boolean missed();
 }
 
 // represents a non-existent dart in the centipede game
 class NoDart extends ANoProjectile implements IDart {
-  
+
   // NoDart cannot miss since there isn't a dart
   public boolean missed() {
     return false;
@@ -1375,7 +1375,7 @@ class CGameState extends GameState {
     return false;
   }
 
-  // generates a worldscene that displays the game over message and 
+  // generates a worldscene that displays the game over message and
   // the final score when the game ends
   public WorldScene lastScene(String s) {
     WorldScene worldScene = new WorldScene(this.width, this.height);
