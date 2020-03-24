@@ -338,6 +338,7 @@ class ExamplesCentipede {
 
     ArrayList<Posn> posns_2 = new ArrayList<>();
     posns_2.add(new Posn(60, 20));
+    posns_2.add(new Posn(60, 100));
     obl_3 = new ObstacleList(1, posns_2);
 
     ArrayList<Posn> posns_3 = new ArrayList<>();
