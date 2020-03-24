@@ -832,6 +832,8 @@ class Centipede {
     return centipedes;
   }
 
+  // ASSUMPTION: the given ArrayList<BodySeg> cannot be empty; otherwise there will be an
+  // index out of bounds
   // makes a centipede with the same fields as this one but instead with a different given
   // body
   Centipede makeCentipede(ArrayList<BodySeg> bodySegs) {
@@ -1001,7 +1003,7 @@ class BodySeg {
   void move(int width, int speed, ObstacleList obl) {
     boolean inNextRow = Math.abs(this.pos.y - nextRow) <= speed / 2;
 
-    if (this.obstacleAhead(this.pos, speed, width, obl)) {
+    if (this.obstacleAhead(speed, width, obl)) {
       int middle_x = (this.pos.x / ITile.WIDTH) * ITile.WIDTH + ITile.WIDTH / 2;
       int excessSpeed = Math.abs(this.pos.x + this.velocity.x - middle_x);
       if (this.velocity.x == 0) {
@@ -1044,11 +1046,11 @@ class BodySeg {
   }
 
   // is there a dandelion ahead of this centipede?
-  boolean obstacleAhead(Posn p, int speed, int width, ObstacleList obl) {
-    boolean leftEdge = Math.abs(p.x - ITile.WIDTH / 2) <= speed / 2;
-    boolean rightEdge = Math.abs(p.x - (width - ITile.WIDTH / 2)) <= speed / 2;
-    boolean inRow = (p.y - ITile.HEIGHT / 2) % ITile.HEIGHT <= speed / 2
-        || (p.y - ITile.HEIGHT / 2) % ITile.HEIGHT >= ITile.HEIGHT - speed / 2;
+  boolean obstacleAhead(int speed, int width, ObstacleList obl) {
+    boolean leftEdge = Math.abs(this.pos.x - ITile.WIDTH / 2) <= speed / 2;
+    boolean rightEdge = Math.abs(this.pos.x - (width - ITile.WIDTH / 2)) <= speed / 2;
+    boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT <= speed / 2
+        || (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT >= ITile.HEIGHT - speed / 2;
 
     if (this.nextEncountered(obl) && inRow
         || leftEdge && inRow && !this.right

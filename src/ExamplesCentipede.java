@@ -106,6 +106,11 @@ class ExamplesCentipede {
   BodySeg bodySeg_21;
   BodySeg bodySeg_22;
   BodySeg bodySeg_23;
+  BodySeg bodySeg_24;
+  BodySeg bodySeg_25;
+  BodySeg bodySeg_26;
+  BodySeg bodySeg_27;
+  BodySeg bodySeg_28;
   ArrayList<BodySeg> bseg_0;
   ArrayList<BodySeg> bseg_1;
   ArrayList<BodySeg> bseg_2;
@@ -286,8 +291,18 @@ class ExamplesCentipede {
         false, true, true, 100, 2);
     bodySeg_22 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
         false, false, true, 20, 1);
-    bodySeg_23 = new BodySeg(new Posn(60, 20), new Posn(6, 0),
+    bodySeg_23 = new BodySeg(new Posn(60, 100), new Posn(6, 0),
+        false, true, true, 20, 0);
+    bodySeg_24 = new BodySeg(new Posn(60, 20), new Posn(6, 0),
+        false, true, true, 60, 2);
+    bodySeg_25 = new BodySeg(new Posn(20, 20), new Posn(-6, 0),
+        false, false, false, 20, 1);
+    bodySeg_26 = new BodySeg(new Posn(56, 20), new Posn(6, 0),
         false, true, true, 20, 1);
+    bodySeg_27 = new BodySeg(new Posn(62, 60), new Posn(6, 0),
+        false, false, true, 20, 1);
+    bodySeg_28 = new BodySeg(new Posn(22, 20), new Posn(-6, 0),
+        false, true, false, 20, 1);
 
     cent_0 = new Centipede(10, 4);
     cent_1 = new Centipede(bseg_0, 8,
@@ -295,7 +310,7 @@ class ExamplesCentipede {
     cent_2 = new Centipede(bseg_1, 8,
         10, new ArrayList<>(), new ArrayList<>());
     cent_3 = new Centipede(util.singletonList(bodySeg_11), 8,
-        10, new ArrayList<>(), new ArrayList<>());
+        10, obl_list_0, new ArrayList<>());
     cent_4 = new Centipede(bseg_2, 8,
         10, new ArrayList<>(), new ArrayList<>());
     cent_arr_0 = new ArrayList<>();
@@ -323,11 +338,13 @@ class ExamplesCentipede {
 
     ArrayList<Posn> posns_2 = new ArrayList<>();
     posns_2.add(new Posn(60, 20));
+    posns_2.add(new Posn(60, 100));
     obl_3 = new ObstacleList(1, posns_2);
 
     ArrayList<Posn> posns_3 = new ArrayList<>();
     posns_3.add(new Posn(100, 20));
     posns_3.add(new Posn(20, 60));
+    posns_3.add(new Posn(100, 100));
     obl_4 = new ObstacleList(0, posns_3);
 
     obl_list_0 = new ArrayList<>();
@@ -433,14 +450,14 @@ class ExamplesCentipede {
     t.checkExpect(player.x, 20);
     t.checkExpect(player.y, 580);
   }
-  
+
   // test the method endGame in BGameState class
   boolean testBEndGame(Tester t) {
     this.initTestConditions();
-    return t.checkExpect(bgame_0.endGame(), false) 
+    return t.checkExpect(bgame_0.endGame(), false)
         && t.checkExpect(bgame_1.endGame(), false);
   }
-  
+
   // tests for onMouseClicked in BGameState class
   void testBGameOnMouseClicked(Tester t) {
     this.initTestConditions();
@@ -455,7 +472,7 @@ class ExamplesCentipede {
     bgame_0.onMouseClicked(new Posn(500, 600), "LeftButton");
     t.checkExpect(bgame_0.garden, garden_);
   }
-  
+
   // tests for onKeyEvent in BGameState class
   void testBGameOnKeyEvent(Tester t) {
     this.initTestConditions();
@@ -470,7 +487,7 @@ class ExamplesCentipede {
     bgame_0.onKeyEvent("r");
     t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
   }
-  
+
   // test the method score in BGameState class
   boolean testBScore(Tester t) {
     this.initTestConditions();
@@ -488,7 +505,7 @@ class ExamplesCentipede {
   
   // we did not test makeScene in the BGameState class, because we can visualize it when we 
   // run bigBang, and check if things are drawn correctly from there, which they were.
-  
+
   // function object tests
 
   // tests IsGrass, IsPebble, IsDandelion apply(ITile)
@@ -984,6 +1001,48 @@ class ExamplesCentipede {
     t.checkExpect(cent_4.inPebsAlreadyOn(garden_5.get(4)), false);
   }
 
+  // tests Centipede positionHit(IDart)
+  boolean testCentipedePositionHit(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(cent_0.positionHit(dart_4), new Posn(20, 20))
+        && t.checkExpect(cent_4.positionHit(dart_5), new Posn(20, 20))
+        && t.checkException(new RuntimeException("The dart did not hit any of the body segments."),
+        cent_3, "positionHit", dart_4);
+  }
+
+  // tests Centipede makeCentipede(ArrayList<BodySeg>)
+  // NOTE: this tests Centipede copyEncountered()
+  boolean testCentipedeMakeCentipede(Tester t) {
+    this.initTestConditions();
+    ArrayList<BodySeg> bseg_new = util.singletonList(bodySeg_21);
+    Centipede cent_3 = new Centipede(bseg_new, 8,
+        10, this.cent_3.copyEncountered(), new ArrayList<>());
+    Centipede newCentipede = this.cent_3.makeCentipede(bseg_new);
+    return t.checkExpect(newCentipede.body, cent_3.body)
+        && t.checkExpect(newCentipede.currSpeed, cent_3.maxSpeed)
+        && t.checkExpect(newCentipede.maxSpeed, cent_3.maxSpeed)
+        && t.checkExpect(newCentipede.pebsAlreadyOn, cent_3.pebsAlreadyOn)
+        && t.checkExpect(newCentipede.encountered, cent_3.encountered)
+        && t.checkExpect(cent_3.encountered == this.cent_3.encountered, false);
+    // NOTE: the tester library expected the arraylists to be aliased in order to be the same
+    // object, hence checking all the fields themselves
+  }
+
+  // tests Centipede getIndicesHit(IWaterBalloon)
+  boolean testCentipedeGetIndicesHit(Tester t) {
+    this.initTestConditions();
+    ArrayList<Integer> indices_0 = new ArrayList<>();
+    indices_0.add(8);
+    indices_0.add(9);
+    ArrayList<Integer> indices_1 = new ArrayList<>();
+    indices_1.add(0);
+    indices_1.add(1);
+    indices_1.add(3);
+    indices_1.add(4);
+    return t.checkExpect(cent_0.getIndicesHit(waterBalloon_4), indices_0)
+        && t.checkExpect(cent_4.getIndicesHit(waterBalloon_5), indices_1);
+  }
+
   // Centipede onPebble already tested anyInRange(ITile tile)
 
   // tests for BodySeg
@@ -1106,12 +1165,58 @@ class ExamplesCentipede {
         && t.checkExpect(bodySeg_16.generateObstacleList(), new ObstacleList(1));
   }
 
-  boolean testTrapped(Tester t) {
+  // tests BodySeg trapped(int, ObstacleList)
+  boolean testBodySegTrapped(Tester t) {
     this.initTestConditions();
     return t.checkExpect(bodySeg_22.trapped(400, obl_3), true)
         && t.checkExpect(bodySeg_23.trapped(400, obl_4), true)
         && t.checkExpect(bodySeg_19.trapped(400, obl_3), false)
         && t.checkExpect(bodySeg_13.trapped(400, obl_1), false);
+  }
+
+  // tests BodySeg obstacleAhead(int, int ObstacleList)
+  // NOTE: this tests BodySeg nextEncountered(ObstacleList)
+  boolean testBodySegObstacleAhead(Tester t) {
+    this.initTestConditions();
+    return t.checkExpect(bodySeg_22.obstacleAhead(6, 400, obl_3), true)
+        && t.checkExpect(bodySeg_23.obstacleAhead(6, 400, obl_4), true)
+        && t.checkExpect(bodySeg_24.obstacleAhead(6, 80, obl_1), true)
+        && t.checkExpect(bodySeg_25.obstacleAhead(6, 80, obl_1), true)
+        && t.checkExpect(bodySeg_16.obstacleAhead(6, 80, obl_1), false);
+  }
+
+  // tests BodySeg move(int, int, ObstacleList)
+  void testBodySegMove(Tester t) {
+    this.initTestConditions();
+    BodySeg bodySeg_0 = new BodySeg(new Posn(26, 20), new Posn(6, 0),
+        false, true, true, 60, 0);
+    this.bodySeg_0.move(80, 6, obl_2);
+    t.checkExpect(this.bodySeg_0, bodySeg_0);
+
+    BodySeg bodySeg_26 = new BodySeg(new Posn(62, 20), new Posn(6, 0),
+        false, true, true, 20, 1);
+    this.bodySeg_26.move(80, 6, obl_2);
+    t.checkExpect(this.bodySeg_26, bodySeg_26);
+
+    BodySeg bodySeg_27 = new BodySeg(new Posn(60, 52), new Posn(0, -6),
+        false, false, false, 20, 1);
+    this.bodySeg_27.move(80, 6, obl_2);
+    t.checkExpect(this.bodySeg_27, bodySeg_27);
+
+    BodySeg bodySeg_28 = new BodySeg(new Posn(20, 24), new Posn(0, 6),
+        false, true, true, 20, 1);
+    this.bodySeg_28.move(80, 6, obl_2);
+    t.checkExpect(this.bodySeg_28, bodySeg_28);
+
+    BodySeg bodySeg_22 = new BodySeg(new Posn(20, 26), new Posn(0, 6),
+        false, true, false, 20, 2);
+    // NOTE: even though this body segment is trapped, it trusts the centipede
+    // itself (that it is in) to make sure the obstacle list does not contain any dandelions
+    // that would trap it; it also trusts the centipede will reverse this body segment's direction
+    // when needed
+    this.bodySeg_22.reverseYDirection(220);
+    this.bodySeg_22.move(80, 6, obl_3);
+    t.checkExpect(this.bodySeg_22, bodySeg_22);
   }
 
   // tests in ObstacleList
