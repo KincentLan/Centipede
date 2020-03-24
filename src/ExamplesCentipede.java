@@ -1037,7 +1037,8 @@ class ExamplesCentipede {
     indices_1.add(3);
     indices_1.add(4);
     return t.checkExpect(cent_0.getIndicesHit(waterBalloon_4), indices_0)
-        && t.checkExpect(cent_4.getIndicesHit(waterBalloon_5), indices_1);
+        && t.checkExpect(cent_4.getIndicesHit(waterBalloon_5), indices_1)
+        && t.checkExpect(cent_3.getIndicesHit(waterBalloon_4), new ArrayList<>());
   }
 
   // Centipede onPebble already tested anyInRange(ITile tile)
