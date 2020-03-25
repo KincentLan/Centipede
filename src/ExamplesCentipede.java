@@ -1,30 +1,30 @@
 import javalib.impworld.WorldScene;
 import javalib.worldimages.*;
-import tester.*; // The tester library
+import tester.*;                // The tester library
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Random;
 
-/* DOCUMENTATION for known/potential bugs:
-   The move() for BodySeg has a slight bug where it will try to move towards a Dandelion
-   when moving down sometimes depending on speed. It will re-orient itself to the correct position
-   but this leads to janky movement to the eyes. If there was more time, the move() would have
-   been fixed by checking if there was a dandelion and adding the excess speed to the y
-   position, while mutating all its related fields.
+  /* DOCUMENTATION for known/potential bugs:
+     The move() for BodySeg has a slight bug where it will try to move towards a Dandelion
+     when moving down sometimes depending on speed. It will re-orient itself to the correct position
+     but this leads to janky movement to the eyes. If there was more time, the move() would have
+     been fixed by checking if there was a dandelion and adding the excess speed to the y
+     position, while mutating all its related fields.
 
-   Speeds may also affect how aheadDandelion() works in the BodySeg class. It currently checks
-   if there is a dandelion ahead of this tile, but with higher speeds, it may lead to bugs
-   where it may overshoot the current tile, making it not able to detect dandelions correctly.
+     Speeds may also affect how aheadDandelion() works in the BodySeg class. It currently checks
+     if there is a dandelion ahead of this tile, but with higher speeds, it may lead to bugs
+     where it may overshoot the current tile, making it not able to detect dandelions correctly.
 
-   If this is the case, then the centipede would break, and all of its segments would not
-   follow the head correctly. In certain cases where the body segment somehow reaches
-   the top or bottom row before the head, it will also crash. This is because the program
-   expects the head to reach those rows first to generate a new ObstacleList to be
-   used by all other body segments in the same iteration as that ObstacleList. If the head
-   does not reach it first, the ObstacleList with the same iteration would never exist
-   and the program would crash.
-*/
+     If this is the case, then the centipede would break, and all of its segments would not
+     follow the head correctly. In certain cases where the body segment somehow reaches
+     the top or bottom row before the head, it will also crash. This is because the program
+     expects the head to reach those rows first to generate a new ObstacleList to be
+     used by all other body segments in the same iteration as that ObstacleList. If the head
+     does not reach it first, the ObstacleList with the same iteration would never exist
+     and the program would crash.
+ */
 
 // tests and examples for the centipede game and all of its related classes and fields
 class ExamplesCentipede {

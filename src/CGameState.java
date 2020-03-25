@@ -1,28 +1,28 @@
-import javalib.worldimages.*; // images, like RectangleImage or OverlayImages
-import javalib.impworld.*; // the abstract World class and the big-bang library
+import javalib.worldimages.*;   // images, like RectangleImage or OverlayImages
+import javalib.impworld.*;      // the abstract World class and the big-bang library
 // for imperative worlds
 import java.awt.*;
-import java.util.ArrayList; // the arraylist library from java
+import java.util.ArrayList;     // the arraylist library from java
 // and predefined colors (Red, Green, Yellow, Blue, Black, White)
 
 // represents a util class
 class Util {
-  // generates a centipede body given the length and the currSpeed of the
-  // centipede
+  // generates a centipede body given the length and the currSpeed of the centipede
   ArrayList<BodySeg> generateCentBody(int length, int speed) {
     ArrayList<BodySeg> body = new ArrayList<>();
     for (int index = 0; index < length; index += 1) {
       boolean head = index == length - 1;
-      Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2, ITile.HEIGHT / 2);
+      Posn pos = new Posn((index - length + 1) * ITile.WIDTH + ITile.WIDTH / 2,
+          ITile.HEIGHT / 2);
       Posn vel = new Posn(speed, 0);
-      BodySeg curr = new BodySeg(pos, vel, head, true, true, 3 * ITile.HEIGHT / 2, 0);
+      BodySeg curr = new BodySeg(pos, vel, head, true, true,
+          3 * ITile.HEIGHT / 2, 0);
       body.add(curr);
     }
     return body;
   }
 
-  // constructs an arraylist that has the elements of the given arraylist from the
-  // start to the
+  // constructs an arraylist that has the elements of the given arraylist from the start to the
   // end
   <T> ArrayList<T> getElementsBetween(ArrayList<T> src, int start, int end) {
     ArrayList<T> cpArr = new ArrayList<>();
@@ -39,8 +39,7 @@ class Util {
     return list;
   }
 
-  // generates an arraylist of grass tiles given the width and height of the board
-  // to represent
+  // generates an arraylist of grass tiles given the width and height of the board to represent
   // the board
   ArrayList<ITile> generateGrassBoard(int row, int col) {
     ArrayList<ITile> garden = new ArrayList<>();
@@ -52,9 +51,9 @@ class Util {
 
   // EFFECT: modifies the arraylist given to add the current row of grass tiles
   // generates an arraylist of col amount of grass tiles for a given row number
-  void generateGrassRow(ArrayList<ITile> garden, int row_ind, int col, int row) {
+  void generateGrassRow(ArrayList<ITile> garden, int rowInd, int col, int row) {
     for (int index = 0; index < col; index += 1) {
-      garden.add(new GrassTile(row_ind * ITile.WIDTH + ITile.WIDTH / 2,
+      garden.add(new GrassTile(rowInd * ITile.WIDTH + ITile.WIDTH / 2,
           index * ITile.HEIGHT + ITile.HEIGHT / 2, row * ITile.WIDTH));
     }
   }
@@ -78,8 +77,7 @@ class Util {
     }
   }
 
-  // ASSUMPTION: the second posn is meant to be a tile posn; otherwise this method
-  // would not make
+  // ASSUMPTION: the second posn is meant to be a tile posn; otherwise this method would not make
   // sense
   // are the two posns in range of each other?
   boolean inRange(Posn pos, Posn tilePosn) {
@@ -88,8 +86,7 @@ class Util {
   }
 
   // EFFECT: modifies the givengarden to change one of the tiles to a dandelion
-  // sprouts a dandelion in the given posn; in effect, replacing one of the tiles
-  // in the garden
+  // sprouts a dandelion in the given posn; in effect, replacing one of the tiles in the garden
   // with a dandelion tile
   void sproutDandelion(Posn posHit, ArrayList<ITile> garden) {
     IsGrass isGrass = new IsGrass();
@@ -102,8 +99,7 @@ class Util {
   }
 
   // EFFECT: modifies the given garden to change multiple tiles to a dandelion
-  // sprouts dandelions in the given positions; in effect, replacing multiple
-  // tiles in the garden
+  // sprouts dandelions in the given positions; in effect, replacing multiple tiles in the garden
   // with dandelion tiles
   void sproutDanInPosns(ArrayList<Posn> hitbox, ArrayList<ITile> garden) {
     for (Posn hitboxSeg : hitbox) {
@@ -123,11 +119,10 @@ interface ITile {
   // draws this tile onto the world scene given
   void draw(WorldScene s);
 
-  // are these the tile's coordinates?
+  //are these the tile's coordinates?
   boolean samePos(Posn pos);
 
-  // in effect "replaces" this tile with a new tile with the same position given
-  // the
+  // in effect "replaces" this tile with a new tile with the same position given the
   // mouse button name and the bottom column of the board
   ITile replaceTile(String bName, int botCol);
 
@@ -172,13 +167,11 @@ abstract class ATile implements ITile {
   }
 
   // in effect, this gives the "replacement" of this ATile with a new tile
-  // with the same position given the mouse button name and the bottom column of
-  // the board
+  // with the same position given the mouse button name and the bottom column of the board
   public ITile replaceTile(String bName, int botCol) {
     if (bName.equals("LeftButton") && this.col != botCol) {
       return new GrassTile(this.row, this.col, this.width);
-    }
-    else {
+    } else {
       return this;
     }
   }
@@ -199,21 +192,21 @@ abstract class ATile implements ITile {
 
   // by default, an ATile does not have an HP unit, so this method does nothing
   public void lowerHP() {
+    // does not do anything since this ATile has no HP
   }
 
   // by default, an ATile does not have an HP unit, so this method does nothing
   public void fullHP() {
+    // does not do anything since this ATile has no HP
   }
 
-  // by default, an ATile does not have an HP unit, so it does not make sense to
-  // have noHP, so
+  // by default, an ATile does not have an HP unit, so it does not make sense to have noHP, so
   // it just returns false
   public boolean noHP() {
     return false;
   }
 
-  // by default, this ATile's hitbox is just the current tile; so the only thing
-  // added to the
+  // by default, this ATile's hitbox is just the current tile; so the only thing added to the
   // hitbox of this ATile is this ATile's center (row, col)
   public ArrayList<Posn> hitBox() {
     ArrayList<Posn> hitBox = new ArrayList<>();
@@ -229,11 +222,11 @@ class GrassTile extends ATile {
     super(row, col, width);
   }
 
-  // draws a GrassTile, a solid green cube and a black outline, onto the given
-  // world scene
+  // draws a GrassTile, a solid green cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
-    WorldImage grass = new RectangleImage(WIDTH - 1, HEIGHT - 1, OutlineMode.SOLID, Color.GREEN);
+    WorldImage grass = new RectangleImage(WIDTH - 1,
+        HEIGHT - 1, OutlineMode.SOLID, Color.GREEN);
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
   }
@@ -244,8 +237,7 @@ class GrassTile extends ATile {
   public ITile replaceTile(String bName, int botCol) {
     if (bName.equals("LeftButton") && this.col != botCol) {
       return new DandelionTile(this.row, this.col, FULL_HP, this.width);
-    }
-    else if (bName.equals("RightButton") && this.col != botCol) {
+    } else if (bName.equals("RightButton") && this.col != botCol) {
       return new PebbleTile(this.row, this.col, this.width);
     }
     return this;
@@ -264,11 +256,11 @@ class PebbleTile extends ATile {
     super(row, col, width);
   }
 
-  // draws a PebbleTile, a solid gray cube and a black outline, onto the given
-  // world scene
+  // draws a PebbleTile, a solid gray cube and a black outline, onto the given world scene
   public void draw(WorldScene s) {
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
-    WorldImage grass = new RectangleImage(WIDTH - 1, HEIGHT - 1, OutlineMode.SOLID, Color.GRAY);
+    WorldImage grass = new RectangleImage(WIDTH - 1,
+        HEIGHT - 1, OutlineMode.SOLID, Color.GRAY);
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
   }
@@ -280,8 +272,7 @@ class PebbleTile extends ATile {
   }
 
   @Override
-  // the hitbox of this PebbleTile is eight tiles around this pebble tile
-  // including it's tile
+  // the hitbox of this PebbleTile is eight tiles around this pebble tile including it's tile
   // position
   public ArrayList<Posn> hitBox() {
     boolean leftEdge = ITile.WIDTH / 2 == this.row;
@@ -318,12 +309,12 @@ class DandelionTile extends ATile {
   }
 
   @Override
-  // draws a DandelionTile, with the color depending on the HP, onto the given
-  // world scene
+  // draws a DandelionTile, with the color depending on the HP, onto the given world scene
   public void draw(WorldScene s) {
     Color color = new Color(255, 255, -(this.hp - FULL_HP) * 75);
     WorldImage outline = new RectangleImage(WIDTH, HEIGHT, OutlineMode.SOLID, Color.BLACK);
-    WorldImage grass = new RectangleImage(WIDTH - 1, HEIGHT - 1, OutlineMode.SOLID, color);
+    WorldImage grass = new RectangleImage(WIDTH - 1,
+        HEIGHT - 1, OutlineMode.SOLID, color);
     s.placeImageXY(outline, this.row, this.col);
     s.placeImageXY(grass, this.row, this.col);
   }
@@ -409,14 +400,14 @@ abstract class AProjectile implements IProjectile {
 
 // represents a non-existing projectile in the game
 abstract class ANoProjectile implements IProjectile {
-  // draws this ANoProjectile onto the given world scene, which in essence does
-  // nothing
+  // draws this ANoProjectile onto the given world scene, which in essence does nothing
   public void draw(WorldScene s) {
+    // does not draw anything since there is no projectile
   }
 
-  // draws this ANoProjectile onto the given world scene, which in essence does
-  // nothing
+  // draws this ANoProjectile onto the given world scene, which in essence does nothing
   public void move() {
+    // does not move anything since there is no projectile
   }
 
   // is this ANoProjectile off the screen? Yes, always
@@ -460,8 +451,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     s.placeImageXY(waterBalloon, this.x, this.y);
   }
 
-  // EFFECT: modifies the given list of centipedes and list of tiles if any of the
-  // body segment
+  // EFFECT: modifies the given list of centipedes and list of tiles if any of the body segment
   // or dandelions if the water balloon or its splash collides with them
   public void explode(ArrayList<Centipede> cents, ArrayList<ITile> garden) {
     IsDandelion isDandelion = new IsDandelion();
@@ -470,8 +460,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
       if (isDandelion.apply(tile) && this.tileInHitBox(tile)) {
         if (tile.inRange(new Posn(this.x, this.y))) {
           garden.set(index, new DanToPeb().apply(tile));
-        }
-        else {
+        } else {
           tile.fullHP();
         }
       }
@@ -482,8 +471,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
       if (cent.splashHit(this)) {
         util.sproutDanInPosns(cent.posnsHit(this), garden);
         util.append(cpCent, cent.splitWaterBalloon(this));
-      }
-      else {
+      } else {
         cpCent.add(cent);
       }
     }
@@ -503,7 +491,7 @@ class WaterBalloon extends AProjectile implements IWaterBalloon {
     return false;
   }
 
-  // is this water balloon or its splash inside the given ITile?
+  //is this water balloon or its splash inside the given ITile?
   boolean tileInHitBox(ITile tile) {
     for (Posn p : this.hitBox()) {
       if (tile.inRange(p)) {
@@ -539,7 +527,7 @@ class NoWaterBalloon extends ANoProjectile implements IWaterBalloon {
   }
 
   @Override
-  // is this water balloon or its splash inside the given body segment? No
+  //is this water balloon or its splash inside the given body segment? No
   public boolean bodySegInHitbox(BodySeg bodySeg) {
     return false;
   }
@@ -603,22 +591,18 @@ class Gnome {
     s.placeImageXY(player, this.x, this.y);
   }
 
-  // EFFECT: modifies the position of the gnome, meaning it modifies its x and y
-  // fields
-  // moves the gnome (towards the playerDirection specified by the key) by one
-  // unit
+  // EFFECT: modifies the position of the gnome, meaning it modifies its x and y fields
+  // moves the gnome (towards the playerDirection specified by the key) by one unit
   // (currSpeed), the gnome stays if it tries to move off the edge of the screen.
   void moveCell(String key, int edge) {
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       this.x = this.x - ITile.WIDTH;
-    }
-    else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
+    } else if (key.equals("right") && this.x + this.speed <= edge - ITile.WIDTH / 2) {
       this.x = this.x + ITile.WIDTH;
     }
   }
 
-  // moves the gnome (towards the playerDirection specified by the key) by one
-  // unit (currSpeed).
+  // moves the gnome (towards the playerDirection specified by the key) by one unit (currSpeed).
   // the gnome stays if it tries to move off the edge of the screen.
   void move(String key, int rightEdge, int botEdge, ArrayList<ITile> garden) {
     int x_away = 0;
@@ -629,17 +613,14 @@ class Gnome {
     if (key.equals("left") && this.x - this.speed >= ITile.WIDTH / 2) {
       x_away = -this.speed;
       x_dir = -1;
-    }
-    else if (key.equals("right") && this.x + this.speed <= rightEdge - ITile.WIDTH / 2) {
+    } else if (key.equals("right") && this.x + this.speed <= rightEdge - ITile.WIDTH / 2) {
       x_away = this.speed;
       x_dir = 1;
-    }
-    else if (key.equals("up")
-        && this.y - this.speed >= botEdge - 2 * ITile.HEIGHT - ITile.HEIGHT / 2) {
+    } else if (key.equals("up") &&
+        this.y - this.speed >= botEdge - 2 * ITile.HEIGHT - ITile.HEIGHT / 2) {
       y_away = -this.speed;
       y_dir = -1;
-    }
-    else if (key.equals("down") && this.y + this.speed <= botEdge - ITile.HEIGHT / 2) {
+    } else if (key.equals("down") && this.y + this.speed <= botEdge - ITile.HEIGHT / 2) {
       y_away = this.speed;
       y_dir = 1;
     }
@@ -657,17 +638,16 @@ class Gnome {
 
   // will this player's model intersect with the given tile given the direction
   // the player is moving in?
-  boolean intersect(ITile tile, int x_dir, int y_dir) {
-    if (x_dir == 0 && y_dir == 0) {
+  boolean intersect(ITile tile, int xDir, int yDir) {
+    if (xDir == 0 && yDir == 0) {
       return false;
-    }
-    else if (x_dir != 0) {
-      int x_displace = this.x + x_dir * ITile.WIDTH / 2;
+    } else if (xDir != 0) {
+      int x_displace = this.x + xDir * ITile.WIDTH / 2;
       return tile.inRange(new Posn(x_displace, this.y))
           || tile.inRange(new Posn(x_displace, (this.y + 1) - ITile.HEIGHT / 2))
           || tile.inRange(new Posn(x_displace, (this.y - 1) + ITile.HEIGHT / 2));
     }
-    int y_displace = this.y + y_dir * ITile.HEIGHT / 2;
+    int y_displace = this.y + yDir * ITile.HEIGHT / 2;
     return tile.inRange(new Posn(this.x, y_displace))
         || tile.inRange(new Posn((this.x + 1) - ITile.WIDTH / 2, y_displace))
         || tile.inRange(new Posn((this.x - 1) + ITile.WIDTH / 2, y_displace));
