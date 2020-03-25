@@ -1086,11 +1086,8 @@ class BodySeg {
     boolean inRow = (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT <= speed / 2
         || (this.pos.y - ITile.HEIGHT / 2) % ITile.HEIGHT >= ITile.HEIGHT - speed / 2;
 
-    if (this.nextEncountered(obl) && inRow || leftEdge && inRow && !this.right
-        || rightEdge && inRow && this.right) {
-      return true;
-    }
-    return false;
+    return this.nextEncountered(obl) && inRow || leftEdge && inRow && !this.right
+        || rightEdge && inRow && this.right;
   }
 
   // EFFECT: changes the given world scene by adding this body segment onto it
