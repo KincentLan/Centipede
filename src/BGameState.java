@@ -1,7 +1,7 @@
 import javalib.worldimages.*;
 import java.util.ArrayList;
-import java.util.Random;        // the random library in java
-import javalib.impworld.*;      // the abstract World class and the big-bang library
+import java.util.Random; // the random library in java
+import javalib.impworld.*; // the abstract World class and the big-bang library
 
 //represents a setting up phase for the centipede game
 class BGameState extends GameState {
@@ -20,11 +20,12 @@ class BGameState extends GameState {
     this.rand = rand;
   }
 
-  // the default constructor - only requiring the dimensions of the board and the random seed
+  // the default constructor - only requiring the dimensions of the board and the
+  // random seed
   BGameState(int x, int y, int initialSeed) {
     this(x, y, new Util().generateGrassBoard(x, y),
-        new Gnome(ITile.WIDTH / 2, y * ITile.HEIGHT - ITile.HEIGHT / 2,
-            ITile.WIDTH / 7), new Random(initialSeed));
+        new Gnome(ITile.WIDTH / 2, y * ITile.HEIGHT - ITile.HEIGHT / 2, ITile.WIDTH / 7),
+        new Random(initialSeed));
   }
 
   @Override
@@ -62,13 +63,13 @@ class BGameState extends GameState {
       this.garden = new Util().generateGrassBoard(this.x, this.y);
     }
   }
-  
+
   // EFFECT: changes the garden by generating random dandelions or pebbles
   // changes the board to fill 5% of it with dandelions or pebbles
   void generate(String bName) {
     int botCol = (this.y - 1) * ITile.HEIGHT + ITile.HEIGHT / 2;
     int available = (this.garden.size() - this.x) / 20;
-    for(int index = 0; index < available; index += 1) {
+    for (int index = 0; index < available; index += 1) {
       if (this.grassLeft() > 0) {
         int randGrassIndex = this.randGrassIndex();
         ITile randElement = this.garden.get(randGrassIndex);
@@ -103,7 +104,8 @@ class BGameState extends GameState {
   }
 
   @Override
-  // EFFECT: changes this BGame's garden to change the tile clicked on to its effective new tile
+  // EFFECT: changes this BGame's garden to change the tile clicked on to its
+  // effective new tile
   // on left mouse click, updates this BGame with a new DandelionTile at the given
   // posn;
   // on right mouse click, updates this BGame with a new PebbleTile at the given
@@ -123,7 +125,8 @@ class BGameState extends GameState {
   }
 
   @Override
-  // turns this setup (BGameState) to the actual game (CGameState) to be used in GameMaster
+  // turns this setup (BGameState) to the actual game (CGameState) to be used in
+  // GameMaster
   public CGameState toCGameState() {
     return new CGameState(this.x, this.y, this.garden, this.gnome);
   }
@@ -133,10 +136,9 @@ class BGameState extends GameState {
     return false;
   }
 
-  // returns the score of the game. It is 0 because we haven't 
+  // returns the score of the game. It is 0 because we haven't
   // started the game
   public int score() {
     return 0;
   }
 }
-

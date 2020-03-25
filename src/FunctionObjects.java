@@ -21,7 +21,7 @@ interface ITileVisitor<T> extends IFunc<ITile, T> {
 
 // represents a functional object that visits a tile and tells if it is a grass
 class IsGrass implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
-  // applies this predicate on the given tile  to tell if it is a grass
+  // applies this predicate on the given tile to tell if it is a grass
   public Boolean apply(ITile tile) {
     return tile.accept(this);
   }
@@ -50,7 +50,8 @@ class IsDandelion implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
     return tile.accept(this);
   }
 
-  // visits a grass tile and tells if it is a dandelion tile, which is always false
+  // visits a grass tile and tells if it is a dandelion tile, which is always
+  // false
   public Boolean visitGrass(GrassTile tile) {
     return false;
   }
@@ -61,7 +62,8 @@ class IsDandelion implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
     return true;
   }
 
-  // visits a Pebble tile and tells if it is a dandelion tile, which is always false
+  // visits a Pebble tile and tells if it is a dandelion tile, which is always
+  // false
   public Boolean visitPeb(PebbleTile tile) {
     return false;
   }
@@ -93,7 +95,8 @@ class IsPebble implements ITileVisitor<Boolean>, IFunc<ITile, Boolean> {
 
 // converts this tile to a pebble if the tile is a dandelion
 class DanToPeb implements ITileVisitor<ITile> {
-  // applies this visitor to the given tile, meaning that it changes the dandelion tile
+  // applies this visitor to the given tile, meaning that it changes the dandelion
+  // tile
   // to a pebble tile
   public ITile apply(ITile tile) {
     return tile.accept(this);
@@ -119,7 +122,8 @@ class DanToPeb implements ITileVisitor<ITile> {
 
 // converts this tile to a pebble if the tile is a dandelion
 class GrassToDan implements ITileVisitor<ITile> {
-  // applies this visitor to the given tile, meaning that it changes the dandelion tile
+  // applies this visitor to the given tile, meaning that it changes the dandelion
+  // tile
   // to a pebble tile
   public ITile apply(ITile tile) {
     return tile.accept(this);

@@ -11,7 +11,8 @@ class GameMaster extends World {
     this.gameState = gameState;
   }
 
-  // the default constructor - makes a new BGame state, only requiring the dimensions of the board
+  // the default constructor - makes a new BGame state, only requiring the
+  // dimensions of the board
   // and the initial seed for the random object being used
   GameMaster(int x, int y, int initialSeed) {
     this(new BGameState(x, y, initialSeed));
@@ -24,7 +25,8 @@ class GameMaster extends World {
   }
 
   @Override
-  // EFFECT: modifies the current GameState by modifying its fields after each tick
+  // EFFECT: modifies the current GameState by modifying its fields after each
+  // tick
   // moves the world along after each tick
   public void onTick() {
     if (this.gameState.endGame()) {
@@ -34,29 +36,36 @@ class GameMaster extends World {
   }
 
   @Override
-  // EFFECT: modifies the current GameState by modifying its fields after each key event, in the
-  // event that the key "s" is pressed, if the GameState is BGameState, then it changes to the
-  // CGameState with its current fields passed in, if the GameState is a CGameState,
+  // EFFECT: modifies the current GameState by modifying its fields after each key
+  // event, in the
+  // event that the key "s" is pressed, if the GameState is BGameState, then it
+  // changes to the
+  // CGameState with its current fields passed in, if the GameState is a
+  // CGameState,
   // it stays the same
   // changes the world accordingly in response to the key pressed by the user
   public void onKeyEvent(String s) {
     if (s.equals("s")) {
       this.gameState = this.gameState.toCGameState();
-    } else {
+    }
+    else {
       this.gameState.onKeyEvent(s);
     }
   }
 
   @Override
-  // EFFECT: modifies the current GameState by modifying its fields after each key release
+  // EFFECT: modifies the current GameState by modifying its fields after each key
+  // release
   // changes the world accordingly in response to the key released by the user
   public void onKeyReleased(String s) {
     this.gameState.onKeyReleased(s);
   }
 
   @Override
-  // EFFECT: changes the current GameState by modifying its fields after each mouse click
-  // changes the world accordingly in response to the position and mouse button click by the user
+  // EFFECT: changes the current GameState by modifying its fields after each
+  // mouse click
+  // changes the world accordingly in response to the position and mouse button
+  // click by the user
   public void onMouseClicked(Posn mouse, String bName) {
     this.gameState.onMouseClicked(mouse, bName);
   }
@@ -74,7 +83,8 @@ abstract class GameState extends World {
   // gives the world scene of this GameState
   public abstract WorldScene makeScene();
 
-  // in essence, it "starts" the game if this GameState is a BGameState, if this GameState is a
+  // in essence, it "starts" the game if this GameState is a BGameState, if this
+  // GameState is a
   // CGameState, then it just "continues" the game as normal
   public abstract CGameState toCGameState();
 
@@ -84,5 +94,3 @@ abstract class GameState extends World {
   // gets the score of the current GameState
   public abstract int score();
 }
-
-

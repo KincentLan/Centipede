@@ -1,30 +1,30 @@
 import javalib.impworld.WorldScene;
 import javalib.worldimages.*;
-import tester.*;                // The tester library
+import tester.*; // The tester library
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Random;
 
-  /* DOCUMENTATION for known/potential bugs:
-     The move() for BodySeg has a slight bug where it will try to move towards a Dandelion
-     when moving down sometimes depending on speed. It will re-orient itself to the correct position
-     but this leads to janky movement to the eyes. If there was more time, the move() would have
-     been fixed by checking if there was a dandelion and adding the excess speed to the y
-     position, while mutating all its related fields.
+/* DOCUMENTATION for known/potential bugs:
+   The move() for BodySeg has a slight bug where it will try to move towards a Dandelion
+   when moving down sometimes depending on speed. It will re-orient itself to the correct position
+   but this leads to janky movement to the eyes. If there was more time, the move() would have
+   been fixed by checking if there was a dandelion and adding the excess speed to the y
+   position, while mutating all its related fields.
 
-     Speeds may also affect how aheadDandelion() works in the BodySeg class. It currently checks
-     if there is a dandelion ahead of this tile, but with higher speeds, it may lead to bugs
-     where it may overshoot the current tile, making it not able to detect dandelions correctly.
+   Speeds may also affect how aheadDandelion() works in the BodySeg class. It currently checks
+   if there is a dandelion ahead of this tile, but with higher speeds, it may lead to bugs
+   where it may overshoot the current tile, making it not able to detect dandelions correctly.
 
-     If this is the case, then the centipede would break, and all of its segments would not
-     follow the head correctly. In certain cases where the body segment somehow reaches
-     the top or bottom row before the head, it will also crash. This is because the program
-     expects the head to reach those rows first to generate a new ObstacleList to be
-     used by all other body segments in the same iteration as that ObstacleList. If the head
-     does not reach it first, the ObstacleList with the same iteration would never exist
-     and the program would crash.
- */
+   If this is the case, then the centipede would break, and all of its segments would not
+   follow the head correctly. In certain cases where the body segment somehow reaches
+   the top or bottom row before the head, it will also crash. This is because the program
+   expects the head to reach those rows first to generate a new ObstacleList to be
+   used by all other body segments in the same iteration as that ObstacleList. If the head
+   does not reach it first, the ObstacleList with the same iteration would never exist
+   and the program would crash.
+*/
 
 // tests and examples for the centipede game and all of its related classes and fields
 class ExamplesCentipede {
@@ -244,35 +244,24 @@ class ExamplesCentipede {
     dart_7 = new Dart(100, 20, 10);
 
     bseg_0 = new ArrayList<>();
-    bodySeg_0 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
-        false, true, true, 60, 0);
-    bodySeg_1 = new BodySeg(new Posn(60, 20), new Posn(6, 0),
-        false, true, true, 60, 0);
+    bodySeg_0 = new BodySeg(new Posn(20, 20), new Posn(6, 0), false, true, true, 60, 0);
+    bodySeg_1 = new BodySeg(new Posn(60, 20), new Posn(6, 0), false, true, true, 60, 0);
     bseg_0.add(bodySeg_0);
     bseg_0.add(bodySeg_1);
 
     bseg_1 = new ArrayList<>();
-    bodySeg_2 = new BodySeg(new Posn(60, 22), new Posn(0, 2),
-        false, true, false, 60, 0);
-    bodySeg_3 = new BodySeg(new Posn(22, 20), new Posn(2, 0),
-        false, true, true, 60, 1);
+    bodySeg_2 = new BodySeg(new Posn(60, 22), new Posn(0, 2), false, true, false, 60, 0);
+    bodySeg_3 = new BodySeg(new Posn(22, 20), new Posn(2, 0), false, true, true, 60, 1);
     bseg_1.add(bodySeg_2);
     bseg_1.add(bodySeg_3);
 
-    bodySeg_4 = new BodySeg(new Posn(100, 20), new Posn(0, 6),
-        false, true, true, 60, 0);
-    bodySeg_5 = new BodySeg(new Posn(20, 60), new Posn(-6, 0),
-        false, true, false, 60, 0);
-    bodySeg_6 = new BodySeg(new Posn(60, 60), new Posn(0, 6),
-        false, true, true, 60, 0);
-    bodySeg_7 = new BodySeg(new Posn(98, 60), new Posn(-6, 0),
-        false, true, false, 60, 0);
-    bodySeg_8 = new BodySeg(new Posn(20, 100), new Posn(0, 6),
-        false, true, true, 60, 0);
-    bodySeg_9 = new BodySeg(new Posn(60, 100), new Posn(-6, 0),
-        false, true, false, 60, 0);
-    bodySeg_10 = new BodySeg(new Posn(100, 100), new Posn(-6, 0),
-        false, true, false, 60, 0);
+    bodySeg_4 = new BodySeg(new Posn(100, 20), new Posn(0, 6), false, true, true, 60, 0);
+    bodySeg_5 = new BodySeg(new Posn(20, 60), new Posn(-6, 0), false, true, false, 60, 0);
+    bodySeg_6 = new BodySeg(new Posn(60, 60), new Posn(0, 6), false, true, true, 60, 0);
+    bodySeg_7 = new BodySeg(new Posn(98, 60), new Posn(-6, 0), false, true, false, 60, 0);
+    bodySeg_8 = new BodySeg(new Posn(20, 100), new Posn(0, 6), false, true, true, 60, 0);
+    bodySeg_9 = new BodySeg(new Posn(60, 100), new Posn(-6, 0), false, true, false, 60, 0);
+    bodySeg_10 = new BodySeg(new Posn(100, 100), new Posn(-6, 0), false, true, false, 60, 0);
 
     bseg_2 = new ArrayList<>();
     bseg_2.add(bodySeg_0);
@@ -285,49 +274,28 @@ class ExamplesCentipede {
     bseg_2.add(bodySeg_9);
     bseg_2.add(bodySeg_10);
 
-    bodySeg_11 = new BodySeg(new Posn(220, 100), new Posn(-6, 0),
-        false, true, false, 60, 0);
-    bodySeg_12 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
-        false, true, true, 60, 0);
-    bodySeg_13 = new BodySeg(new Posn(25, 20), new Posn(6, 0),
-        false, true, true, 60, 0);
-    bodySeg_14 = new BodySeg(new Posn(57, 20), new Posn(-6, 0),
-        false, true, false, 60, 0);
-    bodySeg_15 = new BodySeg(new Posn(15, 20), new Posn(6, 0),
-        false, true, true, 60, 0);
-    bodySeg_16 = new BodySeg(new Posn(63, 20), new Posn(-6, 0),
-        false, true, false, 60, 1);
-    bodySeg_17 = new BodySeg(new Posn(20, 26), new Posn(0, 6),
-        false, true, true, 60, 2);
-    bodySeg_18 = new BodySeg(new Posn(20, 23), new Posn(6, 0),
-        false, false, true, 20, 2);
-    bodySeg_19 = new BodySeg(new Posn(20, 20), new Posn(0, 6),
-        false, true, true, 60, 2);
-    bodySeg_20 = new BodySeg(new Posn(20, 380), new Posn(0, 6),
-        false, true, true, 380, 2);
-    bodySeg_21 = new BodySeg(new Posn(20, 60), new Posn(0, 6),
-        false, true, true, 100, 2);
-    bodySeg_22 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
-        false, false, true, 20, 1);
-    bodySeg_23 = new BodySeg(new Posn(60, 100), new Posn(6, 0),
-        false, true, true, 20, 0);
-    bodySeg_24 = new BodySeg(new Posn(60, 20), new Posn(6, 0),
-        false, true, true, 60, 2);
-    bodySeg_25 = new BodySeg(new Posn(20, 20), new Posn(-6, 0),
-        false, false, false, 20, 1);
-    bodySeg_26 = new BodySeg(new Posn(56, 20), new Posn(6, 0),
-        false, true, true, 20, 1);
-    bodySeg_27 = new BodySeg(new Posn(62, 60), new Posn(6, 0),
-        false, false, true, 20, 1);
-    bodySeg_28 = new BodySeg(new Posn(22, 20), new Posn(-6, 0),
-        false, true, false, 20, 1);
+    bodySeg_11 = new BodySeg(new Posn(220, 100), new Posn(-6, 0), false, true, false, 60, 0);
+    bodySeg_12 = new BodySeg(new Posn(20, 20), new Posn(6, 0), false, true, true, 60, 0);
+    bodySeg_13 = new BodySeg(new Posn(25, 20), new Posn(6, 0), false, true, true, 60, 0);
+    bodySeg_14 = new BodySeg(new Posn(57, 20), new Posn(-6, 0), false, true, false, 60, 0);
+    bodySeg_15 = new BodySeg(new Posn(15, 20), new Posn(6, 0), false, true, true, 60, 0);
+    bodySeg_16 = new BodySeg(new Posn(63, 20), new Posn(-6, 0), false, true, false, 60, 1);
+    bodySeg_17 = new BodySeg(new Posn(20, 26), new Posn(0, 6), false, true, true, 60, 2);
+    bodySeg_18 = new BodySeg(new Posn(20, 23), new Posn(6, 0), false, false, true, 20, 2);
+    bodySeg_19 = new BodySeg(new Posn(20, 20), new Posn(0, 6), false, true, true, 60, 2);
+    bodySeg_20 = new BodySeg(new Posn(20, 380), new Posn(0, 6), false, true, true, 380, 2);
+    bodySeg_21 = new BodySeg(new Posn(20, 60), new Posn(0, 6), false, true, true, 100, 2);
+    bodySeg_22 = new BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 20, 1);
+    bodySeg_23 = new BodySeg(new Posn(60, 100), new Posn(6, 0), false, true, true, 20, 0);
+    bodySeg_24 = new BodySeg(new Posn(60, 20), new Posn(6, 0), false, true, true, 60, 2);
+    bodySeg_25 = new BodySeg(new Posn(20, 20), new Posn(-6, 0), false, false, false, 20, 1);
+    bodySeg_26 = new BodySeg(new Posn(56, 20), new Posn(6, 0), false, true, true, 20, 1);
+    bodySeg_27 = new BodySeg(new Posn(62, 60), new Posn(6, 0), false, false, true, 20, 1);
+    bodySeg_28 = new BodySeg(new Posn(22, 20), new Posn(-6, 0), false, true, false, 20, 1);
 
-    bodySeg_29 = new BodySeg(new Posn(20, 20), new Posn(6, 0),
-        false, true, true, 60, 1);
-    bodySeg_30 = new BodySeg(new Posn(60, 20), new Posn(6, 0),
-        false, true, true, 60, 1);
-    bodySeg_31 = new BodySeg(new Posn(100, 20), new Posn(6, 0),
-        false, true, true, 60, 1);
+    bodySeg_29 = new BodySeg(new Posn(20, 20), new Posn(6, 0), false, true, true, 60, 1);
+    bodySeg_30 = new BodySeg(new Posn(60, 20), new Posn(6, 0), false, true, true, 60, 1);
+    bodySeg_31 = new BodySeg(new Posn(100, 20), new Posn(6, 0), false, true, true, 60, 1);
     bseg_3 = new ArrayList<>();
     bseg_3.add(bodySeg_29);
     bseg_3.add(bodySeg_30);
@@ -341,8 +309,8 @@ class ExamplesCentipede {
     cent_3 = new Centipede(util.singletonList(bodySeg_11), 8, 10, obl_list_0, new ArrayList<>());
     cent_4 = new Centipede(bseg_2, 8, 10, new ArrayList<>(), new ArrayList<>());
     cent_5 = new Centipede(bseg_3, 6, 6, obl_list_0, new ArrayList<>());
-    cent_6 = new Centipede(util.singletonList(bodySeg_32), 8, 10, util.singletonList(new ObstacleList(1)),
-        new ArrayList<>());
+    cent_6 = new Centipede(util.singletonList(bodySeg_32), 8, 10,
+        util.singletonList(new ObstacleList(1)), new ArrayList<>());
 
     cent_arr_0 = new ArrayList<>();
     cent_arr_0.add(cent_0);
@@ -389,12 +357,12 @@ class ExamplesCentipede {
 
     cgame_0 = new CGameState(3, 3, garden_1, player);
     cgame_1 = new CGameState(5, 5, garden_2, player);
-    cgame_2 = new CGameState(util.singletonList(cent_0), 10, 4, garden_3, new Posn(0, 0),
-        player, dart_4, new NoWaterBalloon(), 0, 0, 140, 140);
-    cgame_3 = new CGameState(util.singletonList(cent_0), 10, 4, garden_3, new Posn(0, 0),
-        player, dart_7, new NoWaterBalloon(), 0, 0, 140, 140);
-    cgame_4 = new CGameState(util.singletonList(cent_0), 10, 4, garden_3, new Posn(0, 0),
-        player, new NoDart(), waterBalloon_6, 0, 0, 140, 140);
+    cgame_2 = new CGameState(util.singletonList(cent_0), 10, 4, garden_3, new Posn(0, 0), player,
+        dart_4, new NoWaterBalloon(), 0, 0, 140, 140);
+    cgame_3 = new CGameState(util.singletonList(cent_0), 10, 4, garden_3, new Posn(0, 0), player,
+        dart_7, new NoWaterBalloon(), 0, 0, 140, 140);
+    cgame_4 = new CGameState(util.singletonList(cent_0), 10, 4, garden_3, new Posn(0, 0), player,
+        new NoDart(), waterBalloon_6, 0, 0, 140, 140);
 
     bgame_0 = new BGameState(3, 3, 20);
     bgame_1 = new BGameState(3, 3, garden_1, player, new Random(20));
@@ -413,11 +381,8 @@ class ExamplesCentipede {
   // test the method draw in Gnome class
   void testGnomeDraw(Tester t) {
     this.initTestConditions();
-    WorldImage gnome =
-        new StarImage(ITile.WIDTH / 2 - 1, 8,
-            2, OutlineMode.SOLID, Color.ORANGE);
-    WorldImage gnomeBallon =
-        new CircleImage(ITile.WIDTH / 2 - 1, OutlineMode.SOLID, Color.BLUE);
+    WorldImage gnome = new StarImage(ITile.WIDTH / 2 - 1, 8, 2, OutlineMode.SOLID, Color.ORANGE);
+    WorldImage gnomeBallon = new CircleImage(ITile.WIDTH / 2 - 1, OutlineMode.SOLID, Color.BLUE);
     t.checkExpect(bg, bg1);
     bg1.placeImageXY(gnome, 20, 580);
     player.draw(bg, 2);
@@ -492,8 +457,7 @@ class ExamplesCentipede {
   // test the method endGame in BGameState class
   boolean testBGameEndGame(Tester t) {
     this.initTestConditions();
-    return t.checkExpect(bgame_0.endGame(), false)
-        && t.checkExpect(bgame_1.endGame(), false);
+    return t.checkExpect(bgame_0.endGame(), false) && t.checkExpect(bgame_1.endGame(), false);
   }
 
   // tests for onMouseClicked in BGameState class
@@ -529,8 +493,7 @@ class ExamplesCentipede {
   // test the method score in BGameState class
   boolean testBGameScore(Tester t) {
     this.initTestConditions();
-    return t.checkExpect(bgame_0.score(), 0)
-        && t.checkExpect(bgame_1.score(), 0);
+    return t.checkExpect(bgame_0.score(), 0) && t.checkExpect(bgame_1.score(), 0);
   }
 
   // test the method toCGameState in BGameState class
@@ -540,9 +503,11 @@ class ExamplesCentipede {
         new CGameState(3, 3, new Util().generateGrassBoard(3, 3), new Gnome(20, 100, 5)))
         && t.checkExpect(bgame_1.toCGameState(), new CGameState(3, 3, garden_1, player));
   }
-  
-  // we did not test makeScene in the BGameState or CGameState class, because we can visualize
-  // it when we run bigBang, and check if things are drawn correctly from there, which they were.
+
+  // we did not test makeScene in the BGameState or CGameState class, because we
+  // can visualize
+  // it when we run bigBang, and check if things are drawn correctly from there,
+  // which they were.
 
   // tests for CGameState
 
@@ -674,13 +639,13 @@ class ExamplesCentipede {
     cgame_0.movePlayer();
     t.checkExpect(cgame_0.gnome, player);
     t.checkExpect(cgame_1.gnome, player);
-    cgame_1.playerDirection = new Posn(- 1, 0);
+    cgame_1.playerDirection = new Posn(-1, 0);
     cgame_1.movePlayer();
     t.checkExpect(cgame_1.gnome, player);
     cgame_1.playerDirection = new Posn(1, 0);
     cgame_1.movePlayer();
     t.checkExpect(cgame_1.gnome, new Gnome(25, 580, 5));
-    cgame_1.playerDirection = new Posn(0, - 1);
+    cgame_1.playerDirection = new Posn(0, -1);
     cgame_1.movePlayer();
     t.checkExpect(cgame_1.gnome, new Gnome(25, 580, 5));
     cgame_1.playerDirection = new Posn(0, 1);
@@ -709,17 +674,17 @@ class ExamplesCentipede {
   // test the method onKeyEvent in CGameState
   void testCGameOnKeyEvent(Tester t) {
     this.initTestConditions();
-    t.checkExpect(cgame_0.playerDirection, new Posn(0,0));
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
     cgame_0.onKeyEvent("left");
-    t.checkExpect(cgame_0.playerDirection, new Posn(-1,0));
+    t.checkExpect(cgame_0.playerDirection, new Posn(-1, 0));
     cgame_0.onKeyEvent("right");
-    t.checkExpect(cgame_0.playerDirection, new Posn(1,0));
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, 0));
     cgame_0.onKeyEvent("up");
     t.checkExpect(cgame_0.playerDirection, new Posn(1, 1));
     cgame_0.onKeyEvent("down");
-    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, -1));
     cgame_0.onKeyEvent("q");
-    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, -1));
     t.checkExpect(cgame_0.dart, new NoDart());
     cgame_0.onKeyEvent(" ");
     t.checkExpect(cgame_0.dart, new Dart(20, 580, 20));
@@ -774,8 +739,7 @@ class ExamplesCentipede {
   boolean testCGameScore(Tester t) {
     this.initTestConditions();
     cgame_1.score = 130;
-    return t.checkExpect(cgame_0.score, 0)
-        && t.checkExpect(cgame_1.score, 130);
+    return t.checkExpect(cgame_0.score, 0) && t.checkExpect(cgame_1.score, 130);
   }
 
   // test the method toCGameState in CGameState
@@ -786,7 +750,7 @@ class ExamplesCentipede {
   }
 
   // tests for GameMaster class
-  
+
   // we did not write tests for the lastScene and makeScene methods because
   // we can visualize the graph when we ran bigbang, and everything behaves as
   // desired.
@@ -795,17 +759,17 @@ class ExamplesCentipede {
   void testGMOnKey(Tester t) {
     this.initTestConditions();
     t.checkExpect(gm_0.gameState, cgame_0);
-    t.checkExpect(cgame_0.playerDirection, new Posn(0,0));
+    t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
     gm_0.onKeyEvent("left");
-    t.checkExpect(cgame_0.playerDirection, new Posn(-1,0));
+    t.checkExpect(cgame_0.playerDirection, new Posn(-1, 0));
     gm_0.onKeyEvent("right");
-    t.checkExpect(cgame_0.playerDirection, new Posn(1,0));
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, 0));
     gm_0.onKeyEvent("up");
     t.checkExpect(cgame_0.playerDirection, new Posn(1, 1));
     gm_0.onKeyEvent("down");
-    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, -1));
     gm_0.onKeyEvent("q");
-    t.checkExpect(cgame_0.playerDirection, new Posn(1,-1));
+    t.checkExpect(cgame_0.playerDirection, new Posn(1, -1));
     t.checkExpect(cgame_0.dart, new NoDart());
     gm_0.onKeyEvent(" ");
     t.checkExpect(cgame_0.dart, new Dart(20, 580, 20));
@@ -833,7 +797,7 @@ class ExamplesCentipede {
     gm_1.onKeyEvent("r");
     t.checkExpect(bgame_0.garden, new Util().generateGrassBoard(3, 3));
   }
-  
+
   // test the method onKeyRealease in GameMaster class
   void GMOnKeyRealease(Tester t) {
     this.initTestConditions();
@@ -850,14 +814,14 @@ class ExamplesCentipede {
     t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
     gm_0.onKeyReleased("p");
     t.checkExpect(cgame_0.playerDirection, new Posn(0, 0));
-    
+
     t.checkExpect(gm_1.gameState, bgame_0);
     gm_1.onKeyReleased("left");
     t.checkExpect(gm_1.gameState, bgame_0);
     gm_1.onKeyReleased("right");
     t.checkExpect(gm_1.gameState, bgame_0);
   }
-  
+
   // test the method onMouseClick in GameMaster class
   void testGMMouseClick(Tester t) {
     this.initTestConditions();
@@ -872,14 +836,14 @@ class ExamplesCentipede {
     t.checkExpect(bgame_0.garden, garden_);
     gm_1.onMouseClicked(new Posn(500, 600), "LeftButton");
     t.checkExpect(bgame_0.garden, garden_);
-    
+
     t.checkExpect(gm_0.gameState, cgame_0);
-    gm_0.onMouseClicked(new Posn(60, 60), "LeftButton");;
+    gm_0.onMouseClicked(new Posn(60, 60), "LeftButton");
     t.checkExpect(gm_0.gameState, cgame_0);
     gm_0.onMouseClicked(new Posn(0, 0), "RightButton");
     t.checkExpect(gm_0.gameState, cgame_0);
   }
-  
+
   // test the method onTick in GameMaster class
   void testGMOnTick(Tester t) {
     this.initTestConditions();
@@ -888,7 +852,7 @@ class ExamplesCentipede {
     t.checkExpect(gm_1.gameState, bgame_0);
     gm_1.onTick();
     t.checkExpect(gm_1.gameState, bgame_0);
-    
+
     Centipede cent1 = new Centipede(10, 4);
     ArrayList<Centipede> centB = new Util().singletonList(cent1);
     t.checkExpect(gm_0.gameState, cgame_0);
@@ -951,12 +915,9 @@ class ExamplesCentipede {
   void testUtilGenerateCentBody(Tester t) {
     this.initTestConditions();
     ArrayList<BodySeg> body = new ArrayList<>();
-    body.add(new BodySeg(new Posn(-60, 20),
-        new Posn(4, 0), false, true, true, 60, 0));
-    body.add(new BodySeg(new Posn(-20, 20),
-        new Posn(4, 0), false, true, true, 60, 0));
-    BodySeg head = new BodySeg(new Posn(20, 20),
-        new Posn(4, 0), true, true, true, 60, 0);
+    body.add(new BodySeg(new Posn(-60, 20), new Posn(4, 0), false, true, true, 60, 0));
+    body.add(new BodySeg(new Posn(-20, 20), new Posn(4, 0), false, true, true, 60, 0));
+    BodySeg head = new BodySeg(new Posn(20, 20), new Posn(4, 0), true, true, true, 60, 0);
     body.add(head);
     t.checkExpect(util.generateCentBody(3, 4), body);
     body.remove(0);
@@ -981,7 +942,8 @@ class ExamplesCentipede {
   }
 
   // tests util generateGrassBoard(int, int)
-  // NOTE: this checks generateGrassRow(ArrayList<ITile>, int, int, int) implicitly
+  // NOTE: this checks generateGrassRow(ArrayList<ITile>, int, int, int)
+  // implicitly
   boolean testUtilGenerateGrassBoard(Tester t) {
     this.initTestConditions();
     return t.checkExpect(util.generateGrassBoard(1, 1), garden_1)
@@ -1077,14 +1039,10 @@ class ExamplesCentipede {
   // tests ITile replaceTile(String, int)
   boolean testITileReplaceTile(Tester t) {
     this.initTestConditions();
-    return t.checkExpect(tile_0.replaceTile("LeftButton", 380),
-        new DandelionTile(20, 60, 3, 400))
-        && t.checkExpect(tile_0.replaceTile("RightButton", 380),
-        new PebbleTile(20, 60, 400))
-        && t.checkExpect(tile_1.replaceTile("LeftButton", 380),
-        new GrassTile(20, 20, 400))
-        && t.checkExpect(tile_2.replaceTile("LeftButton", 380),
-        new GrassTile(60, 60, 400))
+    return t.checkExpect(tile_0.replaceTile("LeftButton", 380), new DandelionTile(20, 60, 3, 400))
+        && t.checkExpect(tile_0.replaceTile("RightButton", 380), new PebbleTile(20, 60, 400))
+        && t.checkExpect(tile_1.replaceTile("LeftButton", 380), new GrassTile(20, 20, 400))
+        && t.checkExpect(tile_2.replaceTile("LeftButton", 380), new GrassTile(60, 60, 400))
         && t.checkExpect(tile_2.replaceTile("RightButton", 380), tile_2)
         && t.checkExpect(tile_1.replaceTile("LeftButton", 20), tile_1);
   }
@@ -1133,8 +1091,7 @@ class ExamplesCentipede {
   boolean testITileNoHP(Tester t) {
     this.initTestConditions();
     ITile dan_0 = new DandelionTile(20, 20, 0, 3);
-    return t.checkExpect(tile_10.noHP(), false)
-        && t.checkExpect(dan_0.noHP(), true)
+    return t.checkExpect(tile_10.noHP(), false) && t.checkExpect(dan_0.noHP(), true)
         && t.checkExpect(tile_1.noHP(), false);
   }
 
@@ -1165,8 +1122,7 @@ class ExamplesCentipede {
     hitBoxFour.add(new Posn(380, 60));
 
     return t.checkExpect(tile_2.hitBox(), util.singletonList(new Posn(60, 60)))
-        && t.checkExpect(tile_1.hitBox(), hitBoxOne)
-        && t.checkExpect(tile_4.hitBox(), hitBoxTwo)
+        && t.checkExpect(tile_1.hitBox(), hitBoxOne) && t.checkExpect(tile_4.hitBox(), hitBoxTwo)
         && t.checkExpect(tile_13.hitBox(), hitBoxThree)
         && t.checkExpect(tile_14.hitBox(), hitBoxFour);
   }
@@ -1227,10 +1183,8 @@ class ExamplesCentipede {
         && t.checkExpect(waterBalloon_1.offScreen(), true)
         && t.checkExpect(waterBalloon_2.offScreen(), false)
         && t.checkExpect(waterBalloon_3.offScreen(), true)
-        && t.checkExpect(dart_0.offScreen(), true)
-        && t.checkExpect(dart_1.offScreen(), true)
-        && t.checkExpect(dart_2.offScreen(), false)
-        && t.checkExpect(dart_3.offScreen(), true);
+        && t.checkExpect(dart_0.offScreen(), true) && t.checkExpect(dart_1.offScreen(), true)
+        && t.checkExpect(dart_2.offScreen(), false) && t.checkExpect(dart_3.offScreen(), true);
   }
 
   // tests IProjectile hitBodySeg(BodySeg)
@@ -1264,10 +1218,8 @@ class ExamplesCentipede {
   // tests IDart missed()
   boolean testIDartMissed(Tester t) {
     this.initTestConditions();
-    return t.checkExpect(dart_0.missed(), true)
-        && t.checkExpect(dart_1.missed(), true)
-        && t.checkExpect(dart_2.missed(), false)
-        && t.checkExpect(dart_3.missed(), false);
+    return t.checkExpect(dart_0.missed(), true) && t.checkExpect(dart_1.missed(), true)
+        && t.checkExpect(dart_2.missed(), false) && t.checkExpect(dart_3.missed(), false);
   }
 
   // tests for IWaterBalloon
@@ -1336,8 +1288,10 @@ class ExamplesCentipede {
 
   // draw() can be seen in the big bang world
 
-  // already checked splashHit(IWaterBalloon), getIndicesHit(IWaterBalloon), posnsHit(IWaterBalloon)
-  // in explode() of IWaterBalloon, and waterBalloonHit(IWaterBalloon) from IProjectile
+  // already checked splashHit(IWaterBalloon), getIndicesHit(IWaterBalloon),
+  // posnsHit(IWaterBalloon)
+  // in explode() of IWaterBalloon, and waterBalloonHit(IWaterBalloon) from
+  // IProjectile
 
   // tests Centipede dartHit(IDart)
   boolean testCentipedeDartHit(Tester t) {
@@ -1404,7 +1358,7 @@ class ExamplesCentipede {
     return t.checkExpect(cent_0.positionHit(dart_4), new Posn(20, 20))
         && t.checkExpect(cent_4.positionHit(dart_5), new Posn(20, 20))
         && t.checkException(new RuntimeException("The dart did not hit any of the body segments."),
-        cent_3, "positionHit", dart_4);
+            cent_3, "positionHit", dart_4);
   }
 
   // tests Centipede makeCentipede(ArrayList<BodySeg>)
@@ -1412,8 +1366,8 @@ class ExamplesCentipede {
   boolean testCentipedeMakeCentipede(Tester t) {
     this.initTestConditions();
     ArrayList<BodySeg> bseg_new = util.singletonList(bodySeg_21);
-    Centipede cent_3 = new Centipede(bseg_new, 8,
-        10, this.cent_3.copyEncountered(), new ArrayList<>());
+    Centipede cent_3 = new Centipede(bseg_new, 8, 10, this.cent_3.copyEncountered(),
+        new ArrayList<>());
     Centipede newCentipede = this.cent_3.makeCentipede(bseg_new);
     return t.checkExpect(newCentipede.body, cent_3.body)
         && t.checkExpect(newCentipede.currSpeed, cent_3.maxSpeed)
@@ -1421,7 +1375,8 @@ class ExamplesCentipede {
         && t.checkExpect(newCentipede.pebsAlreadyOn, cent_3.pebsAlreadyOn)
         && t.checkExpect(newCentipede.encountered, cent_3.encountered)
         && t.checkExpect(cent_3.encountered == this.cent_3.encountered, false);
-    // NOTE: the tester library expected the arraylists to be aliased in order to be the same
+    // NOTE: the tester library expected the arraylists to be aliased in order to be
+    // the same
     // object, hence checking all the fields themselves
   }
 
@@ -1447,7 +1402,7 @@ class ExamplesCentipede {
     return t.checkExpect(cent_0.getIndexHit(dart_4), 9)
         && t.checkExpect(cent_4.getIndexHit(dart_5), 0)
         && t.checkException(new RuntimeException("The dart did not hit any of the body segments."),
-        cent_3, "getIndexHit", dart_4);
+            cent_3, "getIndexHit", dart_4);
   }
 
   // tests Centipede splitDart(IDart)
@@ -1598,8 +1553,8 @@ class ExamplesCentipede {
 
     this.initTestConditions();
     t.checkExpect(cent_6.encountered.size(), 1);
-    bodySeg_0 = util.singletonList(new
-        BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 60, 1));
+    bodySeg_0 = util
+        .singletonList(new BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 60, 1));
     bodySeg_0.get(0).reverseYDirection(140);
     bodySeg_0.get(0).move(140, 4, obl_0);
     cent_6.move(140, 140, garden_3);
@@ -1609,8 +1564,8 @@ class ExamplesCentipede {
 
     this.initTestConditions();
     cent_6.encountered.get(0).addToObstacles(new Posn(60, 20));
-    bodySeg_0 = util.singletonList(new
-        BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 60, 1));
+    bodySeg_0 = util
+        .singletonList(new BodySeg(new Posn(20, 20), new Posn(6, 0), false, false, true, 60, 1));
     bodySeg_0.get(0).reverseYDirection(140);
     bodySeg_0.get(0).move(140, 4, obl_0);
     cent_6.move(140, 140, garden_3);
@@ -1625,7 +1580,8 @@ class ExamplesCentipede {
 
   // draw() can be seen in the big bang world
 
-  // toHead() is tested by the Centipede move(), tileInRange(ITile), gnomeInRange(Gnome),
+  // toHead() is tested by the Centipede move(), tileInRange(ITile),
+  // gnomeInRange(Gnome),
   // posnInRange(Posn) have already been checked by Centipede
 
   // tests BodySeg spawnTilePosn()
@@ -1713,14 +1669,10 @@ class ExamplesCentipede {
   // tests BodySeg reverseYDirection(int)
   void testBodySegReverseYDirection(Tester t) {
     this.initTestConditions();
-    BodySeg bodySeg_18 = new BodySeg(new Posn(20, 23), new Posn(6, 0),
-        false, true, true, 20, 3);
-    BodySeg bodySeg_19 = new BodySeg(new Posn(20, 20), new Posn(0, 6),
-        false, true, true, 60, 2);
-    BodySeg bodySeg_20 = new BodySeg(new Posn(20, 380), new Posn(0, 6),
-        false, false, true, 380, 3);
-    BodySeg bodySeg_21 = new BodySeg(new Posn(20, 60), new Posn(0, 6),
-        false, true, true, 100, 2);
+    BodySeg bodySeg_18 = new BodySeg(new Posn(20, 23), new Posn(6, 0), false, true, true, 20, 3);
+    BodySeg bodySeg_19 = new BodySeg(new Posn(20, 20), new Posn(0, 6), false, true, true, 60, 2);
+    BodySeg bodySeg_20 = new BodySeg(new Posn(20, 380), new Posn(0, 6), false, false, true, 380, 3);
+    BodySeg bodySeg_21 = new BodySeg(new Posn(20, 60), new Posn(0, 6), false, true, true, 100, 2);
 
     this.bodySeg_18.reverseYDirection(400);
     this.bodySeg_19.reverseYDirection(400);
@@ -1764,31 +1716,28 @@ class ExamplesCentipede {
   // tests BodySeg move(int, int, ObstacleList)
   void testBodySegMove(Tester t) {
     this.initTestConditions();
-    BodySeg bodySeg_0 = new BodySeg(new Posn(26, 20), new Posn(6, 0),
-        false, true, true, 60, 0);
+    BodySeg bodySeg_0 = new BodySeg(new Posn(26, 20), new Posn(6, 0), false, true, true, 60, 0);
     this.bodySeg_0.move(80, 6, obl_2);
     t.checkExpect(this.bodySeg_0, bodySeg_0);
 
-    BodySeg bodySeg_26 = new BodySeg(new Posn(62, 20), new Posn(6, 0),
-        false, true, true, 20, 1);
+    BodySeg bodySeg_26 = new BodySeg(new Posn(62, 20), new Posn(6, 0), false, true, true, 20, 1);
     this.bodySeg_26.move(80, 6, obl_2);
     t.checkExpect(this.bodySeg_26, bodySeg_26);
 
-    BodySeg bodySeg_27 = new BodySeg(new Posn(60, 52), new Posn(0, -6),
-        false, false, false, 20, 1);
+    BodySeg bodySeg_27 = new BodySeg(new Posn(60, 52), new Posn(0, -6), false, false, false, 20, 1);
     this.bodySeg_27.move(80, 6, obl_2);
     t.checkExpect(this.bodySeg_27, bodySeg_27);
 
-    BodySeg bodySeg_28 = new BodySeg(new Posn(20, 24), new Posn(0, 6),
-        false, true, true, 20, 1);
+    BodySeg bodySeg_28 = new BodySeg(new Posn(20, 24), new Posn(0, 6), false, true, true, 20, 1);
     this.bodySeg_28.move(80, 6, obl_2);
     t.checkExpect(this.bodySeg_28, bodySeg_28);
 
-    BodySeg bodySeg_22 = new BodySeg(new Posn(20, 26), new Posn(0, 6),
-        false, true, false, 20, 2);
+    BodySeg bodySeg_22 = new BodySeg(new Posn(20, 26), new Posn(0, 6), false, true, false, 20, 2);
     // NOTE: even though this body segment is trapped, it trusts the centipede
-    // itself (that it is in) to make sure the obstacle list does not contain any dandelions
-    // that would trap it; it also trusts the centipede will reverse this body segment's direction
+    // itself (that it is in) to make sure the obstacle list does not contain any
+    // dandelions
+    // that would trap it; it also trusts the centipede will reverse this body
+    // segment's direction
     // when needed
     this.bodySeg_22.reverseYDirection(220);
     this.bodySeg_22.move(80, 6, obl_3);
@@ -1800,8 +1749,8 @@ class ExamplesCentipede {
   // all tests in ObstacleList have been tested by BodySeg and Centipede
   // tests BodySeg aheadDandelion(ArrayList<ITile>)
 
-
-  // already checked tilePosn() in explode() of IWaterBalloon and posnInRange(Posn pos)
+  // already checked tilePosn() in explode() of IWaterBalloon and posnInRange(Posn
+  // pos)
   // and bodySegInRange() of IProjectile
 
   // runs the game - the setup first, then the game by pressing "s"
